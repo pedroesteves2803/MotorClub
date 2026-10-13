@@ -411,3 +411,133 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
     .mc-gallery-grid, .mc-media-grid { grid-template-columns: 1fr; }
     .mc-gallery-grid .mc-surface, .mc-media-grid figure { border-radius: .85rem; }
 }
+
+/* Autoverse Magazine: a light editorial layer over the existing project data. */
+.av-magazine { --av-paper: color-mix(in srgb, var(--mc-paper) 92%, var(--mc-action) 8%); --av-paper-ink: var(--mc-ink); --av-paper-muted: var(--mc-muted); --av-paper-line: var(--mc-line); --av-blue: var(--mc-action); display: grid; gap: clamp(2rem, 4vw, 4rem); }
+.av-magazine__intro { align-items: end; border-bottom: 1px solid var(--mc-line); display: flex; gap: 2rem; justify-content: space-between; padding-bottom: 2.5rem; }
+.av-magazine__intro h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 7vw, 6rem); font-weight: 520; letter-spacing: -.08em; line-height: .9; margin-top: .7rem; max-width: 12ch; }
+.av-magazine__intro > div:first-child > p:last-child { color: var(--mc-muted); font-size: 1.1rem; margin-top: 1.1rem; }
+.av-magazine__actions { align-items: center; display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; }
+.av-magazine__actions form { display: inline-flex; }
+.av-magazine__mode { border: 1px solid var(--mc-line); border-radius: 999px; display: inline-flex; padding: .2rem; }
+.av-magazine__mode button { border-radius: 999px; color: var(--mc-muted); font-family: var(--font-display); font-size: .7rem; font-weight: 650; letter-spacing: .08em; min-height: 2.45rem; padding: .55rem .85rem; text-transform: uppercase; }
+.av-magazine__mode button.is-active { background: var(--mc-action); color: var(--mc-action-ink); }
+.av-magazine__experience { display: grid; gap: 1rem; }
+.av-magazine__toolbar { align-items: end; display: flex; gap: 1rem; justify-content: space-between; }
+.av-magazine__hint { color: var(--mc-muted); font-size: .86rem; margin-top: .35rem; }
+.av-magazine__progress { align-items: center; color: var(--mc-muted); display: flex; font-family: var(--font-display); font-size: .7rem; font-weight: 650; gap: .75rem; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.av-magazine__progress-line { background: var(--mc-line); display: block; height: 2px; overflow: hidden; width: clamp(5rem, 13vw, 10rem); }
+.av-magazine__progress-line i { background: var(--mc-action); display: block; height: 100%; transform: scaleX(0); transform-origin: left center; transition: transform 360ms cubic-bezier(.23,1,.32,1); }
+.av-magazine__book { margin-inline: auto; max-width: 76rem; outline: none; perspective: 1800px; position: relative; width: 100%; }
+.av-magazine__book:focus-visible { border-radius: 1.25rem; box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-action) 35%, transparent); }
+.av-magazine__sheet { background: var(--av-paper); border: 1px solid var(--av-paper-line); box-shadow: 0 28px 60px rgb(4 7 11 / .16), 0 2px 0 color-mix(in srgb, var(--av-paper-ink) 8%, transparent); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: clamp(34rem, 58vw, 48rem); overflow: hidden; position: relative; transform-style: preserve-3d; }
+.av-magazine__sheet::before { background: linear-gradient(90deg, transparent 49.8%, color-mix(in srgb, var(--av-paper-ink) 12%, transparent) 50%, transparent 50.2%); content: ''; inset: 0; pointer-events: none; position: absolute; z-index: 3; }
+.av-magazine__slot { min-width: 0; position: relative; }
+.av-magazine__slot + .av-magazine__slot { border-left: 1px solid color-mix(in srgb, var(--av-paper-ink) 10%, transparent); }
+.av-magazine__slot.is-entering { animation: av-magazine-page-enter 620ms cubic-bezier(.23,1,.32,1) both; transform-origin: left center; }
+.av-magazine__edge { align-items: center; background: color-mix(in srgb, var(--mc-paper) 85%, transparent); border: 1px solid var(--mc-line); border-radius: 999px; color: var(--mc-ink); display: inline-flex; font-size: 2rem; height: 3rem; justify-content: center; line-height: 1; opacity: .72; position: absolute; top: 50%; transform: translateY(-50%); transition: opacity 180ms ease-out, transform 180ms ease-out, background-color 180ms ease-out; width: 3rem; z-index: 5; }
+.av-magazine__edge:disabled { cursor: not-allowed; opacity: .25; }
+.av-magazine__edge--prev { left: -1.25rem; }
+.av-magazine__edge--next { right: -1.25rem; }
+.av-magazine__edge:not(:disabled):hover { background: var(--mc-action); color: var(--mc-action-ink); opacity: 1; transform: translateY(-50%) scale(1.05); }
+.av-magazine-page { background: var(--av-paper); color: var(--av-paper-ink); height: 100%; min-height: clamp(34rem, 58vw, 48rem); overflow: hidden; position: relative; }
+.av-magazine-page__inner { display: flex; flex-direction: column; height: 100%; padding: clamp(1.45rem, 3.2vw, 3.4rem); position: relative; }
+.av-magazine-page__header { align-items: start; display: flex; gap: 1rem; justify-content: space-between; padding-bottom: 1.5rem; }
+.av-magazine-page__header h2 { font-family: var(--font-display); font-size: clamp(2rem, 4.4vw, 4.8rem); font-weight: 520; letter-spacing: -.08em; line-height: .9; margin-top: .55rem; text-wrap: balance; }
+.av-magazine-page__header > p { color: var(--av-paper-muted); margin-top: .55rem; max-width: 34rem; }
+.av-magazine-page__number { bottom: 1.35rem; color: var(--av-paper-muted); font-family: var(--font-display); font-size: .68rem; font-weight: 650; letter-spacing: .12em; position: absolute; right: clamp(1.45rem, 3.2vw, 3.4rem); }
+.av-magazine-kicker { color: var(--av-blue); font-family: var(--font-display); font-size: .66rem; font-weight: 700; letter-spacing: .17em; line-height: 1.5; text-transform: uppercase; }
+.av-magazine-status { border: 1px solid color-mix(in srgb, var(--av-blue) 45%, var(--av-paper-line)); border-radius: 999px; color: var(--av-blue); font-family: var(--font-display); font-size: .62rem; font-weight: 650; letter-spacing: .08em; padding: .48rem .65rem; text-transform: uppercase; white-space: nowrap; }
+.av-magazine-page__note { color: var(--av-paper-muted); font-size: .78rem; line-height: 1.5; margin-top: auto; max-width: 28rem; }
+.av-magazine-page--cover { background: var(--mc-graphite); color: #edf3fb; isolation: isolate; }
+.av-magazine-cover__image { background-color: #182439; background-image: var(--av-cover-image); background-position: center; background-size: cover; inset: 0; position: absolute; }
+.av-magazine-cover__veil { background: linear-gradient(180deg, rgb(4 7 11 / .08) 0%, rgb(4 7 11 / .12) 34%, rgb(4 7 11 / .93) 100%); inset: 0; position: absolute; }
+.av-magazine-cover__empty { color: #c8d6e8; font-size: .85rem; left: 2rem; position: absolute; top: 50%; transform: translateY(-50%); }
+.av-magazine-cover__copy { display: flex; flex-direction: column; height: 100%; justify-content: end; max-width: 32rem; position: relative; z-index: 1; }
+.av-magazine-cover__copy .av-magazine-kicker { color: #9cc2ff; }
+.av-magazine-cover__edition { color: rgb(237 243 251 / .68); font-family: var(--font-display); font-size: .65rem; letter-spacing: .14em; margin-top: auto; text-transform: uppercase; }
+.av-magazine-cover__copy h2 { font-family: var(--font-display); font-size: clamp(2.8rem, 7vw, 7rem); font-weight: 520; letter-spacing: -.1em; line-height: .85; margin-top: 3.5rem; max-width: 8ch; }
+.av-magazine-cover__vehicle { color: #dceaff; font-size: clamp(1rem, 1.8vw, 1.4rem); margin-top: 1rem; }
+.av-magazine-cover__description { color: rgb(237 243 251 / .72); font-size: .92rem; line-height: 1.5; margin-top: 1.25rem; max-width: 28rem; }
+.av-magazine-cover__meta { border-top: 1px solid rgb(237 243 251 / .24); display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-top: 2rem; padding-top: .75rem; }
+.av-magazine-cover__meta span { color: rgb(237 243 251 / .72); font-family: var(--font-display); font-size: .63rem; letter-spacing: .11em; text-transform: uppercase; }
+.av-magazine-toc { border-top: 1px solid var(--av-paper-line); list-style: none; margin: 1rem 0 2rem; overflow: auto; padding: 0; }
+.av-magazine-toc li { border-bottom: 1px solid var(--av-paper-line); }
+.av-magazine-toc button { align-items: baseline; color: var(--av-paper-ink); display: grid; gap: .75rem; grid-template-columns: 2rem minmax(0, 1fr) auto; padding: .95rem 0; text-align: left; width: 100%; }
+.av-magazine-toc button > span { color: var(--av-blue); font-family: var(--font-display); font-size: .7rem; font-weight: 700; }
+.av-magazine-toc button strong { font-size: .98rem; font-weight: 600; }
+.av-magazine-toc button small { color: var(--av-paper-muted); font-size: .72rem; }
+.av-magazine-toc button:hover strong { color: var(--av-blue); }
+.av-magazine-toc__empty { color: var(--av-paper-muted); padding: 1.5rem 0; }
+.av-magazine-split { display: grid; gap: clamp(1.25rem, 3vw, 3rem); grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); min-height: 0; }
+.av-magazine-split__copy { align-self: center; }
+.av-magazine-lede { font-size: clamp(1rem, 1.5vw, 1.3rem); line-height: 1.55; white-space: pre-line; }
+.av-magazine-split__copy blockquote { border-left: 2px solid var(--av-blue); color: var(--av-paper-muted); margin-top: 1.5rem; padding-left: 1rem; white-space: pre-line; }
+.av-magazine-split__photos { display: grid; gap: .65rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.av-magazine-split__photos figure:first-child { grid-column: 1 / -1; }
+.av-magazine-split figure, .av-magazine-gallery figure { margin: 0; }
+.av-magazine-split img, .av-magazine-gallery img { aspect-ratio: 4 / 3; background: var(--mc-surface-strong); display: block; object-fit: cover; width: 100%; }
+.av-magazine-split figcaption, .av-magazine-gallery figcaption { color: var(--av-paper-muted); font-size: .65rem; margin-top: .35rem; }
+.av-magazine-timeline { border-left: 1px solid var(--av-paper-line); display: grid; gap: 1.15rem; margin: .5rem 0 0 .25rem; overflow: auto; padding-left: 1.2rem; }
+.av-magazine-timeline__item { display: grid; gap: 1rem; grid-template-columns: 5.5rem minmax(0, 1fr); position: relative; }
+.av-magazine-timeline__item::before { background: var(--av-blue); border: 3px solid var(--av-paper); border-radius: 50%; content: ''; height: .55rem; left: -1.52rem; position: absolute; top: .25rem; width: .55rem; }
+.av-magazine-timeline__date { color: var(--av-paper-muted); font-family: var(--font-display); font-size: .7rem; letter-spacing: .05em; }
+.av-magazine-timeline__date small { color: var(--av-blue); display: block; font-size: .58rem; margin-top: .35rem; text-transform: uppercase; }
+.av-magazine-timeline h3 { font-size: 1rem; font-weight: 650; margin-top: .25rem; }
+.av-magazine-timeline p:not(.av-magazine-kicker) { color: var(--av-paper-muted); font-size: .82rem; line-height: 1.45; margin-top: .4rem; white-space: pre-line; }
+.av-magazine-specs { border-top: 1px solid var(--av-paper-line); margin-top: 2rem; }
+.av-magazine-specs > div { align-items: baseline; border-bottom: 1px solid var(--av-paper-line); display: flex; gap: 1rem; justify-content: space-between; padding: .9rem 0; }
+.av-magazine-specs span { color: var(--av-paper-muted); }
+.av-magazine-specs strong { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; }
+.av-magazine-total { border-top: 2px solid var(--av-paper-ink); display: flex; justify-content: space-between; margin-top: 2rem; padding-top: .85rem; }
+.av-magazine-total strong { color: var(--av-blue); font-family: var(--font-display); }
+.av-magazine-quote { font-family: var(--font-display); font-size: clamp(1.6rem, 3.2vw, 3.25rem); font-weight: 520; letter-spacing: -.06em; line-height: 1; margin: auto 0 1rem; max-width: 14ch; }
+.av-magazine-quote__body { color: var(--av-paper-muted); font-size: .9rem; line-height: 1.55; white-space: pre-line; }
+.av-magazine-gallery { display: grid; gap: .7rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: .75rem; overflow: auto; }
+.av-magazine-gallery figure:first-child { grid-column: 1 / -1; }
+.av-magazine-gallery figure:first-child img { aspect-ratio: 16 / 8; }
+.av-magazine__reading { display: grid; gap: 2.5rem; }
+.av-magazine-reading__header { border-bottom: 1px solid var(--mc-line); padding-bottom: 2rem; }
+.av-magazine-reading__header h2, .av-magazine-reading__reports h2 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.5rem); font-weight: 520; letter-spacing: -.08em; line-height: .9; margin-top: .7rem; }
+.av-magazine-lede { color: var(--mc-muted); margin-top: 1rem; max-width: 44rem; }
+.av-magazine-reading__page { max-width: 72rem; }
+.av-magazine-reading__page .av-magazine-page { border: 1px solid var(--mc-line); min-height: auto; }
+.av-magazine-reading__page .av-magazine-page__inner { min-height: 30rem; }
+.av-magazine-reading__page .av-magazine-page--cover { min-height: 42rem; }
+.av-magazine-reading__reports { display: grid; gap: 1rem; max-width: 72rem; }
+.av-magazine-reading__reports article { display: flex; align-items: center; gap: 1rem; justify-content: space-between; }
+@keyframes av-magazine-page-enter { from { opacity: .2; transform: rotateY(-10deg) translateX(1rem); } to { opacity: 1; transform: rotateY(0) translateX(0); } }
+@media (max-width: 860px) {
+    .av-magazine__intro { align-items: start; flex-direction: column; }
+    .av-magazine__actions { justify-content: flex-start; }
+    .av-magazine__sheet { grid-template-columns: 1fr; min-height: 38rem; }
+    .av-magazine__sheet::before { display: none; }
+    .av-magazine__slot + .av-magazine__slot { border-left: 0; }
+    .av-magazine__edge--prev { left: .65rem; }
+    .av-magazine__edge--next { right: .65rem; }
+    .av-magazine-page { min-height: 38rem; }
+    .av-magazine__toolbar { align-items: start; flex-direction: column; }
+    .av-magazine__progress { width: 100%; }
+    .av-magazine__progress-line { flex: 1; }
+}
+@media (max-width: 600px) {
+    .av-magazine__intro h1 { font-size: clamp(2.45rem, 13vw, 4rem); }
+    .av-magazine__actions { align-items: stretch; flex-direction: column; width: 100%; }
+    .av-magazine__actions > *, .av-magazine__actions form > * { width: 100%; }
+    .av-magazine__mode { justify-content: center; }
+    .av-magazine-page, .av-magazine__sheet { min-height: 34rem; }
+    .av-magazine-page__inner { padding: 1.2rem; }
+    .av-magazine-page__header h2 { font-size: clamp(1.9rem, 10vw, 3rem); }
+    .av-magazine-cover__copy h2 { font-size: clamp(2.5rem, 14vw, 4.5rem); margin-top: 2rem; }
+    .av-magazine-split { grid-template-columns: 1fr; }
+    .av-magazine-split__photos { order: -1; }
+    .av-magazine-timeline__item { grid-template-columns: 1fr; }
+    .av-magazine-timeline__date { font-size: .64rem; }
+    .av-magazine-toc button { grid-template-columns: 1.7rem minmax(0, 1fr); }
+    .av-magazine-toc button small { grid-column: 2; }
+    .av-magazine-reading__page .av-magazine-page--cover { min-height: 34rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .av-magazine__progress-line i { transition: none; }
+    .av-magazine__slot.is-entering { animation: none; }
+}

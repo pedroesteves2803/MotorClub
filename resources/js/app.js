@@ -336,6 +336,104 @@ const initLightShowroom = () => {
     });
 };
 
+const initMagazine = () => {
+    document.querySelectorAll('[data-av-magazine]').forEach((root) => {
+        if (root.dataset.avMagazineReady) return;
+
+        const book = root.querySelector('[data-av-book]');
+        const slots = [...root.querySelectorAll('[data-av-page]')];
+        const experience = root.querySelector('[data-av-magazine-view]');
+        const reading = root.querySelector('[data-av-reading-view]');
+        const total = slots.length;
+        if (!book || !slots.length || !experience || !reading) return;
+
+        root.dataset.avMagazineReady = 'true';
+        let index = 0;
+        let mode = window.localStorage.getItem('autoverse-magazine-mode') || root.dataset.avDefaultMode || 'magazine';
+        let animationTimer;
+
+        const isMobile = () => window.matchMedia('(max-width: 860px)').matches;
+        const visibleIndexes = () => {
+            const count = isMobile() ? 1 : 2;
+            return Array.from({ length: count }, (_, offset) => index + offset).filter((value) => value < total);
+        };
+
+        const pageLabel = (slot) => {
+            const heading = slot?.querySelector('h2');
+            return heading?.textContent?.trim() || (slot?.querySelector('h1')?.textContent?.trim() ?? 'Página');
+        };
+
+        const sync = ({animate = false} = {}) => {
+            const visible = visibleIndexes();
+            slots.forEach((slot, slotIndex) => {
+                const shouldShow = visible.includes(slotIndex);
+                slot.hidden = !shouldShow;
+                slot.setAttribute('aria-hidden', String(!shouldShow));
+                slot.classList.remove('is-entering');
+                if (animate && shouldShow && slotIndex === index && !reduceMotion.matches) {
+                    window.requestAnimationFrame(() => slot.classList.add('is-entering'));
+                }
+            });
+
+            const previous = root.querySelector('[data-av-prev]');
+            const next = root.querySelector('[data-av-next]');
+            if (previous) previous.disabled = index <= 0;
+            if (next) next.disabled = index >= total - 1;
+
+            const progress = root.querySelector('[data-av-progress-bar]');
+            if (progress) progress.style.transform = `scaleX(${total > 1 ? index / (total - 1) : 1})`;
+            const label = root.querySelector('[data-av-progress-label]');
+            if (label) label.textContent = `Página ${String(index + 1).padStart(2, '0')} de ${String(total).padStart(2, '0')}`;
+            const status = root.querySelector('[data-av-page-status]');
+            if (status) status.textContent = `${pageLabel(slots[index])}. Página ${index + 1} de ${total}.`;
+        };
+
+        const setMode = (nextMode) => {
+            mode = nextMode === 'reading' ? 'reading' : 'magazine';
+            experience.hidden = mode !== 'magazine';
+            reading.hidden = mode !== 'reading';
+            root.querySelectorAll('[data-av-mode]').forEach((button) => {
+                const active = button.dataset.avMode === mode;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+            window.localStorage.setItem('autoverse-magazine-mode', mode);
+            if (mode === 'reading') reading.querySelector('h2')?.focus?.({preventScroll: true});
+        };
+
+        const goTo = (target, animate = true) => {
+            const nextIndex = clamp(Number(target), 0, total - 1);
+            if (nextIndex === index) return;
+            index = nextIndex;
+            window.clearTimeout(animationTimer);
+            sync({animate});
+            animationTimer = window.setTimeout(() => slots.forEach((slot) => slot.classList.remove('is-entering')), 680);
+        };
+
+        root.querySelectorAll('[data-av-mode]').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.avMode)));
+        root.querySelector('[data-av-prev]')?.addEventListener('click', () => goTo(index - 1));
+        root.querySelector('[data-av-next]')?.addEventListener('click', () => goTo(index + 1));
+        root.querySelectorAll('[data-av-toc]').forEach((button) => button.addEventListener('click', () => {
+            setMode('magazine');
+            goTo(button.dataset.avToc);
+        }));
+        book.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); goTo(index - 1); }
+            if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); goTo(index + 1); }
+            if (event.key === 'Home') { event.preventDefault(); goTo(0, false); }
+            if (event.key === 'End') { event.preventDefault(); goTo(total - 1, false); }
+        });
+        book.addEventListener('click', (event) => {
+            if (event.target.closest('button, a')) return;
+            const bounds = book.getBoundingClientRect();
+            goTo(event.clientX < bounds.left + bounds.width / 2 ? index - 1 : index + 1);
+        });
+        window.addEventListener('resize', () => sync(), {passive: true});
+        setMode(mode);
+        sync();
+    });
+};
+
 const initEasterEggs = () => {
     if (document.body.dataset.mcEasterEggsBound) return;
 
@@ -383,6 +481,7 @@ const initMotion = () => {
     initHeroMotion();
     initCardTilt();
     initLightShowroom();
+    initMagazine();
     initEasterEggs();
 };
 

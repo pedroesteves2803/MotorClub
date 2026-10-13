@@ -8,6 +8,7 @@ use App\Models\ProjectPhoto;
 use App\Models\ProjectReport;
 use App\Models\Vehicle;
 use App\Models\Workshop;
+use App\Presenters\ProjectMagazinePresenter;
 use App\Services\AI\AIReportGeneratorInterface;
 use App\Services\VehicleImages;
 use Illuminate\Http\Request;
@@ -68,15 +69,20 @@ class ProjectController extends Controller
         return back()->with('status', 'Projeto atualizado.');
     }
 
-    public function show(Project $project)
+    public function show(Project $project, ProjectMagazinePresenter $magazinePresenter)
     {
         abort_unless(Gate::allows('view', $project), 404);
-        $project->load('photos', 'vehicle.user', 'workshop');
-        $reports = Gate::allows('update', $project)
+        $ownerCanEdit = Gate::allows('update', $project);
+        $project->load('photos', 'vehicle.user', 'vehicle.photos', 'vehicle.entries', 'workshop');
+        if (! $ownerCanEdit) {
+            $project->vehicle->setRelation('entries', $project->vehicle->entries->where('is_public', true)->values());
+        }
+        $reports = $ownerCanEdit
             ? $project->reports()->latest('version')->get()
             : $project->reports()->where('status', 'approved')->where('is_public', true)->latest('version')->get();
+        $magazine = $magazinePresenter->present($project, $ownerCanEdit);
 
-        return response()->view('projects.show', compact('project', 'reports'))->header('Cache-Control', 'private, no-store');
+        return response()->view('projects.show', compact('project', 'reports', 'magazine'))->header('Cache-Control', 'private, no-store');
     }
 
     public function generateReport(Project $project, AIReportGeneratorInterface $generator)
@@ -181,6 +187,7 @@ class ProjectController extends Controller
     public function image(ProjectPhoto $photo)
     {
         abort_unless(Gate::allows('view', $photo->project), 404);
+        abort_unless(Storage::disk(config('filesystems.private_disk'))->exists($photo->path), 404);
 
         return Storage::disk(config('filesystems.private_disk'))->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }

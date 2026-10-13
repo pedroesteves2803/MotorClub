@@ -72,6 +72,22 @@ it('protege projetos e custos privados mesmo quando vinculados a uma oficina', f
     $project->update(['is_public' => false]);
     $this->get(route('projects.show', $project))->assertNotFound();
 });
+it('monta a revista com capítulos relevantes e oculta histórico privado', function () {
+    $project = mvpProject(data: ['title' => 'Venom Black MK7']);
+    $project->vehicle->entries()->create(['category' => 'maintenance', 'title' => 'Revisão pública', 'description' => 'Serviço documentado', 'occurred_on' => '2026-01-01', 'is_public' => true]);
+    $project->vehicle->entries()->create(['category' => 'maintenance', 'title' => 'Anotação privada', 'description' => 'Não publicar', 'occurred_on' => '2026-01-02', 'is_public' => false]);
+
+    $this->get(route('projects.show', $project))
+        ->assertOk()
+        ->assertSee('Autoverse Magazine')
+        ->assertSee('Evolução documentada')
+        ->assertSee('Revisão pública')
+        ->assertDontSee('Anotação privada');
+
+    $this->actingAs($project->vehicle->user)->get(route('projects.show', $project))
+        ->assertSee('Anotação privada')
+        ->assertSee('Privado');
+});
 it('valida campos de projetos e impede injeção de autorização', function () {
     $vehicle = Vehicle::factory()->create();
     $this->actingAs($vehicle->user);

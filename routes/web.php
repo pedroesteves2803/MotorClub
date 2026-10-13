@@ -44,6 +44,7 @@ Route::get('veiculos/{vehicle}', function (Vehicle $vehicle) {
 Route::get('garagem/{vehicle}', Details::class)->middleware(['auth', 'verified', 'feature:garage'])->name('garage.details');
 Route::get('fotos/{photo}', function (VehiclePhoto $photo) {
     abort_unless(Gate::allows('view', $photo->vehicle), 404);
+    abort_unless(Storage::disk(config('filesystems.private_disk'))->exists($photo->path), 404);
 
     return Storage::disk(config('filesystems.private_disk'))->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
 })->middleware('feature:garage')->name('vehicle-photos.show');
