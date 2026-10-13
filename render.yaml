@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: motorclub-pedroesteves
+    name: motorclub-br
     runtime: docker
     plan: free
     region: oregon
@@ -17,7 +17,7 @@ services:
       - key: APP_URL
         fromService:
           type: web
-          name: motorclub-pedroesteves
+          name: motorclub-br
           envVarKey: RENDER_EXTERNAL_URL
       - key: APP_KEY
         sync: false
