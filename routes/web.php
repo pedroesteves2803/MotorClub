@@ -37,6 +37,7 @@ require __DIR__.'/auth.php';
 
 Route::get('veiculos/{vehicle}', function (Vehicle $vehicle) {
     abort_unless($vehicle->visibility === 'public', 404);
+    $vehicle->load(['photos', 'user', 'entries' => fn ($query) => $query->where('is_public', true)->orderByDesc('occurred_on')->orderByDesc('id')]);
 
     return response()->view('vehicle', compact('vehicle'))->header('Cache-Control', 'private, no-store');
 })->middleware('feature:garage')->name('vehicles.show');

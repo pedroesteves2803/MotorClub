@@ -21,6 +21,7 @@
             <flux:textarea wire:model="description" label="Descrição" maxlength="5000" required />
             <flux:textarea wire:model="parts" label="Peças utilizadas (opcional)" maxlength="2000" />
             <flux:textarea wire:model="services" label="Serviços realizados (opcional)" maxlength="2000" />
+            <flux:checkbox wire:model="is_public" label="Publicar este registro na página pública do carro" />
             <div class="flex items-end gap-3"><flux:button type="submit" variant="primary">Salvar registro</flux:button><flux:button wire:click="clearEntry" type="button">Limpar formulário</flux:button></div>
         </form>
     </section>

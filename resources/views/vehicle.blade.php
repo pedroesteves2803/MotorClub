@@ -16,4 +16,22 @@
     @else
         <p class="max-w-2xl text-sm">Informações declaradas pelo proprietário. Não representam garantia de compatibilidade técnica.</p>
     @endif
-<section class="space-y-6"><h2 class="text-3xl font-bold">Projetos deste carro</h2><x-project-cards :projects="\App\Models\Project::published()->where('vehicle_id',$vehicle->id)->with(['previewPhoto','vehicle.previewPhoto'])->get()" /></section></x-layouts.public>
+    @if($vehicle->entries->isNotEmpty())
+        <section class="mt-12 space-y-6" aria-labelledby="public-history-title">
+            <h2 id="public-history-title" class="text-3xl font-bold">Histórico público</h2>
+            <div class="space-y-5">
+                @foreach($vehicle->entries as $entry)
+                    <article class="mc-surface space-y-3 rounded-2xl p-6">
+                        <p class="mc-edition">{{ $entry->occurred_on?->format('d/m/Y') ?? 'Data não informada' }} · {{ $entry->category === 'maintenance' ? 'Manutenção' : 'Modificação' }}</p>
+                        <h3 class="text-xl font-semibold">{{ $entry->title }}</h3>
+                        <p class="whitespace-pre-line">{{ $entry->description }}</p>
+                        @if($entry->parts)<p class="whitespace-pre-line">Peças: {{ $entry->parts }}</p>@endif
+                        @if($entry->services)<p class="whitespace-pre-line">Serviços: {{ $entry->services }}</p>@endif
+                        @if($entry->cost !== null)<p>Valor: R$ {{ number_format((float) $entry->cost, 2, ',', '.') }}</p>@endif
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
+    <section class="space-y-6"><h2 class="text-3xl font-bold">Projetos deste carro</h2><x-project-cards :projects="\App\Models\Project::published()->where('vehicle_id',$vehicle->id)->with(['previewPhoto','vehicle.previewPhoto'])->get()" /></section>
+</x-layouts.public>

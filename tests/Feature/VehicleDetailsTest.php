@@ -81,10 +81,11 @@ it('removes stored photos when the vehicle is deleted', function () {
     $v->delete();
     Storage::disk('local')->assertMissing('vehicles/test.webp');
 });
-it('does not expose history or costs on public pages', function () {
+it('exposes only explicitly public history on public pages', function () {
     $v = Vehicle::factory()->create(['visibility' => 'public']);
-    $v->entries()->create(['category' => 'maintenance', 'title' => 'Registro secreto', 'description' => 'Segredo', 'occurred_on' => '2026-01-01', 'cost' => '123.45']);
-    $this->get(route('vehicles.show', $v))->assertOk()->assertDontSee('Registro secreto')->assertDontSee('123.45');
+    $v->entries()->create(['category' => 'maintenance', 'title' => 'Registro secreto', 'description' => 'Segredo', 'occurred_on' => '2026-01-01', 'cost' => '123.45', 'is_public' => false]);
+    $v->entries()->create(['category' => 'maintenance', 'title' => 'Registro público', 'description' => 'Informação compartilhada', 'occurred_on' => '2026-01-02', 'is_public' => true]);
+    $this->get(route('vehicles.show', $v))->assertOk()->assertSee('Registro público')->assertDontSee('Registro secreto')->assertDontSee('123.45');
 });
 
 it('cannot delete another vehicles photo', function () {

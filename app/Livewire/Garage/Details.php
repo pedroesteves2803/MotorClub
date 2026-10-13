@@ -38,6 +38,8 @@ class Details extends Component
 
     public string $cost = '';
 
+    public bool $is_public = false;
+
     public $photo;
 
     private function ensureFeatureEnabled(): void
@@ -73,6 +75,7 @@ class Details extends Component
             'occurred_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:1886-01-01', 'before_or_equal:today'],
             'parts' => ['nullable', 'string', 'max:2000'], 'services' => ['nullable', 'string', 'max:2000'],
             'cost' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
+            'is_public' => ['required', 'boolean'],
         ], ['required' => 'Preencha este campo.', 'in' => 'Selecione uma opção válida.', 'max' => 'O valor ultrapassa o limite de :max.', 'min' => 'O valor não pode ser negativo.', 'date_format' => 'Informe uma data válida.', 'before_or_equal' => 'A data não pode estar no futuro.', 'after_or_equal' => 'Informe uma data a partir de 1886.', 'numeric' => 'Informe um valor numérico, usando ponto nos centavos.', 'decimal' => 'Use no máximo duas casas decimais.']);
         $data['cost'] = $data['cost'] === '' ? null : $data['cost'];
         $data['occurred_on'] = $data['occurred_on'] === '' ? null : $data['occurred_on'];
@@ -92,7 +95,7 @@ class Details extends Component
         $entry = $this->vehicle()->entries()->find($id);
         abort_unless($entry, 404);
         $this->entryId = $entry->id;
-        foreach (['category', 'title', 'description', 'parts', 'services', 'cost'] as $field) {
+        foreach (['category', 'title', 'description', 'parts', 'services', 'cost', 'is_public'] as $field) {
             $this->$field = (string) $entry->$field;
         }
         $this->occurred_on = $entry->occurred_on?->toDateString() ?? '';
@@ -102,7 +105,7 @@ class Details extends Component
     public function clearEntry(): void
     {
         $this->ensureFeatureEnabled();
-        $this->reset('entryId', 'category', 'title', 'description', 'parts', 'services', 'cost');
+        $this->reset('entryId', 'category', 'title', 'description', 'parts', 'services', 'cost', 'is_public');
         $this->occurred_on = now()->toDateString();
         $this->resetValidation();
     }
