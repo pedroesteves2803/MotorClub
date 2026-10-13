@@ -18,6 +18,7 @@ it('oferece menu responsivo acessível nas páginas públicas', function () {
 it('usa o próprio farol como controle acessível de tema', function () {
     $this->get('/')
         ->assertOk()
+        ->assertSee('data-hero-3d', false)
         ->assertSee('data-theme-toggle-button', false)
         ->assertSee('data-theme-toggle-status', false)
         ->assertSee('mc-theme-toggle--floating', false)

@@ -121,6 +121,19 @@ html, body { max-width: 100%; overflow-x: clip; }
 .mc-mark[data-theme-headlight].is-ready.is-lit .mc-headlight-lens { filter: drop-shadow(0 0 2px rgb(156 194 255 / .78)) drop-shadow(0 0 5px rgb(46 111 217 / .35)); transition-delay: 560ms; }
 .mc-mark[data-theme-headlight].is-ready.is-dark .mc-light-segment { opacity: 0; stroke-dashoffset: 1; transition-delay: calc(110ms - var(--mc-headlight-delay)); }
 .dark .mc-mark[data-theme-headlight] .mc-headlight-base, .mc-site.dark .mc-mark[data-theme-headlight] .mc-headlight-base { stroke: var(--mc-muted); }
+.mc-home-poster svg[data-theme-headlight] { overflow: visible; }
+.mc-home-poster svg[data-theme-headlight] .mc-headlight-base { opacity: .42; stroke: color-mix(in srgb, currentColor 48%, #718097 52%); transition: opacity 180ms ease-out, stroke 180ms ease-out; }
+.mc-home-poster svg[data-theme-headlight] .mc-headlight-lens { filter: none; transition: filter 180ms ease-out; }
+.mc-home-poster svg[data-theme-headlight] .mc-light-segment { opacity: 0; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 560ms cubic-bezier(.23,1,.32,1), opacity 160ms ease-out; transition-delay: var(--mc-headlight-delay, 0ms); }
+.mc-home-poster svg[data-theme-headlight] .mc-light-segment--1 { --mc-headlight-delay: 0ms; }
+.mc-home-poster svg[data-theme-headlight] .mc-light-segment--2 { --mc-headlight-delay: 55ms; }
+.mc-home-poster svg[data-theme-headlight] .mc-light-segment--3 { --mc-headlight-delay: 110ms; }
+.mc-home-poster svg[data-theme-headlight].is-initializing .mc-headlight-lens, .mc-home-poster svg[data-theme-headlight].is-initializing .mc-light-segment { transition: none !important; }
+.mc-home-poster svg[data-theme-headlight]:not(.is-ready) .mc-light-segment { opacity: 0; transition: none; }
+.mc-home-poster svg[data-theme-headlight].is-ready.is-lit .mc-light-segment { opacity: 1; stroke-dashoffset: 0; }
+.mc-home-poster svg[data-theme-headlight].is-ready.is-lit .mc-headlight-lens { filter: drop-shadow(0 0 3px rgb(156 194 255 / .82)) drop-shadow(0 0 9px rgb(46 111 217 / .4)); transition-delay: 560ms; }
+.mc-home-poster svg[data-theme-headlight].is-ready.is-dark .mc-light-segment { opacity: 0; stroke-dashoffset: 1; transition-delay: calc(110ms - var(--mc-headlight-delay)); }
+.dark .mc-home-poster svg[data-theme-headlight] .mc-headlight-base, .mc-site.dark .mc-home-poster svg[data-theme-headlight] .mc-headlight-base { stroke: var(--mc-muted); }
 .mc-nav { align-items: center; display: flex; flex-wrap: wrap; font-family: var(--font-display); font-size: .74rem; font-weight: 600; gap: 1.35rem; letter-spacing: .08em; text-transform: uppercase; }
 .mc-nav > a { border-bottom: 1px solid transparent; padding: .35rem 0; }
 .mc-masthead [aria-current="page"] { border-bottom-color: var(--mc-action); color: var(--mc-action); }
@@ -194,6 +207,9 @@ html, body { max-width: 100%; overflow-x: clip; }
 .mc-scroll-progress { background: var(--mc-action); height: 2px; inset: 0 auto auto 0; pointer-events: none; position: fixed; transform: scaleX(var(--mc-scroll-progress, 0)); transform-origin: left center; transition: transform 120ms linear; width: 100%; z-index: 60; }
 .mc-reveal { opacity: 0; transform: translateY(18px); transition: opacity 460ms cubic-bezier(.23,1,.32,1), transform 460ms cubic-bezier(.23,1,.32,1); transition-delay: var(--mc-reveal-delay, 0ms); }
 .mc-reveal.is-visible { opacity: 1; transform: translateY(0); }
+.mc-home-poster[data-hero-3d] { perspective: 900px; transform-style: preserve-3d; }
+.mc-home-poster[data-hero-3d].is-visible { transform: perspective(900px) rotateX(var(--mc-tilt-x, 0deg)) rotateY(var(--mc-tilt-y, 0deg)); transition: opacity 460ms cubic-bezier(.23,1,.32,1), transform 420ms cubic-bezier(.23,1,.32,1); will-change: transform; }
+.mc-home-poster[data-hero-3d] > * { transform: translateZ(12px); transition: transform 420ms cubic-bezier(.23,1,.32,1); }
 .mc-image-reveal { clip-path: inset(0 0 100% 0); opacity: .02; transition: clip-path 720ms cubic-bezier(.23,1,.32,1), opacity 360ms ease-out; }
 .mc-image-reveal.is-visible { clip-path: inset(0 0 0 0); opacity: 1; }
 .mc-scroll-zoom { --mc-hover-scale: 1; --mc-scroll-scale: 1; transform: scale(calc(var(--mc-scroll-scale) * var(--mc-hover-scale))); transform-origin: center; transition: transform 520ms cubic-bezier(.23,1,.32,1); will-change: transform; }

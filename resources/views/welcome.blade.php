@@ -6,7 +6,7 @@
             <p class="mt-7 text-lg leading-relaxed">Seu carro merece mais que uma publicação. Registre detalhes, mudanças, encontros e os olhares que fazem cada projeto seguir em frente.</p>
             <div class="mt-8 flex flex-wrap gap-3"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem</a><a class="mc-text-link border-[#2d486e] text-[#edf3fb]" href="{{ route('shots.index') }}">Explorar Shots</a></div>
         </div>
-        <aside class="mc-home-poster" aria-label="Manifesto Autoverse"><span class="mc-edition">Seu carro · Sua história · Seu universo</span><x-brand-mark /><p>Alguns veem<br>um carro.<br>A gente vê<br><em>um universo.</em></p><span class="mc-edition">Garagem · Projetos · Shots</span></aside>
+        <aside class="mc-home-poster" aria-label="Manifesto Autoverse" data-hero-3d><span class="mc-edition">Seu carro · Sua história · Seu universo</span><x-brand-mark /><p>Alguns veem<br>um carro.<br>A gente vê<br><em>um universo.</em></p><span class="mc-edition">Garagem · Projetos · Shots</span></aside>
     </section>
 
     <section class="mc-home-features" aria-label="O que você pode fazer">

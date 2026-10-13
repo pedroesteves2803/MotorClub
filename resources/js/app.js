@@ -217,7 +217,7 @@ const initMenu = () => {
 };
 
 const initHeroMotion = () => {
-    const hero = document.querySelector('.mc-home-poster');
+    const hero = document.querySelector('[data-hero-3d]');
     if (!hero || reduceMotion.matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || hero.dataset.mcBound) return;
 
     hero.dataset.mcBound = 'true';
@@ -228,11 +228,15 @@ const initHeroMotion = () => {
         const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
         hero.style.setProperty('--mc-pointer-x', `${(x * 8).toFixed(2)}px`);
         hero.style.setProperty('--mc-pointer-y', `${(y * 8).toFixed(2)}px`);
+        hero.style.setProperty('--mc-tilt-x', `${(-y * 3.5).toFixed(2)}deg`);
+        hero.style.setProperty('--mc-tilt-y', `${(x * 4.5).toFixed(2)}deg`);
     });
 
     hero.addEventListener('pointerleave', () => {
         hero.style.setProperty('--mc-pointer-x', '0px');
         hero.style.setProperty('--mc-pointer-y', '0px');
+        hero.style.setProperty('--mc-tilt-x', '0deg');
+        hero.style.setProperty('--mc-tilt-y', '0deg');
     });
 };
 
