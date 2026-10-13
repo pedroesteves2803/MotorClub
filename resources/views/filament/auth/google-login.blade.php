@@ -4,8 +4,8 @@
         <span>ou</span>
         <span class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></span>
     </div>
-    <x-filament::button tag="a" :href="route('auth.google')" color="gray" outlined="true" class="w-full">
-        Entrar com Google
+    <x-filament::button tag="a" :href="route('auth.google.admin')" color="gray" outlined="true" class="w-full">
+        Entrar como administrador com Google
     </x-filament::button>
-    <p class="text-xs text-gray-500 dark:text-gray-400">Use a mesma conta Google cadastrada no Autoverse.</p>
+    <p class="text-xs text-gray-500 dark:text-gray-400">Somente contas Google autorizadas para o CMS podem entrar.</p>
 </div>
