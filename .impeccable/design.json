@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "product": "Autoverse",
+  "direction": "midnight-studio-editorial",
+  "tokens": {
+    "color": { "signal": "#4d8dff", "ground": "#070a0f", "paper": "#f5f7fb", "ink": "#111827", "quiet": "#9aa8bd" },
+    "radius": { "panel": "14px", "control": "8px", "pill": "999px" },
+    "motion": { "ease": "cubic-bezier(.23,1,.32,1)", "duration": "260ms" }
+  },
+  "surfaces": ["home", "garage", "explore", "shots", "auth", "settings", "admin"]
+}

@@ -2,7 +2,7 @@
     <a href="{{ route('community') }}" class="mc-text-link">← Conhecer a comunidade</a>
     <header class="mc-intro"><p class="mc-edition mb-5">{{ $vehicle->brand }} / {{ $vehicle->model_year }}</p><h1>{{ $vehicle->model }}<br><span>{{ $vehicle->trim }}</span></h1><p class="mt-6 text-xl">{{ $vehicle->engine }} · {{ $vehicle->model_year }}</p></header>
     @if($vehicle->user->profile_public)<p>Na garagem de <a class="mc-text-link" href="{{ route('profiles.show',$vehicle->user) }}">{{ $vehicle->user->name }}</a></p>@endif
-    @if($vehicle->user->is_demo)<p class="border-l-4 border-orange-600 p-4">Veículo fictício de demonstração.</p>@endif
+    @if($vehicle->user->is_demo)<p class="mc-notice border-l-2 border-[var(--mc-action)] p-4">Veículo fictício de demonstração.</p>@endif
     <section class="grid gap-6 md:grid-cols-2" aria-label="Fotos do veículo">
         @forelse($vehicle->photos as $photo)
             <figure class="{{ $loop->first ? 'md:col-span-2' : '' }}"><img src="{{ route('vehicle-photos.show', $photo) }}" alt="Foto de {{ $vehicle->model }}" class="max-h-[650px] w-full object-cover" /></figure>

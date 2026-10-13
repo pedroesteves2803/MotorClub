@@ -2,7 +2,7 @@
     <div class="mc-header-inner">
         <a href="{{ route('home') }}" class="mc-wordmark" aria-label="Autoverse, página inicial"><x-brand-mark class="mc-mark" /><span>AUTOVERSE</span></a>
 
-        <button type="button" class="mc-menu-toggle" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-expanded="false" aria-controls="site-navigation">Menu <span aria-hidden="true">☰</span></button>
+        <button type="button" class="mc-menu-toggle" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-expanded="false" aria-controls="site-navigation">Menu <span class="mc-menu-icon" aria-hidden="true"><i></i><i></i></span></button>
         <nav id="site-navigation" aria-label="Navegação principal" class="mc-nav" :class="{ 'is-open': menuOpen }">
             <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>Início</a>
             @if(config('features.garage'))
