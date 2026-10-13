@@ -125,6 +125,111 @@ const initFeedback = () => {
     });
 };
 
+const initPhotoUploaders = () => {
+    document.querySelectorAll('[data-photo-uploader]').forEach((root) => {
+        if (root.dataset.mcPhotoUploaderReady) return;
+
+        const input = root.querySelector('[data-photo-input]');
+        const dropzone = root.querySelector('[data-photo-dropzone]');
+        const preview = root.querySelector('[data-photo-preview]');
+        const count = root.querySelector('[data-photo-count]');
+        const status = root.querySelector('[data-photo-status]');
+        if (!input || !dropzone || !preview) return;
+
+        root.dataset.mcPhotoUploaderReady = 'true';
+        const maxFiles = Number(root.dataset.maxFiles || 12);
+        const accepted = (input.accept || '').split(',').map((type) => type.trim().toLowerCase()).filter(Boolean);
+        let files = [];
+        let internalChange = false;
+
+        const fileKey = (file) => `${file.name}:${file.size}:${file.lastModified}`;
+        const isAccepted = (file) => {
+            if (!accepted.length || accepted.includes('*/*')) return true;
+            const extension = `.${file.name.split('.').pop()?.toLowerCase() || ''}`;
+            return accepted.includes(file.type.toLowerCase()) || accepted.includes(extension);
+        };
+
+        const syncInput = (notify = true) => {
+            const transfer = new DataTransfer();
+            files.forEach((file) => transfer.items.add(file));
+            input.files = transfer.files;
+            if (notify) {
+                internalChange = true;
+                input.dispatchEvent(new Event('change', {bubbles: true}));
+                window.queueMicrotask(() => { internalChange = false; });
+            }
+        };
+
+        const render = () => {
+            preview.replaceChildren();
+            files.forEach((file, index) => {
+                const card = document.createElement('figure');
+                card.className = 'mc-photo-uploader__item';
+                const image = document.createElement('img');
+                image.alt = file.name;
+                image.loading = 'lazy';
+                image.src = URL.createObjectURL(file);
+                image.addEventListener('load', () => URL.revokeObjectURL(image.src), {once: true});
+                const details = document.createElement('figcaption');
+                details.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`;
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'mc-photo-uploader__remove';
+                remove.setAttribute('aria-label', `Remover ${file.name}`);
+                remove.textContent = 'Remover';
+                remove.addEventListener('click', () => {
+                    files.splice(index, 1);
+                    syncInput();
+                    render();
+                });
+                card.append(image, details, remove);
+                preview.append(card);
+            });
+            if (count) count.textContent = files.length ? `${files.length} de ${maxFiles} fotos selecionadas` : 'Nenhuma foto selecionada';
+            if (status && !status.dataset.mcPhotoError) status.textContent = files.length ? 'Revise as miniaturas antes de salvar. Você ainda pode adicionar mais fotos.' : '';
+        };
+
+        const addFiles = (incoming) => {
+            const rejected = [];
+            const existing = new Set(files.map(fileKey));
+            [...incoming].forEach((file) => {
+                if (!isAccepted(file)) { rejected.push(`${file.name}: formato não permitido`); return; }
+                if (existing.has(fileKey(file))) return;
+                if (files.length >= maxFiles) { rejected.push(`${file.name}: limite de ${maxFiles} fotos`); return; }
+                files.push(file);
+                existing.add(fileKey(file));
+            });
+            if (status) {
+                status.dataset.mcPhotoError = rejected.length ? 'true' : '';
+                status.textContent = rejected.length ? rejected.join(' · ') : '';
+                status.classList.toggle('text-red-600', rejected.length > 0);
+            }
+            syncInput();
+            render();
+        };
+
+        dropzone.addEventListener('click', () => input.click());
+        dropzone.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); input.click(); }
+        });
+        input.addEventListener('change', (event) => { if (!internalChange) addFiles(event.target.files); });
+        ['dragenter', 'dragover'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            dropzone.classList.add('is-dragging');
+        }));
+        ['dragleave', 'drop'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            dropzone.classList.remove('is-dragging');
+        }));
+        dropzone.addEventListener('drop', (event) => addFiles(event.dataTransfer.files));
+        input.form?.addEventListener('submit', () => {
+            root.classList.add('is-uploading');
+            if (status) status.textContent = `Enviando ${files.length || 'as'} fotos…`;
+        });
+        render();
+    });
+};
+
 const initSectionTabs = () => {
     const tabs = document.querySelector('[data-section-tabs]');
     if (!tabs || tabs.dataset.mcBound) return;
@@ -474,6 +579,7 @@ const initMotion = () => {
     initImageMotion();
     initScrollZoom();
     initFeedback();
+    initPhotoUploaders();
     initSectionTabs();
     initThemeHeadlights();
     initScrollProgress();

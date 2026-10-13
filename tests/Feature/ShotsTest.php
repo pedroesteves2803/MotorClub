@@ -41,6 +41,29 @@ it('cria perfil, galeria e prévia sem expor o original', function () {
         ->and($photo->processing_status)->toBe('ready');
 });
 
+it('aceita várias fotos na mesma seleção da galeria', function () {
+    Storage::fake('local');
+    $photographer = User::factory()->create();
+    $gallery = shotsGallery($photographer);
+
+    $this->actingAs($photographer)->post(route('shots.photos.upload', $gallery), [
+        'photo' => [
+            UploadedFile::fake()->image('frente.jpg', 1200, 800),
+            UploadedFile::fake()->image('lateral.jpg', 1200, 800),
+        ],
+        'brand' => 'Volkswagen',
+        'model' => 'Golf',
+        'license' => 'Uso pessoal',
+        'is_published' => 1,
+    ])->assertSessionHasNoErrors();
+
+    expect($gallery->photos()->count())->toBe(2);
+    $gallery->photos->each(function (ShotPhoto $photo) {
+        Storage::disk('local')->assertExists($photo->original_path);
+        Storage::disk('local')->assertExists($photo->preview_path);
+    });
+});
+
 it('mantém galerias privadas e prévias inacessíveis a visitantes', function () {
     Storage::fake('local');
     $gallery = shotsGallery(User::factory()->create(), ['is_public' => false]);

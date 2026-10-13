@@ -359,6 +359,18 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 .mc-media-grid figure { overflow: hidden; }
 .mc-media-grid figure img { transform: scale(var(--mc-scroll-scale, 1)); }
 .mc-media-grid figure figcaption { color: var(--mc-muted); font-size: .84rem; line-height: 1.5; }
+.mc-photo-uploader { border: 1px solid var(--mc-line); border-radius: 1.1rem; padding: clamp(1rem, 2vw, 1.5rem); }
+.mc-photo-uploader__count { color: var(--mc-muted); font-size: .78rem; font-weight: 650; letter-spacing: .04em; }
+.mc-photo-uploader__dropzone { align-items: center; background: color-mix(in srgb, var(--mc-surface-strong) 58%, transparent); border: 1px dashed color-mix(in srgb, var(--mc-action) 42%, var(--mc-line)); border-radius: .9rem; color: var(--mc-ink); display: flex; gap: .85rem; justify-content: center; min-height: 7.5rem; padding: 1.25rem; text-align: center; transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease; width: 100%; }
+.mc-photo-uploader__dropzone:hover, .mc-photo-uploader__dropzone:focus-visible, .mc-photo-uploader__dropzone.is-dragging { background: color-mix(in srgb, var(--mc-action) 10%, var(--mc-surface-strong)); border-color: var(--mc-action); outline: none; transform: translateY(-1px); }
+.mc-photo-uploader__icon { align-items: center; border: 1px solid var(--mc-action); border-radius: 999px; color: var(--mc-action); display: inline-flex; font-size: 1.2rem; height: 2.3rem; justify-content: center; width: 2.3rem; }
+.mc-photo-uploader__preview { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); }
+.mc-photo-uploader__item { background: var(--mc-surface-strong); border: 1px solid var(--mc-line); border-radius: .75rem; margin: 0; overflow: hidden; padding: .35rem; position: relative; }
+.mc-photo-uploader__item img { aspect-ratio: 4 / 3; border-radius: .5rem; display: block; object-fit: cover; width: 100%; }
+.mc-photo-uploader__item figcaption { color: var(--mc-muted); font-size: .7rem; line-height: 1.35; overflow: hidden; padding: .45rem .2rem .2rem; text-overflow: ellipsis; white-space: nowrap; }
+.mc-photo-uploader__remove { background: var(--mc-graphite); border: 1px solid color-mix(in srgb, #fff 24%, transparent); border-radius: 999px; color: #fff; font-size: .68rem; padding: .22rem .45rem; position: absolute; right: .6rem; top: .6rem; }
+.mc-photo-uploader__remove:hover, .mc-photo-uploader__remove:focus-visible { background: #b42318; }
+.mc-photo-uploader.is-uploading { opacity: .72; pointer-events: none; }
 
 @media (hover:hover) and (pointer:fine) {
     .mc-tilt-card {

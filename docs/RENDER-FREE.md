@@ -17,7 +17,7 @@ Na criação do Blueprint, informe os valores secretos pedidos:
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`: só se o login Google estiver habilitado. Use a URL final do Render seguida de `/auth/google/callback`;
 - `MAIL_FROM_ADDRESS` e `SUPPORT_EMAIL`: endereços reais de contato. O envio de e-mails fica em log até um provedor SMTP ser configurado.
 
-Nesta primeira publicação, as fotos ficam no armazenamento privado do contêiner. Elas não são públicas, mas o sistema de arquivos do Render gratuito não é persistente: uma recriação do serviço pode apagá-las. Antes de usar fotos como dado definitivo, configure um bucket privado S3/R2, mantendo `PRIVATE_FILESYSTEM_DISK=s3` e os segredos correspondentes.
+O armazenamento local do Render gratuito é efêmero: uma recriação do serviço pode apagar as fotos mesmo que o banco continue com os caminhos salvos. Para fotos reais, crie um bucket privado S3/R2 e configure no Render `PRIVATE_FILESYSTEM_DISK=s3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET`, `AWS_ENDPOINT` e, opcionalmente, `AWS_URL`. No Cloudflare R2, o endpoint tem o formato `https://<account-id>.r2.cloudflarestorage.com`; mantenha `AWS_USE_PATH_STYLE_ENDPOINT=false`. Depois faça um upload e um download autorizado e reinicie o serviço para confirmar a persistência antes de divulgar o endereço.
 
 ## 3. Validar a publicação
 

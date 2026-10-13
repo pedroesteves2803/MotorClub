@@ -16,6 +16,7 @@ class ShotImages
         if (! $source) {
             throw ValidationException::withMessages(['photo' => 'Não foi possível processar esta imagem.']);
         }
+        $source = $this->correctOrientation($source, $file);
         $id = Str::uuid()->toString();
         $extension = $file->extension() ?: 'jpg';
         $originalPath = "shots/originals/{$id}.{$extension}";
@@ -78,5 +79,29 @@ class ShotImages
         imagecopy($image, $rotated, max(12, (int) (($width - imagesx($rotated)) / 2)), max(12, (int) (($height - imagesy($rotated)) / 2)), 0, 0, imagesx($rotated), imagesy($rotated));
         imagedestroy($stamp);
         imagedestroy($rotated);
+    }
+
+    private function correctOrientation(\GdImage $image, UploadedFile $file): \GdImage
+    {
+        if (! function_exists('exif_read_data') || ! in_array(strtolower($file->getClientOriginalExtension()), ['jpg', 'jpeg'], true)) {
+            return $image;
+        }
+        $orientation = (int) (@exif_read_data($file->getRealPath())['Orientation'] ?? 1);
+        $angle = match ($orientation) {
+            3 => 180,
+            6 => -90,
+            8 => 90,
+            default => 0,
+        };
+        if ($angle === 0) {
+            return $image;
+        }
+        $rotated = imagerotate($image, $angle, 0);
+        if (! $rotated) {
+            return $image;
+        }
+        imagedestroy($image);
+
+        return $rotated;
     }
 }

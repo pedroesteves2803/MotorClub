@@ -14,6 +14,7 @@ use App\Services\ShotImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -122,18 +123,41 @@ class ShotsController extends Controller
     public function uploadPhoto(Request $request, ShotGallery $gallery, ShotImages $images)
     {
         $this->ownsGallery($request, $gallery);
-        $data = $request->validate(['photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240|dimensions:max_width=6000,max_height=6000', 'brand' => 'nullable|string|max:80', 'model' => 'nullable|string|max:80', 'color' => 'nullable|string|max:50', 'price' => 'nullable|numeric|min:0|max:9999999999.99|decimal:0,2', 'license' => 'required|string|max:120', 'is_published' => 'required|boolean']);
-        $uuid = (string) Str::uuid();
+        $files = $request->file('photo', []);
+        if (! is_array($files)) {
+            $files = [$files];
+        }
+        Validator::make(['photos' => $files], [
+            'photos' => ['required', 'array', 'max:12'],
+            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240', 'dimensions:max_width=6000,max_height=6000'],
+        ], [
+            'photos.required' => 'Escolha pelo menos uma foto.',
+            'photos.max' => 'Envie no máximo 12 fotos por vez.',
+            'photos.*.image' => 'Envie imagens válidas.',
+            'photos.*.mimes' => 'Use JPG, PNG ou WebP.',
+            'photos.*.max' => 'Cada foto deve ter até 10 MB.',
+            'photos.*.dimensions' => 'Cada foto deve ter no máximo 6000 × 6000 pixels.',
+        ])->validate();
+        $data = $request->validate(['brand' => 'nullable|string|max:80', 'model' => 'nullable|string|max:80', 'color' => 'nullable|string|max:50', 'price' => 'nullable|numeric|min:0|max:9999999999.99|decimal:0,2', 'license' => 'required|string|max:120', 'is_published' => 'required|boolean']);
+        $created = [];
+        $storedPaths = [];
         try {
-            $paths = $images->store($request->file('photo'), $uuid, $gallery->user->photographerProfile?->professional_name);
-            $gallery->photos()->create($data + $paths + ['uuid' => $uuid, 'processing_status' => 'ready']);
+            foreach ($files as $file) {
+                $uuid = (string) Str::uuid();
+                $paths = $images->store($file, $uuid, $gallery->user->photographerProfile?->professional_name);
+                $storedPaths[] = $paths['original_path'];
+                $storedPaths[] = $paths['preview_path'];
+                $created[] = $gallery->photos()->create($data + $paths + ['uuid' => $uuid, 'processing_status' => 'ready']);
+            }
         } catch (\Throwable $e) {
+            collect($created)->each->delete();
+            Storage::disk(config('filesystems.private_disk'))->delete($storedPaths);
             report($e);
 
             return back()->withErrors(['photo' => 'Não foi possível processar a foto. Tente novamente.']);
         }
 
-        return back()->with('status', 'Foto adicionada com prévia protegida por marca-d’água.');
+        return back()->with('status', count($created).' '.(count($created) === 1 ? 'foto adicionada' : 'fotos adicionadas').' com prévia protegida por marca-d’água.');
     }
 
     public function deletePhoto(Request $request, ShotPhoto $photo)
