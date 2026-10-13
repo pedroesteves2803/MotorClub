@@ -48,7 +48,7 @@ class Project extends Model
     {
         static::deleting(function ($project) {
             foreach ($project->photos as $photo) {
-                if (! Storage::disk('local')->delete($photo->path)) {
+                if (! Storage::disk(config('filesystems.private_disk'))->delete($photo->path)) {
                     throw new \RuntimeException('Não foi possível excluir as fotos.');
                 }
             }

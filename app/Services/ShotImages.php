@@ -21,7 +21,8 @@ class ShotImages
         $originalPath = "shots/originals/{$id}.{$extension}";
         $previewPath = "shots/previews/{$id}.webp";
         $hash = hash_file('sha256', $file->getRealPath());
-        if (! Storage::disk('local')->putFileAs('shots/originals', $file, "{$id}.{$extension}")) {
+        $disk = Storage::disk(config('filesystems.private_disk'));
+        if (! $disk->putFileAs('shots/originals', $file, "{$id}.{$extension}")) {
             imagedestroy($source);
             throw ValidationException::withMessages(['photo' => 'Não foi possível guardar o original.']);
         }
@@ -40,8 +41,8 @@ class ShotImages
             imagedestroy($source);
             imagedestroy($preview);
         }
-        if (! isset($bytes) || ! Storage::disk('local')->put($previewPath, $bytes)) {
-            Storage::disk('local')->delete($originalPath);
+        if (! isset($bytes) || ! $disk->put($previewPath, $bytes)) {
+            $disk->delete($originalPath);
             throw ValidationException::withMessages(['photo' => 'Não foi possível criar a prévia.']);
         }
 

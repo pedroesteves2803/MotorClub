@@ -13,6 +13,8 @@ RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/fra
     && chown -R www-data:www-data storage bootstrap/cache
 COPY deploy/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY deploy/php.ini /usr/local/etc/php/conf.d/motorclub.ini
+COPY deploy/start-render.sh /usr/local/bin/start-render
+RUN chmod +x /usr/local/bin/start-render
 
 FROM node:24-bookworm-slim AS assets
 WORKDIR /app

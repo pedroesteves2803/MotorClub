@@ -1,0 +1,93 @@
+services:
+  - type: web
+    name: motorclub
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /up
+    dockerCommand: /usr/local/bin/start-render
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        fromService:
+          type: web
+          name: motorclub
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: APP_KEY
+        sync: false
+      - key: LOG_LEVEL
+        value: warning
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_ENCRYPT
+        value: "true"
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: s3
+      - key: PRIVATE_FILESYSTEM_DISK
+        value: s3
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_DEFAULT_REGION
+        value: auto
+      - key: AWS_BUCKET
+        sync: false
+      - key: AWS_ENDPOINT
+        sync: false
+      - key: AWS_USE_PATH_STYLE_ENDPOINT
+        value: "true"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
+      - key: DEMO_ENABLED
+        value: "false"
+      - key: TEST_MODE
+        value: "false"
+      - key: FEATURE_GARAGE
+        value: "true"
+      - key: FEATURE_SHOTS
+        value: "true"
+      - key: FEATURE_EXPLORE
+        value: "true"
+      - key: FEATURE_AI_REPORTS
+        value: "false"
+      - key: FEATURE_WORKSHOPS
+        value: "false"
+      - key: FEATURE_EVENTS
+        value: "false"
+      - key: FEATURE_SUBSCRIPTIONS
+        value: "false"
+      - key: FEATURE_DEMO
+        value: "false"

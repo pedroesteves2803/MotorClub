@@ -44,7 +44,7 @@ Route::get('garagem/{vehicle}', Details::class)->middleware(['auth', 'verified',
 Route::get('fotos/{photo}', function (VehiclePhoto $photo) {
     abort_unless(Gate::allows('view', $photo->vehicle), 404);
 
-    return Storage::disk('local')->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+    return Storage::disk(config('filesystems.private_disk'))->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
 })->middleware('feature:garage')->name('vehicle-photos.show');
 
 Route::get('explorar', [DemoCommunityController::class, 'index'])->middleware('feature:explore')->name('explore');
@@ -62,7 +62,7 @@ Route::get('shots/fotos/{photo}/download', function (ShotPhoto $photo) {
         ->first();
     abort_unless($grant, 404);
 
-    return Storage::disk('local')->response($photo->original_path, null, ['Content-Type' => $photo->mime_type ?? 'application/octet-stream', 'Cache-Control' => 'private, no-store']);
+    return Storage::disk(config('filesystems.private_disk'))->response($photo->original_path, null, ['Content-Type' => $photo->mime_type ?? 'application/octet-stream', 'Cache-Control' => 'private, no-store']);
 })->middleware(['auth', 'feature:shots'])->name('shots.photos.download');
 Route::get('projetos', [ProjectController::class, 'index'])->middleware('feature:garage')->name('projects.index');
 Route::get('oficinas', [WorkshopController::class, 'index'])->middleware('feature:workshops')->name('workshops.index');

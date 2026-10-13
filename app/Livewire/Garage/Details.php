@@ -130,7 +130,7 @@ class Details extends Component
         try {
             $vehicle->photos()->create(['path' => $path]);
         } catch (\Throwable $e) {
-            Storage::disk('local')->delete($path);
+            Storage::disk(config('filesystems.private_disk'))->delete($path);
             throw $e;
         }
         $this->reset('photo');
@@ -142,7 +142,7 @@ class Details extends Component
         $this->ensureFeatureEnabled();
         $photo = $this->vehicle()->photos()->find($id);
         abort_unless($photo, 404);
-        if (! Storage::disk('local')->delete($photo->path)) {
+        if (! Storage::disk(config('filesystems.private_disk'))->delete($photo->path)) {
             $this->addError('photo', 'Não foi possível excluir a foto. Tente novamente.');
 
             return;

@@ -156,7 +156,7 @@ class ShotsController extends Controller
         }
         $oldPaths = [$photo->original_path, $photo->preview_path];
         $photo->update($paths + ['processing_status' => 'ready', 'processing_error' => null]);
-        Storage::disk('local')->delete($oldPaths);
+        Storage::disk(config('filesystems.private_disk'))->delete($oldPaths);
 
         return back()->with('status', 'Foto substituída e prévia protegida refeita.');
     }
@@ -166,7 +166,7 @@ class ShotsController extends Controller
         $owner = $photo->gallery->user_id === $request->user()?->id;
         abort_unless($owner || $photo->publiclyVisible(), 404);
 
-        return Storage::disk('local')->response($photo->preview_path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return Storage::disk(config('filesystems.private_disk'))->response($photo->preview_path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     public function requestPurchase(Request $request, ShotPhoto $photo)

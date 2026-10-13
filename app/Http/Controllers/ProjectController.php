@@ -144,7 +144,7 @@ class ProjectController extends Controller
         try {
             $project->photos()->create(['path' => $path]);
         } catch (\Throwable $e) {
-            Storage::disk('local')->delete($path);
+            Storage::disk(config('filesystems.private_disk'))->delete($path);
             throw $e;
         }
 
@@ -154,7 +154,7 @@ class ProjectController extends Controller
     public function deletePhoto(ProjectPhoto $photo)
     {
         Gate::authorize('update', $photo->project);
-        abort_unless(Storage::disk('local')->delete($photo->path), 500);
+        abort_unless(Storage::disk(config('filesystems.private_disk'))->delete($photo->path), 500);
         $photo->delete();
 
         return back()->with('status', 'Foto excluída.');
@@ -164,6 +164,6 @@ class ProjectController extends Controller
     {
         abort_unless(Gate::allows('view', $photo->project), 404);
 
-        return Storage::disk('local')->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return Storage::disk(config('filesystems.private_disk'))->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 }

@@ -19,7 +19,7 @@ class Vehicle extends Model
         static::deleting(function (Vehicle $vehicle) {
             Project::where('vehicle_id', $vehicle->id)->each(fn (Project $project) => $project->delete());
             foreach ($vehicle->photos as $photo) {
-                if (! Storage::disk('local')->delete($photo->path)) {
+                if (! Storage::disk(config('filesystems.private_disk'))->delete($photo->path)) {
                     throw new \RuntimeException('Não foi possível remover as fotos do veículo. Tente novamente.');
                 }
             }

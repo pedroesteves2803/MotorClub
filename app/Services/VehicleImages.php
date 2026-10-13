@@ -21,7 +21,7 @@ class VehicleImages
         $bytes = ob_get_clean();
         imagedestroy($image);
         $path = 'vehicles/'.Str::uuid().'.webp';
-        if (! Storage::disk('local')->put($path, $bytes)) {
+        if (! Storage::disk(config('filesystems.private_disk'))->put($path, $bytes)) {
             throw ValidationException::withMessages(['photo' => 'Não foi possível salvar a foto. Tente novamente.']);
         }
 

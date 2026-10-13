@@ -24,7 +24,7 @@ class ShotPhoto extends Model
             }
         });
         static::deleting(function (ShotPhoto $photo) {
-            if (! Storage::disk('local')->delete([$photo->original_path, $photo->preview_path])) {
+            if (! Storage::disk(config('filesystems.private_disk'))->delete([$photo->original_path, $photo->preview_path])) {
                 throw new \RuntimeException('Não foi possível excluir os arquivos da foto. Tente novamente.');
             }
         });
