@@ -278,6 +278,7 @@ export const initShowroomScene = (root) => {
 
     const status = root.querySelector('[data-showroom-status]');
     const fallback = root.querySelector('[data-showroom-fallback]');
+    const initialStatus = 'Arraste para explorar';
     const modelUrl = root.dataset.modelUrl?.trim();
     if (modelUrl) {
         root.dataset.mcShowroomModel = 'loading-spectral-gt-rs';
