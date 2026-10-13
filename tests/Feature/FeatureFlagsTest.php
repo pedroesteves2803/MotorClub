@@ -38,3 +38,19 @@ it('bloqueia o painel administrativo para usuários comuns', function () {
         ->get('/central-mc-gestao')
         ->assertForbidden();
 });
+
+it('não exibe atalhos de módulos desativados na área autenticada', function () {
+    config(['features.workshops' => false, 'features.events' => false]);
+    $user = User::factory()->create(['email_verified_at' => now()]);
+
+    $this->actingAs($user)
+        ->get('/garagem')
+        ->assertOk()
+        ->assertDontSee('Meus orçamentos')
+        ->assertDontSee('Meus eventos');
+
+    $this->actingAs($user)
+        ->get('/meu-perfil')
+        ->assertOk()
+        ->assertDontSee('Oficina e orçamentos');
+});

@@ -29,7 +29,7 @@ class UserForm
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->helperText('Deixe em branco ao editar para manter a senha atual.'),
-                TextInput::make('google_id'),
+                TextInput::make('google_id')->label('Identificador do Google'),
                 Toggle::make('is_demo')
                     ->label('Conta de demonstração')
                     ->required(),

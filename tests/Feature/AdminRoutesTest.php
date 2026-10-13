@@ -16,3 +16,17 @@ it('redireciona configurações legadas para a rota em português', function () 
         ->assertStatus(301)
         ->assertRedirect('/configuracoes/perfil');
 });
+
+it('permite acesso do administrador configurado por e-mail', function () {
+    config(['motorclub.admin_emails' => ['admin@example.com']]);
+    $admin = User::factory()->create(['email' => 'admin@example.com']);
+
+    $this->actingAs($admin)->get('/central-mc-gestao')->assertOk();
+});
+
+it('renderiza o login do CMS em português com entrada Google', function () {
+    $this->get('/central-mc-gestao/login')
+        ->assertOk()
+        ->assertSee('Entrar com Google')
+        ->assertSee('E-mail');
+});

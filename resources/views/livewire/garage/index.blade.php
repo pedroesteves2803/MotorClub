@@ -2,7 +2,7 @@
     <header class="mc-intro flex flex-wrap items-end justify-between gap-6 pb-5">
         <div><p class="mb-4 text-xs font-bold uppercase tracking-[0.25em] text-[var(--mc-orange)]">Sua coleção de histórias</p><h1 class="text-5xl font-bold tracking-tight md:text-7xl">Mais que um carro.<br><span class="mc-muted">Parte de você.</span></h1><p class="mt-6 max-w-lg text-lg mc-muted">Um lugar para cuidar, registrar e viver cada capítulo da sua garagem.</p></div>
         <flux:button wire:click="create" variant="primary">Adicionar veículo</flux:button>
-    </header><nav class="my-6 flex flex-wrap gap-5" aria-label="Minha atividade"><a class="mc-text-link" href="{{ route('projects.index',['mine'=>1]) }}">Meus projetos →</a><a class="mc-text-link" href="{{ route('quotes.index') }}">Meus orçamentos →</a><a class="mc-text-link" href="{{ route('events.index',['mine'=>1]) }}">Meus eventos →</a></nav>
+    </header><nav class="my-6 flex flex-wrap gap-5" aria-label="Minha atividade"><a class="mc-text-link" href="{{ route('projects.index',['mine'=>1]) }}">Meus projetos →</a>@if(\App\Models\FeatureSetting::enabled('workshops'))<a class="mc-text-link" href="{{ route('quotes.index') }}">Meus orçamentos →</a>@endif @if(\App\Models\FeatureSetting::enabled('events'))<a class="mc-text-link" href="{{ route('events.index',['mine'=>1]) }}">Meus eventos →</a>@endif</nav>
     @if(session('status'))<p role="status" class="rounded-lg border border-green-600 p-4">{{ session('status') }}</p>@endif
     @if($formOpen)
         <form wire:submit="save" class="space-y-5 rounded-xl border border-zinc-300 p-6 dark:border-zinc-600">

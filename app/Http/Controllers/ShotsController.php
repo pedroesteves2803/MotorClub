@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CarEvent;
 use App\Models\PhotographerProfile;
+use App\Models\FeatureSetting;
 use App\Models\ShotGallery;
 use App\Models\ShotPhoto;
 use App\Models\ShotPurchaseRequest;
@@ -39,7 +40,7 @@ class ShotsController extends Controller
             $query->whereDate('shot_on', $request->date('date'));
         }
 
-        return view('shots.index', ['galleries' => $query->latest('shot_on')->paginate(12)->withQueryString(), 'events' => CarEvent::query()->select(['id', 'title'])->where('is_public', true)->orderBy('starts_at')->get()]);
+        return view('shots.index', ['galleries' => $query->latest('shot_on')->paginate(12)->withQueryString(), 'events' => FeatureSetting::enabled('events') ? CarEvent::query()->select(['id', 'title'])->where('is_public', true)->orderBy('starts_at')->get() : collect()]);
     }
 
     public function profile(Request $request)
@@ -78,7 +79,7 @@ class ShotsController extends Controller
 
     private function galleryForm(Request $request, ShotGallery $gallery)
     {
-        return view('shots.gallery-form', ['gallery' => $gallery, 'events' => CarEvent::where('is_public', true)->orWhere('user_id', $request->user()->id)->orderByDesc('starts_at')->get()]);
+        return view('shots.gallery-form', ['gallery' => $gallery, 'events' => FeatureSetting::enabled('events') ? CarEvent::where('is_public', true)->orWhere('user_id', $request->user()->id)->orderByDesc('starts_at')->get() : collect()]);
     }
 
     public function storeGallery(Request $request)

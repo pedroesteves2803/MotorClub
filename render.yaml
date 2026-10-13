@@ -12,6 +12,12 @@ services:
         value: production
       - key: APP_DEBUG
         value: "false"
+      - key: APP_LOCALE
+        value: pt_BR
+      - key: APP_FALLBACK_LOCALE
+        value: pt_BR
+      - key: ADMIN_EMAILS
+        sync: false
       - key: MOTORCLUB_RELEASE
         value: "4ccc76d"
       - key: APP_URL

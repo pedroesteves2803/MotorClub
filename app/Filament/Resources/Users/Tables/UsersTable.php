@@ -26,14 +26,17 @@ class UsersTable
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Criado em')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Atualizado em')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('google_id')
+                    ->label('Identificador do Google')
                     ->searchable(),
                 IconColumn::make('is_demo')
                     ->label('Demonstração')

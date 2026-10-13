@@ -57,12 +57,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $panel->getId() === 'admin' && in_array($this->admin_role, ['super_admin', 'moderator'], true);
+        return $panel->getId() === 'admin'
+            && (in_array($this->admin_role, ['super_admin', 'moderator'], true) || $this->isConfiguredSuperAdmin());
     }
 
     public function isSuperAdmin(): bool
     {
-        return $this->admin_role === 'super_admin';
+        return $this->admin_role === 'super_admin' || $this->isConfiguredSuperAdmin();
+    }
+
+    private function isConfiguredSuperAdmin(): bool
+    {
+        return in_array(Str::lower((string) $this->email), config('motorclub.admin_emails', []), true);
     }
 
     /**
