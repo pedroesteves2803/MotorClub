@@ -1,8 +1,9 @@
 <div class="mx-auto max-w-6xl space-y-10">
     <a href="{{ route('dashboard') }}" wire:navigate class="underline">Voltar à garagem</a>
     <header class="mc-intro"><p class="mc-edition mb-4">O diário do seu carro</p><h1 class="text-5xl font-bold tracking-tight md:text-7xl">{{ $vehicle->brand }} {{ $vehicle->model }}</h1><p>{{ $vehicle->trim }} · {{ $vehicle->model_year }} · {{ $vehicle->engine }}</p></header>
+    <nav class="mc-section-tabs" aria-label="Seções da garagem" data-section-tabs><a href="#fotos" data-section-tab>Fotos</a><a href="{{ route('projects.index', ['mine' => 1]) }}">Projetos</a><a href="#historico" data-section-tab>Histórico</a></nav>
     @if(session('status'))<p role="status">{{ session('status') }}</p>@endif
-    <section class="space-y-5 rounded-2xl mc-surface p-6 shadow-sm  md:p-8">
+    <section id="fotos" class="space-y-5 rounded-2xl mc-surface p-6 shadow-sm  md:p-8">
         <h2 class="text-2xl font-semibold">Fotos do veículo</h2>
         <p>As fotos acompanham a privacidade do veículo. JPEG, PNG ou WebP, até 5 MB e 4096 × 4096 pixels. Limite de 12 fotos.</p>
         <form wire:submit="uploadPhoto" class="space-y-4"><flux:input type="file" wire:model="photo" label="Escolher foto" accept="image/jpeg,image/png,image/webp" /><p wire:loading wire:target="photo">Carregando foto…</p><flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="photo,uploadPhoto">Adicionar foto</flux:button></form>
@@ -23,7 +24,7 @@
             <div class="flex items-end gap-3"><flux:button type="submit" variant="primary">Salvar registro</flux:button><flux:button wire:click="clearEntry" type="button">Limpar formulário</flux:button></div>
         </form>
     </section>
-    <section class="space-y-5"><h2 class="text-2xl font-semibold">Histórico</h2>
+    <section id="historico" class="space-y-5"><h2 class="text-2xl font-semibold">Histórico</h2>
         @forelse($entries as $entry)<article wire:key="entry-{{ $entry->id }}" class="space-y-3 rounded-2xl mc-surface p-6 shadow-sm  md:p-8"><p>{{ $entry->occurred_on->format('d/m/Y') }} · {{ $entry->category === 'maintenance' ? 'Manutenção' : 'Modificação' }}</p><h3 class="text-xl font-semibold">{{ $entry->title }}</h3><p class="whitespace-pre-line">{{ $entry->description }}</p>@if($entry->parts)<p class="whitespace-pre-line">Peças: {{ $entry->parts }}</p>@endif @if($entry->services)<p class="whitespace-pre-line">Serviços: {{ $entry->services }}</p>@endif @if($entry->cost !== null)<p>Valor: R$ {{ number_format((float) $entry->cost, 2, ',', '.') }}</p>@endif<flux:button wire:click="editEntry({{ $entry->id }})">Editar registro</flux:button><flux:button wire:click="deleteEntry({{ $entry->id }})" wire:confirm="Excluir este registro permanentemente?">Excluir registro</flux:button></article>@empty<p>Nenhuma manutenção ou modificação registrada.</p>@endforelse
         {{ $entries->links() }}
     </section>
