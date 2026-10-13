@@ -380,6 +380,30 @@ export const initShowroomScene = (root) => {
     };
     syncTheme();
 
+    const syncCameraFraming = (aspect) => {
+        if (aspect > 2.35) {
+            camera.fov = 27;
+            cameraStart.set(7.35, 3.2, 8.75);
+            cameraEnd.set(5.8, 2.4, 6.95);
+            controls.minDistance = 4.7;
+            controls.maxDistance = 9.2;
+        } else if (aspect > 1.55) {
+            camera.fov = 30;
+            cameraStart.set(6.6, 3.15, 7.8);
+            cameraEnd.set(5.1, 2.35, 6.25);
+            controls.minDistance = 4.25;
+            controls.maxDistance = 8.3;
+        } else {
+            camera.fov = 34;
+            cameraStart.set(5.7, 3.1, 6.9);
+            cameraEnd.set(4.65, 2.4, 5.75);
+            controls.minDistance = 3.9;
+            controls.maxDistance = 7.25;
+        }
+
+        camera.updateProjectionMatrix();
+    };
+
     const resize = () => {
         const bounds = host.getBoundingClientRect();
         const width = Math.max(1, bounds.width);
@@ -387,7 +411,7 @@ export const initShowroomScene = (root) => {
         renderer.setPixelRatio(quality.pixelRatio);
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
-        camera.updateProjectionMatrix();
+        syncCameraFraming(camera.aspect);
         needsRender = true;
     };
 

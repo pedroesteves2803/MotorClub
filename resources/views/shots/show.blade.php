@@ -8,7 +8,7 @@
             <p>Evento: <a class="mc-text-link" href="{{ route('events.show', $gallery->event) }}">{{ $gallery->event->title }}</a></p>
         @endif
     </section>
-    <section class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <section class="mc-gallery-grid mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         @forelse($gallery->photos as $photo)
             <article class="mc-surface overflow-hidden rounded-xl">
                 <img class="aspect-[4/3] w-full object-cover" src="{{ route('shots.photos.preview', $photo) }}" alt="Prévia de {{ $gallery->title }}">

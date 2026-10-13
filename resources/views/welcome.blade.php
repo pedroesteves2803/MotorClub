@@ -4,7 +4,7 @@
             <p class="mc-edition">Autoverse · Garagens que contam histórias</p>
             <h1 id="home-title">O carro é seu.<br><strong>O universo também.</strong></h1>
             <p class="mt-7 text-lg leading-relaxed">Seu carro merece mais que uma publicação. Registre detalhes, mudanças, encontros e os olhares que fazem cada projeto seguir em frente.</p>
-            <div class="mt-8 flex flex-wrap gap-3"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem</a><a class="mc-text-link border-[#2d486e] text-[#edf3fb]" href="{{ route('shots.index') }}">Explorar Shots</a></div>
+            <div class="mt-8 flex flex-wrap gap-3"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem</a><a class="mc-text-link" href="{{ route('shots.index') }}">Explorar Shots</a></div>
         </div>
         <aside class="mc-home-poster mc-home-showroom" aria-label="Showroom 3D Autoverse" data-hero-3d>
             <div class="mc-showroom" data-autoverse-showroom data-model-url="{{ asset('models/spectral_gt_rs_game_ready.glb') }}" role="group" aria-label="Spectral GT RS 3D interativo">

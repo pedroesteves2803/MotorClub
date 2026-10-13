@@ -272,6 +272,43 @@ const initHeroMotion = () => {
     });
 };
 
+const initCardTilt = () => {
+    if (reduceMotion.matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const cards = document.querySelectorAll('main .mc-car, main article.mc-surface, main a.mc-surface');
+    cards.forEach((card) => {
+        if (card.dataset.mcTiltBound || card.matches('.mc-form') || card.querySelector('form, input, textarea, select, button')) return;
+
+        card.dataset.mcTiltBound = 'true';
+        card.classList.add('mc-tilt-card');
+        let frame = 0;
+        let pointer = { x: 0, y: 0 };
+
+        const reset = () => {
+            if (frame) window.cancelAnimationFrame(frame);
+            frame = 0;
+            card.style.setProperty('--mc-card-tilt-x', '0deg');
+            card.style.setProperty('--mc-card-tilt-y', '0deg');
+        };
+
+        const apply = () => {
+            frame = 0;
+            const bounds = card.getBoundingClientRect();
+            if (!bounds.width || !bounds.height) return;
+            const x = ((pointer.x - bounds.left) / bounds.width - 0.5) * 2;
+            const y = ((pointer.y - bounds.top) / bounds.height - 0.5) * 2;
+            card.style.setProperty('--mc-card-tilt-x', `${(-y * 1.8).toFixed(2)}deg`);
+            card.style.setProperty('--mc-card-tilt-y', `${(x * 2.2).toFixed(2)}deg`);
+        };
+
+        card.addEventListener('pointermove', (event) => {
+            pointer = { x: event.clientX, y: event.clientY };
+            if (!frame) frame = window.requestAnimationFrame(apply);
+        }, { passive: true });
+        card.addEventListener('pointerleave', reset, { passive: true });
+    });
+};
+
 const initShowroom = async () => {
     const root = document.querySelector('[data-autoverse-showroom]');
     if (!root || root.dataset.mcShowroomReady) return;
@@ -366,6 +403,7 @@ const initMotion = () => {
     initScrollProgress();
     initMenu();
     initHeroMotion();
+    initCardTilt();
     void initShowroom();
     initEasterEggs();
 };
