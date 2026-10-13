@@ -251,16 +251,28 @@ const initShowroom = async () => {
         return;
     }
 
-    root.dataset.mcShowroomReady = 'loading';
+    root.dataset.mcShowroomReady = 'scheduled';
+    root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Preparando showroom'));
 
-    try {
-        const { initShowroomScene } = await import('./showroom.js');
-        if (root.isConnected) initShowroomScene(root);
-    } catch (error) {
-        root.dataset.mcShowroomReady = 'error';
-        root.classList.add('is-fallback');
-        root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Modo visual estático ativado'));
-        console.error('Autoverse showroom indisponível:', error);
+    const loadShowroom = async () => {
+        if (!root.isConnected || root.dataset.mcShowroomReady !== 'scheduled') return;
+        root.dataset.mcShowroomReady = 'loading';
+
+        try {
+            const { initShowroomScene } = await import('./showroom.js');
+            if (root.isConnected) initShowroomScene(root);
+        } catch (error) {
+            root.dataset.mcShowroomReady = 'error';
+            root.classList.add('is-fallback');
+            root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Modo visual estático ativado'));
+            console.error('Autoverse showroom indisponível:', error);
+        }
+    };
+
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(loadShowroom, { timeout: 1200 });
+    } else {
+        window.setTimeout(loadShowroom, 180);
     }
 };
 

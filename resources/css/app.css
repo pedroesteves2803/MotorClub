@@ -172,6 +172,7 @@ html, body { max-width: 100%; overflow-x: clip; }
 .mc-showroom__webgl { display: block; height: 100%; width: 100%; }
 .mc-showroom__fallback { background: radial-gradient(circle at 70% 18%, rgb(46 111 217 / .16), transparent 38%), #08111f; display: flex; flex-direction: column; inset: 0; justify-content: space-between; opacity: 1; padding: clamp(1.25rem, 3vw, 2.2rem); position: absolute; transition: opacity 260ms ease-out, visibility 260ms ease-out; visibility: visible; z-index: 1; }
 .mc-showroom.is-ready .mc-showroom__fallback { opacity: 0; pointer-events: none; visibility: hidden; }
+.mc-showroom.is-loading .mc-showroom__fallback { opacity: 1; pointer-events: auto; visibility: visible; }
 .mc-showroom__fallback .mc-mark { margin: 2rem 0; }
 .mc-showroom__hud { display: flex; flex-direction: column; inset: 1.25rem; pointer-events: none; position: absolute; z-index: 3; }
 .mc-showroom__hud > * { pointer-events: auto; }

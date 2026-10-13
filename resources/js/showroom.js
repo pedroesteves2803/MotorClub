@@ -8,6 +8,7 @@ const easeOutCubic = (value) => 1 - ((1 - value) ** 3);
 
 const showFallback = (root, message = '') => {
     root.classList.remove('is-ready');
+    root.classList.remove('is-loading');
     root.classList.add('is-fallback');
 
     root.querySelector('[data-showroom-fallback]')?.setAttribute('aria-hidden', 'false');
@@ -222,6 +223,8 @@ export const initShowroomScene = (root) => {
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.08;
+        renderer.shadowMap.enabled = !coarsePointer;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     } catch {
         showFallback(root, 'Modo visual estático ativado neste dispositivo.');
         root.dataset.mcShowroomReady = 'false';
@@ -239,7 +242,7 @@ export const initShowroomScene = (root) => {
     const keyLight = new THREE.DirectionalLight(0xf4f8ff, 2.1);
     keyLight.position.set(4, 7, 5);
     keyLight.castShadow = !coarsePointer;
-    keyLight.shadow.mapSize.set(coarsePointer ? 512 : 1024, coarsePointer ? 512 : 1024);
+    keyLight.shadow.mapSize.set(coarsePointer ? 256 : 512, coarsePointer ? 256 : 512);
     keyLight.shadow.camera.near = 1;
     keyLight.shadow.camera.far = 18;
     scene.add(keyLight);
@@ -248,7 +251,7 @@ export const initShowroomScene = (root) => {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-        new THREE.CircleGeometry(8, 64),
+        new THREE.CircleGeometry(8, 48),
         new THREE.MeshStandardMaterial({ color: 0x0b1220, metalness: 0.5, roughness: 0.3 }),
     );
     floor.rotation.x = -Math.PI / 2;
@@ -292,6 +295,7 @@ export const initShowroomScene = (root) => {
             root.dataset.mcShowroomAnimations = gltf.animations.map((clip) => clip.name).join('|');
             root.dataset.mcShowroomMaterials = [...externalVehicle.materialNames].join('|');
             root.classList.add('is-ready');
+            root.classList.remove('is-loading');
             root.classList.remove('is-fallback');
             fallback?.setAttribute('aria-hidden', 'true');
             if (status) status.textContent = initialStatus;
@@ -335,7 +339,7 @@ export const initShowroomScene = (root) => {
         const bounds = host.getBoundingClientRect();
         const width = Math.max(1, bounds.width);
         const height = Math.max(1, bounds.height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarsePointer ? 1 : 1.5));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarsePointer ? 1 : 1.25));
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
@@ -438,6 +442,7 @@ export const initShowroomScene = (root) => {
     }, { passive: false });
 
     root.classList.add('is-ready');
+    if (modelUrl) root.classList.add('is-loading');
     root.classList.remove('is-fallback');
     fallback?.setAttribute('aria-hidden', 'true');
     resize();
