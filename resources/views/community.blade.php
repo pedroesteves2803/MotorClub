@@ -1,6 +1,5 @@
 <x-layouts.public title="Conheça a comunidade — Autoverse" :noindex="true">
     <header class="mc-intro"><p class="mc-edition mb-5">Pessoas diferentes. A mesma paixão.</p><h1>Uma garagem.<br><span>Muitas histórias.</span></h1><p class="mt-6 max-w-xl text-lg">Clássicos, esportivos e carros do dia a dia. Conheça as histórias e os projetos de quem compartilha a cultura automotiva na Autoverse.</p></header>
-    <p role="note" class="mc-notice border-l-2 border-[var(--mc-action)] p-4 text-sm"><strong>Ambiente de demonstração.</strong> Perfis fictícios e garagens demonstrativas inspiradas em criadores reais. Os criadores não possuem contas oficiais nesta prévia. Fotos dos criadores têm crédito da publicação original; os demais carros fictícios usam imagens ilustrativas.</p>
     <form method="GET" class="flex gap-3"><input class="mc-input" name="q" value="{{ request('q') }}" placeholder="Pessoa, marca ou modelo" aria-label="Buscar na comunidade"><button class="mc-link-button">Buscar</button></form>
     @if($people->isEmpty())<p>Nenhum perfil encontrado.</p>@endif
     <section class="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Perfis da comunidade">

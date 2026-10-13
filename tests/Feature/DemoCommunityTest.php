@@ -10,7 +10,7 @@ it('seeds repeatable demo profiles without exposing real accounts', function () 
     $this->seed(DemoCommunitySeeder::class);
     expect(User::where('is_demo', true)->count())->toBe(8);
     expect(Vehicle::count())->toBe(8);
-    $this->get('/comunidade')->assertOk()->assertSee('Perfis fictícios e garagens demonstrativas inspiradas em criadores reais')->assertSee('Marina Costa')->assertDontSee('Pessoa real confidencial')->assertDontSee('demo-1@motorclub.example');
+    $this->get('/comunidade')->assertOk()->assertSee('Marina Costa')->assertDontSee('Pessoa real confidencial')->assertDontSee('demo-1@motorclub.example');
 });
 it('labels the public demo vehicle', function () {
     $this->seed(DemoCommunitySeeder::class);
