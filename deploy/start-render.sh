@@ -8,6 +8,12 @@ port="${PORT:-10000}"
 sed -ri "s/^Listen [0-9]+$/Listen ${port}/" /etc/apache2/ports.conf
 sed -ri "s#<VirtualHost \*:[0-9]+>#<VirtualHost *:${port}>#" /etc/apache2/sites-available/000-default.conf
 
+if [ -n "${DB_SSL_CA_B64:-}" ]; then
+    printf '%s' "$DB_SSL_CA_B64" | base64 --decode > /tmp/motorclub-db-ca.pem
+    chmod 600 /tmp/motorclub-db-ca.pem
+    export MYSQL_ATTR_SSL_CA=/tmp/motorclub-db-ca.pem
+fi
+
 php artisan migrate --force
 
 exec apache2-foreground
