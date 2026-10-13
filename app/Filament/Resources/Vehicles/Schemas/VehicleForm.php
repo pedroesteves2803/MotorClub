@@ -22,9 +22,18 @@ class VehicleForm
                 TextInput::make('model')
                     ->label('Modelo')
                     ->required(),
+                TextInput::make('public_name')
+                    ->label('Nome público')
+                    ->maxLength(120),
                 TextInput::make('trim')
                     ->label('Versão')
                     ->required(),
+                TextInput::make('generation')
+                    ->label('Geração')
+                    ->maxLength(50),
+                TextInput::make('color')
+                    ->label('Cor')
+                    ->maxLength(50),
                 TextInput::make('model_year')
                     ->label('Ano do modelo')
                     ->required()
@@ -32,6 +41,19 @@ class VehicleForm
                 TextInput::make('engine')
                     ->label('Motor')
                     ->required(),
+                TextInput::make('mileage')
+                    ->label('Quilometragem')
+                    ->numeric(),
+                TextInput::make('acquired_on')
+                    ->label('Data de aquisição')
+                    ->type('date'),
+                TextInput::make('location')
+                    ->label('Localização geral')
+                    ->maxLength(100),
+                TextInput::make('instagram_url')
+                    ->label('Instagram do carro')
+                    ->url()
+                    ->maxLength(255),
                 TextInput::make('visibility')
                     ->label('Visibilidade')
                     ->required()

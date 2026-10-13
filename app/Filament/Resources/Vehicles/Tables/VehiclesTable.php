@@ -23,6 +23,9 @@ class VehiclesTable
                 TextColumn::make('model')
                     ->label('Modelo')
                     ->searchable(),
+                TextColumn::make('public_name')
+                    ->label('Nome público')
+                    ->searchable(),
                 TextColumn::make('trim')
                     ->label('Versão')
                     ->searchable(),

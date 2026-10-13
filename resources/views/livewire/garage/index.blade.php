@@ -10,9 +10,17 @@
             <div class="grid gap-5 sm:grid-cols-2">
                 <flux:input wire:model="brand" label="Marca" placeholder="Volkswagen" required maxlength="80" />
                 <flux:input wire:model="model" label="Modelo" placeholder="Golf" required maxlength="80" />
+                <flux:input wire:model="public_name" label="Nome público" placeholder="Venom Black MK7" maxlength="120" />
                 <flux:input wire:model="trim" label="Versão" placeholder="GTI MK7" required maxlength="100" />
+                <flux:input wire:model="generation" label="Geração" placeholder="MK7" maxlength="50" />
+                <flux:input wire:model="color" label="Cor" placeholder="Preto" maxlength="50" />
                 <flux:input wire:model="model_year" label="Ano do modelo" type="number" min="1886" max="{{ now()->year + 1 }}" required />
                 <flux:input wire:model="engine" label="Motorização" placeholder="2.0 TSI" required maxlength="100" />
+                <flux:input wire:model="mileage" label="Quilometragem (km)" type="number" min="0" max="2000000" />
+                <flux:input wire:model="acquired_on" label="Data de aquisição" type="date" max="{{ now()->toDateString() }}" />
+                <flux:input wire:model="location" label="Localização geral" placeholder="São Paulo, SP" maxlength="100" />
+                <flux:input wire:model="instagram_url" label="Instagram do carro" type="url" placeholder="https://www.instagram.com/..." maxlength="255" />
+                <flux:checkbox wire:model="mileage_approximate" label="Quilometragem aproximada" />
                 <flux:select wire:model="visibility" label="Visibilidade"><flux:select.option value="private">Privado — somente você</flux:select.option><flux:select.option value="public">Público — acessível por link</flux:select.option></flux:select>
             </div>
             <p class="text-sm mc-muted">Ao escolher público, você permite compartilhar os dados do veículo. Seu e-mail não será exibido.</p>
@@ -31,8 +39,10 @@
                 </a>
                 <div class="p-6 md:p-8">
                 <p class="text-sm mc-muted">{{ $vehicle->brand }} · {{ $vehicle->model_year }}</p>
-                <h2 class="mt-2 text-4xl font-bold tracking-tight">{{ $vehicle->model }}</h2>
+                <h2 class="mt-2 text-4xl font-bold tracking-tight">{{ $vehicle->public_name ?: $vehicle->model }}</h2>
+                @if($vehicle->public_name)<p class="mt-1 text-sm mc-muted">{{ $vehicle->model }}</p>@endif
                 <p class="mt-2">{{ $vehicle->trim }} · {{ $vehicle->engine }}</p>
+                @if($vehicle->color || $vehicle->mileage || $vehicle->location)<p class="mt-2 text-sm mc-muted">{{ $vehicle->color }}{{ $vehicle->mileage ? ' · '.number_format($vehicle->mileage, 0, ',', '.').' km'.($vehicle->mileage_approximate ? ' (aprox.)' : '') : '' }}{{ $vehicle->location ? ' · '.$vehicle->location : '' }}</p>@endif
                 <p class="mt-4 text-sm">{{ $vehicle->visibility === 'public' ? 'Público' : 'Privado' }}</p>
                 <div class="mt-5 flex flex-wrap gap-3">
                     <flux:button href="{{ route('garage.details', $vehicle) }}" wire:navigate>Fotos e histórico</flux:button>

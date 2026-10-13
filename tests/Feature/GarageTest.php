@@ -12,6 +12,33 @@ it('creates a private vehicle owned by the authenticated user', function () {
     expect(Vehicle::sole()->visibility)->toBe('private');
 });
 
+it('saves the real vehicle profile details without exposing it by default', function () {
+    $user = User::factory()->create();
+    Livewire::actingAs($user)->test(Index::class)
+        ->call('create')
+        ->set('brand', 'Volkswagen')
+        ->set('model', 'Golf')
+        ->set('public_name', 'Venom Black MK7')
+        ->set('trim', 'Highline 1.4 TSI')
+        ->set('generation', 'MK7')
+        ->set('color', 'Preto')
+        ->set('model_year', '2015')
+        ->set('engine', '1.4 TSI Turbo · DSG DQ200')
+        ->set('mileage', '180000')
+        ->set('mileage_approximate', true)
+        ->set('acquired_on', '2026-03-14')
+        ->set('location', 'São Paulo, SP')
+        ->set('instagram_url', 'https://www.instagram.com/venomblackmk7/')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $vehicle = Vehicle::sole();
+    expect($vehicle->public_name)->toBe('Venom Black MK7')
+        ->and($vehicle->mileage)->toBe(180000)
+        ->and($vehicle->mileage_approximate)->toBeTrue()
+        ->and($vehicle->visibility)->toBe('private');
+});
+
 it('validates required fields year and visibility', function () {
     Livewire::actingAs(User::factory()->create())->test(Index::class)->set('brand', '   ')->set('model_year', '1800')->set('visibility', 'invalid')->call('save')->assertHasErrors(['brand', 'model', 'trim', 'engine', 'model_year', 'visibility']);
     expect(Vehicle::count())->toBe(0);

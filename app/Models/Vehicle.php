@@ -13,7 +13,19 @@ class Vehicle extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['brand', 'model', 'trim', 'model_year', 'engine', 'visibility'];
+    protected $fillable = [
+        'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine',
+        'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'acquired_on' => 'date',
+            'mileage' => 'integer',
+            'mileage_approximate' => 'boolean',
+        ];
+    }
 
     protected static function booted(): void
     {
