@@ -226,6 +226,8 @@ export const initShowroomScene = (root) => {
     let frame = 0;
     let introStart = performance.now();
     let introFinished = false;
+    let needsRender = true;
+    let idleFrameCount = 0;
 
     const syncTheme = () => {
         themeState.dark = isDarkTheme();
@@ -238,6 +240,7 @@ export const initShowroomScene = (root) => {
         keyLight.intensity = themeState.dark ? 1.35 : 2.45;
         rimLight.intensity = themeState.dark ? 1.15 : 1.8;
         floor.material.color.set(themeState.dark ? 0x080d16 : 0x18273f);
+        needsRender = true;
     };
     syncTheme();
 
@@ -249,16 +252,22 @@ export const initShowroomScene = (root) => {
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
+        needsRender = true;
     };
 
     const animateHeadlights = () => {
+        let animating = false;
         car.headlights.forEach(({ material }) => {
+            animating ||= Math.abs(material.opacity - themeState.targetOpacity) > 0.01;
+            animating ||= Math.abs(material.emissiveIntensity - (themeState.dark ? 0.18 : 2.4)) > 0.03;
             material.opacity = THREE.MathUtils.damp(material.opacity, themeState.targetOpacity, 7, 1 / 60);
             material.emissiveIntensity = THREE.MathUtils.damp(material.emissiveIntensity, themeState.dark ? 0.18 : 2.4, 7, 1 / 60);
         });
         car.headlightLights.forEach((light) => {
+            animating ||= Math.abs(light.intensity - themeState.targetLight) > 0.02;
             light.intensity = THREE.MathUtils.damp(light.intensity, themeState.targetLight, 6, 1 / 60);
         });
+        return animating;
     };
 
     const tick = (now) => {
@@ -278,15 +287,26 @@ export const initShowroomScene = (root) => {
             }
         }
 
-        animateHeadlights();
-        controls.update();
+        const headlightsAnimating = animateHeadlights();
+        const controlsChanged = controls.update();
         renderer.render(scene, camera);
-        frame = window.requestAnimationFrame(tick);
+        const shouldContinue = !introFinished || headlightsAnimating || controlsChanged || needsRender;
+        needsRender = false;
+        if (shouldContinue || idleFrameCount < 1) {
+            idleFrameCount = shouldContinue ? 0 : idleFrameCount + 1;
+            frame = window.requestAnimationFrame(tick);
+        }
     };
 
     const start = () => {
+        idleFrameCount = 0;
         if (!frame && active && !disposed) frame = window.requestAnimationFrame(tick);
     };
+
+    controls.addEventListener('change', () => {
+        needsRender = true;
+        start();
+    });
 
     const intersection = 'IntersectionObserver' in window
         ? new IntersectionObserver(([entry]) => {
@@ -304,7 +324,10 @@ export const initShowroomScene = (root) => {
     resizeObserver?.observe(host);
     window.addEventListener('resize', resize, { passive: true });
 
-    const themeObserver = new MutationObserver(syncTheme);
+    const themeObserver = new MutationObserver(() => {
+        syncTheme();
+        start();
+    });
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
