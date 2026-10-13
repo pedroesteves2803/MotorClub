@@ -141,6 +141,39 @@ const initSectionTabs = () => {
     sync();
 };
 
+const initThemeHeadlights = () => {
+    const marks = document.querySelectorAll('[data-theme-headlight]');
+    if (!marks.length) return;
+
+    const isDarkTheme = () => document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+    const sync = () => {
+        const dark = isDarkTheme();
+
+        document.querySelectorAll('[data-theme-headlight]').forEach((mark) => {
+            const wasReady = mark.dataset.mcThemeHeadlightReady === 'true';
+            mark.classList.toggle('is-dark', dark);
+            mark.classList.toggle('is-lit', !dark);
+
+            if (wasReady) return;
+
+            mark.dataset.mcThemeHeadlightReady = 'true';
+            mark.classList.add('is-initializing', 'is-ready');
+            window.requestAnimationFrame(() => mark.classList.remove('is-initializing'));
+        });
+    };
+
+    sync();
+    if (document.body.dataset.mcThemeHeadlightsBound) return;
+
+    document.body.dataset.mcThemeHeadlightsBound = 'true';
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    document.addEventListener('change', (event) => {
+        if (event.target instanceof HTMLElement && event.target.matches('[data-theme-toggle]')) window.requestAnimationFrame(sync);
+    }, true);
+};
+
 const initScrollProgress = () => {
     const progress = document.querySelector('.mc-scroll-progress');
     if (!progress || progress.dataset.mcBound) return;
@@ -230,6 +263,7 @@ const initMotion = () => {
     initScrollZoom();
     initFeedback();
     initSectionTabs();
+    initThemeHeadlights();
     initScrollProgress();
     initMenu();
     initHeroMotion();
