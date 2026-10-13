@@ -17,6 +17,43 @@ const showFallback = (root, message = '') => {
     if (message && status) status.textContent = message;
 };
 
+const getQualityProfile = () => {
+    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    const connection = navigator.connection ?? navigator.mozConnection ?? navigator.webkitConnection;
+    const slowConnection = ['slow-2g', '2g'].includes(connection?.effectiveType);
+    const lowPower = coarsePointer
+        || connection?.saveData === true
+        || slowConnection
+        || (navigator.deviceMemory && navigator.deviceMemory <= 4)
+        || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+
+    return {
+        coarsePointer,
+        lowPower,
+        antialias: !lowPower,
+        shadows: !lowPower,
+        pixelRatio: Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 1.25),
+        shadowMapSize: lowPower ? 256 : 512,
+        floorSegments: lowPower ? 32 : 48,
+    };
+};
+
+const disposeMaterial = (material) => {
+    if (!material) return;
+    Object.values(material).forEach((value) => {
+        if (value?.isTexture) value.dispose();
+    });
+    material.dispose();
+};
+
+const disposeObject = (object) => {
+    object?.traverse((child) => {
+        child.geometry?.dispose();
+        if (Array.isArray(child.material)) child.material.forEach(disposeMaterial);
+        else disposeMaterial(child.material);
+    });
+};
+
 const createMaterial = (THREE, options) => new THREE.MeshPhysicalMaterial(options);
 
 const createProceduralCar = () => {
@@ -114,7 +151,7 @@ const createProceduralCar = () => {
     return { group, headlights, headlightLights };
 };
 
-const normalizeExternalModel = (model) => {
+const normalizeExternalModel = (model, castShadows = true) => {
     const bounds = new THREE.Box3().setFromObject(model);
     const size = bounds.getSize(new THREE.Vector3());
     const largest = Math.max(size.x, size.y, size.z) || 1;
@@ -126,13 +163,13 @@ const normalizeExternalModel = (model) => {
     model.position.y += 0.05 - groundedBounds.min.y;
     model.traverse((child) => {
         if (!child.isMesh) return;
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = castShadows;
+        child.receiveShadow = castShadows;
     });
     return model;
 };
 
-const configureExternalVehicle = (model, animations = []) => {
+const configureExternalVehicle = (model, animations = [], castShadows = true) => {
     const headlightMaterials = new Set();
     const headlightLights = [];
     const materialNames = new Set();
@@ -140,8 +177,8 @@ const configureExternalVehicle = (model, animations = []) => {
     model.traverse((child) => {
         if (!child.isMesh) return;
 
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = castShadows;
+        child.receiveShadow = castShadows;
 
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((material) => {
@@ -206,7 +243,8 @@ export const initShowroomScene = (root) => {
     if (!host) return () => {};
 
     root.dataset.mcShowroomReady = 'loading';
-    const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    const quality = getQualityProfile();
+    const { coarsePointer } = quality;
     const canvas = document.createElement('canvas');
     canvas.setAttribute('aria-hidden', 'true');
     canvas.className = 'mc-showroom__webgl';
@@ -217,13 +255,13 @@ export const initShowroomScene = (root) => {
         renderer = new THREE.WebGLRenderer({
             canvas,
             alpha: true,
-            antialias: !coarsePointer,
+            antialias: quality.antialias,
             powerPreference: 'high-performance',
         });
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.08;
-        renderer.shadowMap.enabled = !coarsePointer;
+        renderer.shadowMap.enabled = quality.shadows;
         renderer.shadowMap.type = THREE.PCFShadowMap;
     } catch {
         showFallback(root, 'Modo visual estático ativado neste dispositivo.');
@@ -232,6 +270,10 @@ export const initShowroomScene = (root) => {
     }
 
     const scene = new THREE.Scene();
+    const sceneBackground = new THREE.Color(0x050912);
+    const sceneFog = new THREE.Fog(sceneBackground, 8, 16);
+    scene.background = sceneBackground;
+    scene.fog = sceneFog;
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 40);
     const cameraStart = new THREE.Vector3(6.6, 3.15, 7.8);
     const cameraEnd = new THREE.Vector3(5.1, 2.35, 6.25);
@@ -241,8 +283,8 @@ export const initShowroomScene = (root) => {
     scene.add(hemiLight);
     const keyLight = new THREE.DirectionalLight(0xf4f8ff, 2.1);
     keyLight.position.set(4, 7, 5);
-    keyLight.castShadow = !coarsePointer;
-    keyLight.shadow.mapSize.set(coarsePointer ? 256 : 512, coarsePointer ? 256 : 512);
+    keyLight.castShadow = quality.shadows;
+    keyLight.shadow.mapSize.set(quality.shadowMapSize, quality.shadowMapSize);
     keyLight.shadow.camera.near = 1;
     keyLight.shadow.camera.far = 18;
     scene.add(keyLight);
@@ -251,7 +293,7 @@ export const initShowroomScene = (root) => {
     scene.add(rimLight);
 
     const floor = new THREE.Mesh(
-        new THREE.CircleGeometry(8, 48),
+        new THREE.CircleGeometry(8, quality.floorSegments),
         new THREE.MeshStandardMaterial({ color: 0x0b1220, metalness: 0.5, roughness: 0.3 }),
     );
     floor.rotation.x = -Math.PI / 2;
@@ -286,9 +328,11 @@ export const initShowroomScene = (root) => {
         const loader = new GLTFLoader();
         loader.load(modelUrl, (gltf) => {
             if (!root.isConnected) return;
-            const externalModel = normalizeExternalModel(gltf.scene);
-            const externalVehicle = configureExternalVehicle(externalModel, gltf.animations);
+            if (disposed) return;
+            const externalModel = normalizeExternalModel(gltf.scene, quality.shadows);
+            const externalVehicle = configureExternalVehicle(externalModel, gltf.animations, quality.shadows);
             scene.remove(vehicle.group);
+            disposeObject(vehicle.group);
             scene.add(externalModel);
             vehicle = externalVehicle;
             root.dataset.mcShowroomModel = 'spectral-gt-rs';
@@ -325,8 +369,8 @@ export const initShowroomScene = (root) => {
         themeState.targetLight = themeState.dark ? 0.12 : 2.65;
         themeState.targetOpacity = themeState.dark ? 0.28 : 1;
         const background = themeState.dark ? 0x050912 : 0xe5edf7;
-        scene.background = new THREE.Color(background);
-        scene.fog = new THREE.Fog(background, 8, 16);
+        scene.background.set(background);
+        scene.fog.color.set(background);
         hemiLight.groundColor.set(themeState.dark ? 0x0b1220 : 0xd8e5f3);
         hemiLight.intensity = themeState.dark ? 0.46 : 1.12;
         keyLight.intensity = themeState.dark ? 1.35 : 2.45;
@@ -340,24 +384,24 @@ export const initShowroomScene = (root) => {
         const bounds = host.getBoundingClientRect();
         const width = Math.max(1, bounds.width);
         const height = Math.max(1, bounds.height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, coarsePointer ? 1 : 1.25));
+        renderer.setPixelRatio(quality.pixelRatio);
         renderer.setSize(width, height, false);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
         needsRender = true;
     };
 
-    const animateHeadlights = () => {
+    const animateHeadlights = (delta) => {
         let animating = false;
         vehicle.headlights.forEach(({ material }) => {
             animating ||= Math.abs(material.opacity - themeState.targetOpacity) > 0.01;
             animating ||= Math.abs(material.emissiveIntensity - (themeState.dark ? 0.18 : 2.4)) > 0.03;
-            material.opacity = THREE.MathUtils.damp(material.opacity, themeState.targetOpacity, 7, 1 / 60);
-            material.emissiveIntensity = THREE.MathUtils.damp(material.emissiveIntensity, themeState.dark ? 0.18 : 2.4, 7, 1 / 60);
+            material.opacity = THREE.MathUtils.damp(material.opacity, themeState.targetOpacity, 7, delta);
+            material.emissiveIntensity = THREE.MathUtils.damp(material.emissiveIntensity, themeState.dark ? 0.18 : 2.4, 7, delta);
         });
         vehicle.headlightLights.forEach((light) => {
             animating ||= Math.abs(light.intensity - themeState.targetLight) > 0.02;
-            light.intensity = THREE.MathUtils.damp(light.intensity, themeState.targetLight, 6, 1 / 60);
+            light.intensity = THREE.MathUtils.damp(light.intensity, themeState.targetLight, 6, delta);
         });
         return animating;
     };
@@ -382,7 +426,7 @@ export const initShowroomScene = (root) => {
             }
         }
 
-        const headlightsAnimating = animateHeadlights();
+        const headlightsAnimating = animateHeadlights(delta);
         vehicle.mixer?.update(delta);
         const controlsChanged = controls.update();
         renderer.render(scene, camera);
@@ -399,22 +443,35 @@ export const initShowroomScene = (root) => {
         if (!frame && active && !disposed) frame = window.requestAnimationFrame(tick);
     };
 
-    controls.addEventListener('change', () => {
+    const onControlsChange = () => {
         needsRender = true;
         start();
-    });
+    };
+    controls.addEventListener('change', onControlsChange);
 
+    let viewportVisible = true;
+    let documentVisible = !document.hidden;
+    const updateActivity = () => {
+        active = viewportVisible && documentVisible;
+        if (active) start();
+        else if (frame) {
+            window.cancelAnimationFrame(frame);
+            frame = 0;
+        }
+    };
     const intersection = 'IntersectionObserver' in window
         ? new IntersectionObserver(([entry]) => {
-            active = entry.isIntersecting;
-            if (active) start();
-            else if (frame) {
-                window.cancelAnimationFrame(frame);
-                frame = 0;
-            }
+            viewportVisible = entry.isIntersecting;
+            updateActivity();
         }, { threshold: 0.05 })
         : null;
     intersection?.observe(root);
+
+    const onVisibilityChange = () => {
+        documentVisible = !document.hidden;
+        updateActivity();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange, { passive: true });
 
     const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(resize) : null;
     resizeObserver?.observe(host);
@@ -427,20 +484,24 @@ export const initShowroomScene = (root) => {
     themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-    reset?.addEventListener('click', () => {
+    let resetTimer = 0;
+    const onReset = () => {
         controls.reset();
         if (status) status.textContent = 'Vista recentrada';
-        window.setTimeout(() => {
+        window.clearTimeout(resetTimer);
+        resetTimer = window.setTimeout(() => {
             if (status && root.isConnected) status.textContent = initialStatus;
         }, 1200);
-    });
+    };
+    reset?.addEventListener('click', onReset);
 
-    canvas.addEventListener('webglcontextlost', (event) => {
+    const onContextLost = (event) => {
         event.preventDefault();
         active = false;
         if (frame) window.cancelAnimationFrame(frame);
         showFallback(root, 'WebGL indisponível; modo visual estático ativado.');
-    }, { passive: false });
+    };
+    canvas.addEventListener('webglcontextlost', onContextLost, { passive: false });
 
     root.classList.add('is-ready');
     if (modelUrl) root.classList.add('is-loading');
@@ -456,8 +517,18 @@ export const initShowroomScene = (root) => {
         resizeObserver?.disconnect();
         themeObserver.disconnect();
         window.removeEventListener('resize', resize);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        controls.removeEventListener('change', onControlsChange);
+        reset?.removeEventListener('click', onReset);
+        canvas.removeEventListener('webglcontextlost', onContextLost);
+        window.clearTimeout(resetTimer);
         controls.dispose();
+        disposeObject(scene);
+        renderer.renderLists?.dispose?.();
         renderer.dispose();
+        canvas.remove();
+        root.dataset.mcShowroomReady = 'destroyed';
+        delete root._mcShowroomCleanup;
     };
 
     root.dataset.mcShowroomReady = 'true';

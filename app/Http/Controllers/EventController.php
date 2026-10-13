@@ -76,7 +76,7 @@ class EventController extends Controller
     {
         abort_unless($event->is_public || $request->user()?->id === $event->user_id, 404);
 
-        return view('events.show', ['event' => $event, 'shotGalleries' => $event->shotGalleries()->with(['user.photographerProfile', 'photos'])->where('is_public', true)->whereHas('user.photographerProfile', fn ($profile) => $profile->where('is_public', true))->get()]);
+        return view('events.show', ['event' => $event, 'shotGalleries' => $event->shotGalleries()->with(['user.photographerProfile', 'previewPhoto'])->where('is_public', true)->whereHas('user.photographerProfile', fn ($profile) => $profile->where('is_public', true))->get()]);
     }
 
     public function destroy(Request $request, CarEvent $event)

@@ -26,7 +26,7 @@ class WorkshopController extends Controller
     {
         abort_unless($workshop->is_public || $request->user()?->id === $workshop->user_id, 404);
 
-        return view('workshops.show', ['workshop' => $workshop, 'projects' => $workshop->projects()->published()->where('workshop_status', 'approved')->with('vehicle')->get(), 'vehicles' => $request->user() ? Vehicle::where('user_id', $request->user()->id)->get() : collect()]);
+        return view('workshops.show', ['workshop' => $workshop, 'projects' => $workshop->projects()->published()->where('workshop_status', 'approved')->with(['previewPhoto', 'vehicle.previewPhoto'])->get(), 'vehicles' => $request->user() ? Vehicle::where('user_id', $request->user()->id)->get() : collect()]);
     }
 
     public function edit(Request $request)

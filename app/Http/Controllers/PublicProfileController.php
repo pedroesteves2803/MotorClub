@@ -30,6 +30,11 @@ class PublicProfileController extends Controller
         $person->unsetRelation('photographerProfile');
         $person->load(['photographerProfile' => fn ($query) => $query->where('is_public', true)]);
 
-        return view('profiles.show', ['person' => $person, 'vehicles' => Vehicle::with('photos')->where('user_id', $person->id)->where('visibility', 'public')->get(), 'projects' => Project::published()->whereHas('vehicle', fn ($q) => $q->where('user_id', $person->id))->get(), 'shotGalleries' => ShotGallery::with('photos')->where('user_id', $person->id)->where('is_public', true)->whereHas('user.photographerProfile', fn ($profile) => $profile->where('is_public', true))->get()]);
+        return view('profiles.show', [
+            'person' => $person,
+            'vehicles' => Vehicle::with('previewPhoto')->where('user_id', $person->id)->where('visibility', 'public')->get(),
+            'projects' => Project::with(['vehicle.previewPhoto', 'previewPhoto'])->published()->whereHas('vehicle', fn ($q) => $q->where('user_id', $person->id))->get(),
+            'shotGalleries' => ShotGallery::with('previewPhoto')->where('user_id', $person->id)->where('is_public', true)->whereHas('user.photographerProfile', fn ($profile) => $profile->where('is_public', true))->get(),
+        ]);
     }
 }

@@ -20,7 +20,7 @@ class ShotsController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ShotGallery::with(['user.photographerProfile', 'photos', 'event'])
+        $query = ShotGallery::with(['user.photographerProfile', 'previewPhoto', 'event'])
             ->where('is_public', true)
             ->whereHas('user.photographerProfile', fn ($profile) => $profile->where('is_public', true));
         if ($request->filled('q')) {
@@ -39,7 +39,7 @@ class ShotsController extends Controller
             $query->whereDate('shot_on', $request->date('date'));
         }
 
-        return view('shots.index', ['galleries' => $query->latest('shot_on')->paginate(12)->withQueryString(), 'events' => CarEvent::where('is_public', true)->orderBy('starts_at')->get()]);
+        return view('shots.index', ['galleries' => $query->latest('shot_on')->paginate(12)->withQueryString(), 'events' => CarEvent::query()->select(['id', 'title'])->where('is_public', true)->orderBy('starts_at')->get()]);
     }
 
     public function profile(Request $request)
@@ -59,7 +59,7 @@ class ShotsController extends Controller
 
     public function myGalleries(Request $request)
     {
-        return view('shots.manage', ['galleries' => $request->user()->shotGalleries()->with('photos')->latest()->get()]);
+        return view('shots.manage', ['galleries' => $request->user()->shotGalleries()->withCount('photos')->latest()->get()]);
     }
 
     public function createGallery(Request $request)
@@ -115,7 +115,7 @@ class ShotsController extends Controller
             'photos' => fn ($photos) => $photos->where('is_published', true),
         ]);
 
-        return view('shots.show', ['gallery' => $gallery, 'vehicles' => $request->user() ? Vehicle::where('user_id', $request->user()->id)->get() : collect()]);
+        return view('shots.show', ['gallery' => $gallery, 'vehicles' => $request->user() ? Vehicle::query()->select(['id', 'brand', 'model'])->where('user_id', $request->user()->id)->get() : collect()]);
     }
 
     public function uploadPhoto(Request $request, ShotGallery $gallery, ShotImages $images)

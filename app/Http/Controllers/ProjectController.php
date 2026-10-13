@@ -19,7 +19,7 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $mine = $request->boolean('mine') && $request->user();
-        $query = Project::with(['vehicle.user', 'photos', 'vehicle.photos']);
+        $query = Project::with(['previewPhoto', 'vehicle.previewPhoto']);
         if ($mine) {
             $query->whereHas('vehicle', fn ($q) => $q->where('user_id', $request->user()->id));
         } else {

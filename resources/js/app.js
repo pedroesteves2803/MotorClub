@@ -63,6 +63,8 @@ const initImageMotion = () => {
 
     images.forEach((image) => {
         image.classList.add('mc-image-reveal');
+        if (!image.hasAttribute('loading')) image.loading = 'lazy';
+        image.decoding = 'async';
         if (image.closest('.mc-surface, .mc-car, figure')) image.classList.add('mc-scroll-zoom');
     });
 
@@ -199,9 +201,24 @@ const initScrollProgress = () => {
     };
 
     progress.dataset.mcBound = 'true';
+
+    if (!document.body.dataset.mcScrollProgressBound) {
+        let frame = 0;
+        const requestUpdate = () => {
+            if (frame) return;
+            frame = window.requestAnimationFrame(() => {
+                frame = 0;
+                update();
+            });
+        };
+
+        document.body.dataset.mcScrollProgressBound = 'true';
+        document.body._mcScrollProgressRequestUpdate = requestUpdate;
+        window.addEventListener('scroll', requestUpdate, { passive: true });
+        window.addEventListener('resize', requestUpdate, { passive: true });
+    }
+
     update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update, { passive: true });
 };
 
 const initMenu = () => {
@@ -221,18 +238,33 @@ const initHeroMotion = () => {
     if (!hero || reduceMotion.matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || hero.dataset.mcBound) return;
 
     hero.dataset.mcBound = 'true';
+    let frame = 0;
+    let pointer = { x: 0, y: 0 };
 
-    hero.addEventListener('pointermove', (event) => {
+    const applyPointer = () => {
+        frame = 0;
         const bounds = hero.getBoundingClientRect();
-        const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
-        const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+        const x = ((pointer.x - bounds.left) / bounds.width - 0.5) * 2;
+        const y = ((pointer.y - bounds.top) / bounds.height - 0.5) * 2;
         hero.style.setProperty('--mc-pointer-x', `${(x * 8).toFixed(2)}px`);
         hero.style.setProperty('--mc-pointer-y', `${(y * 8).toFixed(2)}px`);
         hero.style.setProperty('--mc-tilt-x', `${(-y * 3.5).toFixed(2)}deg`);
         hero.style.setProperty('--mc-tilt-y', `${(x * 4.5).toFixed(2)}deg`);
+    };
+
+    const schedulePointer = () => {
+        if (!frame) frame = window.requestAnimationFrame(applyPointer);
+    };
+
+    hero.addEventListener('pointermove', (event) => {
+        pointer = { x: event.clientX, y: event.clientY };
+        schedulePointer();
     });
 
     hero.addEventListener('pointerleave', () => {
+        pointer = { x: 0, y: 0 };
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = 0;
         hero.style.setProperty('--mc-pointer-x', '0px');
         hero.style.setProperty('--mc-pointer-y', '0px');
         hero.style.setProperty('--mc-tilt-x', '0deg');
@@ -269,10 +301,23 @@ const initShowroom = async () => {
         }
     };
 
-    if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(loadShowroom, { timeout: 1200 });
+    const scheduleLoad = () => {
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(loadShowroom, { timeout: 1200 });
+        } else {
+            window.setTimeout(loadShowroom, 180);
+        }
+    };
+
+    if ('IntersectionObserver' in window) {
+        const visibility = new IntersectionObserver(([entry], observer) => {
+            if (!entry.isIntersecting) return;
+            observer.disconnect();
+            scheduleLoad();
+        }, { rootMargin: '240px 0px', threshold: 0.01 });
+        visibility.observe(root);
     } else {
-        window.setTimeout(loadShowroom, 180);
+        scheduleLoad();
     }
 };
 
@@ -325,7 +370,12 @@ const initMotion = () => {
     initEasterEggs();
 };
 
+const cleanupShowrooms = () => {
+    document.querySelectorAll('[data-autoverse-showroom]').forEach((root) => root._mcShowroomCleanup?.());
+};
+
 ready(() => {
     initMotion();
+    document.addEventListener('livewire:navigating', cleanupShowrooms);
     document.addEventListener('livewire:navigated', initMotion);
 });

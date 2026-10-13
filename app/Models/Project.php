@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
 class Project extends Model
@@ -27,6 +28,11 @@ class Project extends Model
     public function photos()
     {
         return $this->hasMany(ProjectPhoto::class);
+    }
+
+    public function previewPhoto(): HasOne
+    {
+        return $this->hasOne(ProjectPhoto::class)->latestOfMany();
     }
 
     public function reports()

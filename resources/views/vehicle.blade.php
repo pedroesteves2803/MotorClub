@@ -15,4 +15,4 @@
     @else
         <p class="max-w-2xl text-sm">Informações declaradas pelo proprietário. Não representam garantia de compatibilidade técnica.</p>
     @endif
-<section class="space-y-6"><h2 class="text-3xl font-bold">Projetos deste carro</h2><x-project-cards :projects="\App\Models\Project::published()->where('vehicle_id',$vehicle->id)->with('photos','vehicle.photos')->get()" /></section></x-layouts.public>
+<section class="space-y-6"><h2 class="text-3xl font-bold">Projetos deste carro</h2><x-project-cards :projects="\App\Models\Project::published()->where('vehicle_id',$vehicle->id)->with(['previewPhoto','vehicle.previewPhoto'])->get()" /></section></x-layouts.public>

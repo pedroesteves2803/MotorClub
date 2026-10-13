@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ShotGallery extends Model
 {
@@ -35,5 +36,10 @@ class ShotGallery extends Model
     public function photos()
     {
         return $this->hasMany(ShotPhoto::class);
+    }
+
+    public function previewPhoto(): HasOne
+    {
+        return $this->hasOne(ShotPhoto::class)->where('is_published', true)->latestOfMany();
     }
 }
