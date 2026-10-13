@@ -166,6 +166,9 @@ const initThemeHeadlights = () => {
                 ? 'Tema escuro, farol apagado. Ativar tema claro.'
                 : 'Tema claro, farol aceso. Ativar tema escuro.';
 
+            control.classList.toggle('is-dark', dark);
+            control.classList.toggle('is-lit', !dark);
+            control.dataset.themeToggleState = dark ? 'dark' : 'light';
             control.setAttribute('aria-label', state);
             control.setAttribute('title', state);
             control.setAttribute('aria-pressed', String(!dark));
