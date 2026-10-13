@@ -217,7 +217,7 @@ const initMenu = () => {
 };
 
 const initHeroMotion = () => {
-    const hero = document.querySelector('[data-hero-3d]');
+    const hero = [...document.querySelectorAll('[data-hero-3d]')].find((element) => !element.querySelector('[data-autoverse-showroom]'));
     if (!hero || reduceMotion.matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || hero.dataset.mcBound) return;
 
     hero.dataset.mcBound = 'true';
@@ -238,6 +238,30 @@ const initHeroMotion = () => {
         hero.style.setProperty('--mc-tilt-x', '0deg');
         hero.style.setProperty('--mc-tilt-y', '0deg');
     });
+};
+
+const initShowroom = async () => {
+    const root = document.querySelector('[data-autoverse-showroom]');
+    if (!root || root.dataset.mcShowroomReady) return;
+
+    if (reduceMotion.matches) {
+        root.dataset.mcShowroomReady = 'reduced-motion';
+        root.classList.add('is-fallback', 'is-reduced-motion');
+        root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Modo estático por preferência de movimento reduzido'));
+        return;
+    }
+
+    root.dataset.mcShowroomReady = 'loading';
+
+    try {
+        const { initShowroomScene } = await import('./showroom.js');
+        if (root.isConnected) initShowroomScene(root);
+    } catch (error) {
+        root.dataset.mcShowroomReady = 'error';
+        root.classList.add('is-fallback');
+        root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Modo visual estático ativado'));
+        console.error('Autoverse showroom indisponível:', error);
+    }
 };
 
 const initEasterEggs = () => {
@@ -285,6 +309,7 @@ const initMotion = () => {
     initScrollProgress();
     initMenu();
     initHeroMotion();
+    void initShowroom();
     initEasterEggs();
 };
 

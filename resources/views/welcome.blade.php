@@ -6,7 +6,22 @@
             <p class="mt-7 text-lg leading-relaxed">Seu carro merece mais que uma publicação. Registre detalhes, mudanças, encontros e os olhares que fazem cada projeto seguir em frente.</p>
             <div class="mt-8 flex flex-wrap gap-3"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem</a><a class="mc-text-link border-[#2d486e] text-[#edf3fb]" href="{{ route('shots.index') }}">Explorar Shots</a></div>
         </div>
-        <aside class="mc-home-poster" aria-label="Manifesto Autoverse" data-hero-3d><span class="mc-edition">Seu carro · Sua história · Seu universo</span><x-brand-mark /><p>Alguns veem<br>um carro.<br>A gente vê<br><em>um universo.</em></p><span class="mc-edition">Garagem · Projetos · Shots</span></aside>
+        <aside class="mc-home-poster mc-home-showroom" aria-label="Showroom 3D Autoverse" data-hero-3d>
+            <div class="mc-showroom" data-autoverse-showroom role="group" aria-label="Carro esportivo 3D interativo">
+                <div class="mc-showroom__canvas" data-showroom-canvas></div>
+                <div class="mc-showroom__fallback" data-showroom-fallback>
+                    <span class="mc-edition">Autoverse · Showroom</span>
+                    <x-brand-mark />
+                    <p>Alguns veem<br>um carro.<br>A gente vê<br><em>um universo.</em></p>
+                    <span class="mc-edition">Garagem · Projetos · Shots</span>
+                </div>
+                <div class="mc-showroom__hud" aria-live="polite">
+                    <span class="mc-edition">Autoverse / 01</span>
+                    <button class="mc-showroom__reset" type="button" data-showroom-reset>Recentrar vista</button>
+                    <span class="mc-showroom__status" data-showroom-status>Arraste para explorar</span>
+                </div>
+            </div>
+        </aside>
     </section>
 
     <section class="mc-home-features" aria-label="O que você pode fazer">

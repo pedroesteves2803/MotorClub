@@ -29,3 +29,14 @@ it('usa o próprio farol como controle acessível de tema', function () {
         ->assertDontSee('mc-theme-toggle__mark', false)
         ->assertDontSee('<select aria-label="Tema" data-theme-toggle', false);
 });
+
+it('oferece showroom 3d progressivo com fallback acessível na home', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('data-autoverse-showroom', false)
+        ->assertSee('data-showroom-canvas', false)
+        ->assertSee('data-showroom-reset', false)
+        ->assertSee('data-showroom-fallback', false)
+        ->assertSee('Carro esportivo 3D interativo', false)
+        ->assertSee('Arraste para explorar');
+});
