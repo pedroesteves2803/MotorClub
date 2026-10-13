@@ -1,0 +1,1 @@
+@props(['name','label','value'=>''])<label class="block space-y-2 font-semibold"><span>{{ $label }}</span><textarea class="mc-input" name="{{ $name }}" rows="4" {{ $attributes }}>{{ old($name,$value) }}</textarea></label>

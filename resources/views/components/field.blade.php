@@ -1,0 +1,2 @@
+@props(['name','label','value'=>'','type'=>'text'])
+<label class="block space-y-2 font-semibold"><span>{{ $label }}</span><input class="mc-input" type="{{ $type }}" name="{{ $name }}" value="{{ old($name,$value) }}" {{ $attributes }}></label>

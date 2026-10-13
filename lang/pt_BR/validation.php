@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'required' => 'Preencha o campo :attribute.',
+    'string' => 'O campo :attribute deve ser um texto.',
+    'boolean' => 'Selecione uma opção válida para :attribute.',
+    'numeric' => 'Informe um número válido em :attribute.',
+    'integer' => 'Informe um número inteiro em :attribute.',
+    'email' => 'Informe um e-mail válido.',
+    'unique' => 'Este valor de :attribute já está em uso.',
+    'exists' => 'Selecione uma opção válida para :attribute.',
+    'in' => 'Selecione uma opção válida para :attribute.',
+    'regex' => 'O formato de :attribute é inválido.',
+    'decimal' => 'O campo :attribute deve ter no máximo :decimal casas decimais.',
+    'date' => 'Informe uma data válida em :attribute.',
+    'date_format' => 'Informe uma data e hora válidas em :attribute.',
+    'after' => 'O campo :attribute deve ser posterior a :date.',
+    'image' => 'Envie uma imagem válida em :attribute.',
+    'mimes' => 'Use um arquivo do tipo :values.',
+    'dimensions' => 'A imagem deve ter no máximo 4096 × 4096 pixels.',
+    'uploaded' => 'Não foi possível enviar :attribute. Confira o tamanho do arquivo.',
+    'current_password' => 'A senha informada está incorreta.',
+    'confirmed' => 'A confirmação de :attribute não corresponde.',
+    'max' => ['string' => 'O campo :attribute deve ter no máximo :max caracteres.', 'numeric' => 'O campo :attribute deve ser no máximo :max.', 'file' => 'O arquivo :attribute deve ter no máximo :max KB.', 'array' => 'O campo :attribute deve ter no máximo :max itens.'],
+    'min' => ['string' => 'O campo :attribute deve ter pelo menos :min caracteres.', 'numeric' => 'O campo :attribute deve ser pelo menos :min.', 'file' => 'O arquivo :attribute deve ter pelo menos :min KB.', 'array' => 'O campo :attribute deve ter pelo menos :min itens.'],
+    'attributes' => ['name' => 'nome', 'email' => 'e-mail', 'password' => 'senha', 'confirmation' => 'confirmação', 'title' => 'título', 'category' => 'categoria', 'status' => 'situação', 'description' => 'descrição', 'parts' => 'peças', 'services' => 'serviços', 'cost' => 'custo', 'show_cost' => 'visibilidade do custo', 'is_public' => 'publicação', 'vehicle_id' => 'veículo', 'workshop_id' => 'oficina', 'workshop_status' => 'autorização', 'photo' => 'foto', 'city' => 'cidade', 'state' => 'estado', 'specialties' => 'especialidades', 'whatsapp' => 'WhatsApp', 'subject' => 'assunto', 'message' => 'mensagem', 'reply' => 'resposta', 'amount' => 'valor', 'starts_at' => 'data e hora', 'venue' => 'local', 'organizer' => 'organizador', 'bio' => 'apresentação', 'profile_public' => 'privacidade do perfil'],
+];

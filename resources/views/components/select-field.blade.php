@@ -1,0 +1,1 @@
+@props(['name','label','options','value'=>''])<label class="block space-y-2 font-semibold"><span>{{ $label }}</span><select class="mc-input" name="{{ $name }}" {{ $attributes }}>@foreach($options as $key=>$text)<option value="{{ $key }}" @selected((string)old($name,$value)===(string)$key)>{{ $text }}</option>@endforeach</select></label>

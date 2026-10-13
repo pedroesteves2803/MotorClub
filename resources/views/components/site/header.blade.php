@@ -1,0 +1,20 @@
+<header class="mc-masthead" x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false">
+    <div class="mc-header-inner">
+        <a href="{{ route('home') }}" class="mc-wordmark">MOTORCLUB</a>
+
+        <button type="button" class="mc-menu-toggle" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-expanded="false" aria-controls="site-navigation">Menu <span aria-hidden="true">☰</span></button>
+        <nav id="site-navigation" aria-label="Navegação principal" class="mc-nav" :class="{ 'is-open': menuOpen }">
+            <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>Início</a>
+            @if(config('features.garage'))
+                <a href="{{ route('dashboard') }}" @if(request()->routeIs('dashboard','garage.*','projects.*')) aria-current="page" @endif>Garagem</a>
+            @endif
+            @if(config('features.shots'))<a href="{{ route('shots.index') }}">Shots</a>@endif
+            @if(config('features.explore'))<a href="{{ route('explore') }}" @if(request()->routeIs('explore','community','profiles.show','vehicles.show')) aria-current="page" @endif>Explorar</a>@endif
+            @auth
+                <a href="{{ route('profiles.edit') }}" @if(request()->routeIs('profiles.*','dashboard','garage.*','quotes.*','workshops.edit','shots.manage','shots.profile','settings.*')) aria-current="page" @endif>Perfil</a>
+            @else
+                <a href="{{ route('login') }}" class="mc-link-button">Entrar com Google</a>
+            @endauth
+        </nav>
+    </div>
+</header>
