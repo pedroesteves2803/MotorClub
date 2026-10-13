@@ -1,0 +1,11 @@
+Spectral GT RS — third-party asset record
+
+Asset: spectral_gt_rs_game_ready.glb
+Source repository: https://github.com/JaronKBragg7337/spectral-gt-rs
+Source file: https://github.com/JaronKBragg7337/spectral-gt-rs/blob/main/spectral_gt_rs_game_ready.glb
+License: CC0 1.0 Universal (public domain dedication)
+License source: https://creativecommons.org/publicdomain/zero/1.0/
+
+The original model, source script, renders and showcase code are dedicated to
+the public domain under CC0 1.0 Universal by the repository author. This file
+keeps the provenance and license record alongside the vendored GLB.

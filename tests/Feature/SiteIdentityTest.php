@@ -34,9 +34,10 @@ it('oferece showroom 3d progressivo com fallback acessível na home', function (
     $this->get('/')
         ->assertOk()
         ->assertSee('data-autoverse-showroom', false)
+        ->assertSee('spectral_gt_rs_game_ready.glb', false)
         ->assertSee('data-showroom-canvas', false)
         ->assertSee('data-showroom-reset', false)
         ->assertSee('data-showroom-fallback', false)
-        ->assertSee('Carro esportivo 3D interativo', false)
+        ->assertSee('Spectral GT RS 3D interativo', false)
         ->assertSee('Arraste para explorar');
 });

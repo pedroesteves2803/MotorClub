@@ -10,6 +10,8 @@ const showFallback = (root, message = '') => {
     root.classList.remove('is-ready');
     root.classList.add('is-fallback');
 
+    root.querySelector('[data-showroom-fallback]')?.setAttribute('aria-hidden', 'false');
+
     const status = root.querySelector('[data-showroom-status]');
     if (message && status) status.textContent = message;
 };
@@ -119,13 +121,81 @@ const normalizeExternalModel = (model) => {
     const normalizedBounds = new THREE.Box3().setFromObject(model);
     const center = normalizedBounds.getCenter(new THREE.Vector3());
     model.position.sub(center);
-    model.position.y += 0.38;
+    const groundedBounds = new THREE.Box3().setFromObject(model);
+    model.position.y += 0.05 - groundedBounds.min.y;
     model.traverse((child) => {
         if (!child.isMesh) return;
         child.castShadow = true;
         child.receiveShadow = true;
     });
     return model;
+};
+
+const configureExternalVehicle = (model, animations = []) => {
+    const headlightMaterials = new Set();
+    const headlightLights = [];
+    const materialNames = new Set();
+
+    model.traverse((child) => {
+        if (!child.isMesh) return;
+
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        materials.forEach((material) => {
+            if (!material) return;
+            materialNames.add(material.name || 'unnamed');
+
+            if (material.name?.includes('Spectral Blue')) {
+                material.color?.set(0x111b2b);
+                material.metalness = 0.9;
+                material.roughness = 0.2;
+                material.clearcoat = 1;
+                material.clearcoatRoughness = 0.14;
+                material.needsUpdate = true;
+            }
+
+            const isHeadlight = material.name?.includes('Headlamp')
+                || material.name?.includes('Ice Blue Emission')
+                || child.name?.includes('Headlight_LED')
+                || child.name?.includes('Headlight_Main');
+            if (isHeadlight) {
+                material.emissive?.set(0x9cc8ff);
+                material.emissiveIntensity = 0.18;
+                material.transparent = true;
+                material.depthWrite = false;
+                materialNames.add('Headlight material');
+                headlightMaterials.add(material);
+                material.needsUpdate = true;
+            }
+        });
+
+        if (child.name?.includes('Headlight_Main')) {
+            const light = new THREE.PointLight(0x9cc8ff, 0, 3.2, 2);
+            light.castShadow = false;
+            child.add(light);
+            headlightLights.push(light);
+        }
+    });
+
+    const mixer = animations.length ? new THREE.AnimationMixer(model) : null;
+    const steeringClip = animations.find((clip) => clip.name?.includes('Steering_Input'));
+    if (mixer && steeringClip) {
+        const action = mixer.clipAction(steeringClip);
+        action.setLoop(THREE.LoopOnce, 1);
+        action.clampWhenFinished = true;
+        action.play();
+    }
+
+    return {
+        group: model,
+        headlights: [...headlightMaterials].map((material) => ({ material })),
+        headlightLights,
+        mixer,
+        materialNames,
+        animations,
+    };
 };
 
 export const initShowroomScene = (root) => {
@@ -149,6 +219,9 @@ export const initShowroomScene = (root) => {
             antialias: !coarsePointer,
             powerPreference: 'high-performance',
         });
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.08;
     } catch {
         showFallback(root, 'Modo visual estático ativado neste dispositivo.');
         root.dataset.mcShowroomReady = 'false';
@@ -183,8 +256,8 @@ export const initShowroomScene = (root) => {
     floor.receiveShadow = true;
     scene.add(floor);
 
-    const car = createProceduralCar();
-    scene.add(car.group);
+    let vehicle = createProceduralCar();
+    scene.add(vehicle.group);
 
     const controls = new OrbitControls(camera, canvas);
     controls.enableDamping = true;
@@ -200,26 +273,39 @@ export const initShowroomScene = (root) => {
     controls.enabled = false;
     canvas.style.touchAction = coarsePointer ? 'pan-y' : 'none';
 
+    const status = root.querySelector('[data-showroom-status]');
+    const fallback = root.querySelector('[data-showroom-fallback]');
+    const initialStatus = status?.textContent || 'Arraste para explorar';
     const modelUrl = root.dataset.modelUrl?.trim();
     if (modelUrl) {
+        root.dataset.mcShowroomModel = 'loading-spectral-gt-rs';
+        if (status) status.textContent = 'Carregando Spectral GT RS';
         const loader = new GLTFLoader();
         loader.load(modelUrl, (gltf) => {
             if (!root.isConnected) return;
             const externalModel = normalizeExternalModel(gltf.scene);
-            scene.remove(car.group);
+            const externalVehicle = configureExternalVehicle(externalModel, gltf.animations);
+            scene.remove(vehicle.group);
             scene.add(externalModel);
-            root.dataset.mcShowroomModel = 'gltf';
-        }, undefined, () => {
+            vehicle = externalVehicle;
+            root.dataset.mcShowroomModel = 'spectral-gt-rs';
+            root.dataset.mcShowroomAnimations = gltf.animations.map((clip) => clip.name).join('|');
+            root.dataset.mcShowroomMaterials = [...externalVehicle.materialNames].join('|');
+            root.classList.add('is-ready');
+            root.classList.remove('is-fallback');
+            fallback?.setAttribute('aria-hidden', 'true');
+            if (status) status.textContent = initialStatus;
+            start();
+        }, undefined, (error) => {
             root.dataset.mcShowroomModel = 'procedural-fallback';
+            if (status) status.textContent = 'Modelo indisponível; showroom original ativado';
+            console.warn('Spectral GT RS indisponível, usando fallback procedural.', error);
         });
     } else {
         root.dataset.mcShowroomModel = 'procedural-original';
     }
 
-    const status = root.querySelector('[data-showroom-status]');
     const reset = root.querySelector('[data-showroom-reset]');
-    const fallback = root.querySelector('[data-showroom-fallback]');
-    const initialStatus = status?.textContent || 'Arraste para explorar';
     const themeState = { dark: isDarkTheme(), targetLight: 0.12, targetOpacity: 0.24 };
     let disposed = false;
     let active = true;
@@ -228,6 +314,7 @@ export const initShowroomScene = (root) => {
     let introFinished = false;
     let needsRender = true;
     let idleFrameCount = 0;
+    let previousFrameTime = performance.now();
 
     const syncTheme = () => {
         themeState.dark = isDarkTheme();
@@ -257,13 +344,13 @@ export const initShowroomScene = (root) => {
 
     const animateHeadlights = () => {
         let animating = false;
-        car.headlights.forEach(({ material }) => {
+        vehicle.headlights.forEach(({ material }) => {
             animating ||= Math.abs(material.opacity - themeState.targetOpacity) > 0.01;
             animating ||= Math.abs(material.emissiveIntensity - (themeState.dark ? 0.18 : 2.4)) > 0.03;
             material.opacity = THREE.MathUtils.damp(material.opacity, themeState.targetOpacity, 7, 1 / 60);
             material.emissiveIntensity = THREE.MathUtils.damp(material.emissiveIntensity, themeState.dark ? 0.18 : 2.4, 7, 1 / 60);
         });
-        car.headlightLights.forEach((light) => {
+        vehicle.headlightLights.forEach((light) => {
             animating ||= Math.abs(light.intensity - themeState.targetLight) > 0.02;
             light.intensity = THREE.MathUtils.damp(light.intensity, themeState.targetLight, 6, 1 / 60);
         });
@@ -274,12 +361,15 @@ export const initShowroomScene = (root) => {
         frame = 0;
         if (disposed || !active || !root.isConnected) return;
 
+        const delta = Math.min(Math.max((now - previousFrameTime) / 1000, 0), 0.05);
+        previousFrameTime = now;
+
         if (!introFinished) {
             const progress = Math.min((now - introStart) / 1550, 1);
             const eased = easeOutCubic(progress);
             camera.position.lerpVectors(cameraStart, cameraEnd, eased);
-            car.group.position.y = THREE.MathUtils.lerp(-0.38, 0.05, eased);
-            car.group.rotation.y = THREE.MathUtils.lerp(-0.62, -0.28, eased);
+            vehicle.group.position.y = THREE.MathUtils.lerp(-0.38, 0.05, eased);
+            vehicle.group.rotation.y = THREE.MathUtils.lerp(-0.62, -0.28, eased);
             if (progress >= 1) {
                 introFinished = true;
                 controls.enabled = true;
@@ -288,6 +378,7 @@ export const initShowroomScene = (root) => {
         }
 
         const headlightsAnimating = animateHeadlights();
+        vehicle.mixer?.update(delta);
         const controlsChanged = controls.update();
         renderer.render(scene, camera);
         const shouldContinue = !introFinished || headlightsAnimating || controlsChanged || needsRender;
