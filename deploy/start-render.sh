@@ -10,7 +10,8 @@ sed -ri "s#<VirtualHost \*:[0-9]+>#<VirtualHost *:${port}>#" /etc/apache2/sites-
 
 if [ -n "${DB_SSL_CA_B64:-}" ]; then
     printf '%s' "$DB_SSL_CA_B64" | base64 --decode > /tmp/motorclub-db-ca.pem
-    chmod 600 /tmp/motorclub-db-ca.pem
+    # Apache workers run as www-data, so they need read access to the public CA.
+    chmod 644 /tmp/motorclub-db-ca.pem
     export MYSQL_ATTR_SSL_CA=/tmp/motorclub-db-ca.pem
 fi
 

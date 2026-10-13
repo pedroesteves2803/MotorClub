@@ -23,6 +23,8 @@ services:
         sync: false
       - key: LOG_LEVEL
         value: warning
+      - key: LOG_CHANNEL
+        value: stderr
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
