@@ -8,6 +8,6 @@
     aria-label="Alternar tema"
     aria-pressed="false"
 >
-    <x-brand-mark class="mc-mark mc-theme-toggle__mark" />
+    <x-theme-headlight />
     <span class="sr-only" data-theme-toggle-status>Tema escuro, farol apagado</span>
 </button>

@@ -20,6 +20,9 @@ it('usa o próprio farol como controle acessível de tema', function () {
         ->assertOk()
         ->assertSee('data-theme-toggle-button', false)
         ->assertSee('data-theme-toggle-status', false)
+        ->assertSee('mc-theme-toggle__icon', false)
+        ->assertSee('M36 24h24', false)
         ->assertSee('aria-label="Alternar tema"', false)
+        ->assertDontSee('mc-theme-toggle__mark', false)
         ->assertDontSee('<select aria-label="Tema" data-theme-toggle', false);
 });
