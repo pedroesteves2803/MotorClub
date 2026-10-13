@@ -18,7 +18,7 @@ it('oferece menu responsivo acessível nas páginas públicas', function () {
 it('usa o próprio farol como controle acessível de tema', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('data-hero-3d', false)
+        ->assertSee('data-hero-animation', false)
         ->assertSee('data-theme-toggle-button', false)
         ->assertSee('data-theme-toggle-status', false)
         ->assertSee('mc-theme-toggle--floating', false)
@@ -30,14 +30,15 @@ it('usa o próprio farol como controle acessível de tema', function () {
         ->assertDontSee('<select aria-label="Tema" data-theme-toggle', false);
 });
 
-it('oferece showroom 3d progressivo com fallback acessível na home', function () {
+it('oferece uma animação SVG leve e acessível na home', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('data-autoverse-showroom', false)
-        ->assertSee('spectral_gt_rs_game_ready.glb', false)
-        ->assertSee('data-showroom-canvas', false)
-        ->assertSee('data-showroom-reset', false)
-        ->assertSee('data-showroom-fallback', false)
-        ->assertSee('Spectral GT RS 3D interativo', false)
-        ->assertSee('Arraste para explorar');
+        ->assertSee('data-light-showroom', false)
+        ->assertSee('mc-light-showroom__art', false)
+        ->assertSee('mc-light-showroom__lamp', false)
+        ->assertSee('Animação SVG · consumo mínimo')
+        ->assertDontSee('data-autoverse-showroom', false)
+        ->assertDontSee('spectral_gt_rs_game_ready.glb', false)
+        ->assertDontSee('data-showroom-canvas', false)
+        ->assertDontSee('Spectral GT RS 3D interativo', false);
 });

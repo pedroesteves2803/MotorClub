@@ -234,7 +234,7 @@ const initMenu = () => {
 };
 
 const initHeroMotion = () => {
-    const hero = [...document.querySelectorAll('[data-hero-3d]')].find((element) => !element.querySelector('[data-autoverse-showroom]'));
+    const hero = document.querySelector('[data-hero-animation]');
     if (!hero || reduceMotion.matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || hero.dataset.mcBound) return;
 
     hero.dataset.mcBound = 'true';
@@ -309,53 +309,31 @@ const initCardTilt = () => {
     });
 };
 
-const initShowroom = async () => {
-    const root = document.querySelector('[data-autoverse-showroom]');
-    if (!root || root.dataset.mcShowroomReady) return;
+const initLightShowroom = () => {
+    document.querySelectorAll('[data-light-showroom]').forEach((root) => {
+        if (root.dataset.mcLightShowroomReady) return;
 
-    if (reduceMotion.matches) {
-        root.dataset.mcShowroomReady = 'reduced-motion';
-        root.classList.add('is-fallback', 'is-reduced-motion');
-        root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Modo estático por preferência de movimento reduzido'));
-        return;
-    }
+        root.dataset.mcLightShowroomReady = 'true';
+        const activate = () => root.classList.add('is-active');
 
-    root.dataset.mcShowroomReady = 'scheduled';
-    root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Preparando showroom'));
-
-    const loadShowroom = async () => {
-        if (!root.isConnected || root.dataset.mcShowroomReady !== 'scheduled') return;
-        root.dataset.mcShowroomReady = 'loading';
-
-        try {
-            const { initShowroomScene } = await import('./showroom.js');
-            if (root.isConnected) initShowroomScene(root);
-        } catch (error) {
-            root.dataset.mcShowroomReady = 'error';
-            root.classList.add('is-fallback');
-            root.querySelector('[data-showroom-status]')?.replaceChildren(document.createTextNode('Modo visual estático ativado'));
-            console.error('Autoverse showroom indisponível:', error);
+        if (reduceMotion.matches || !('IntersectionObserver' in window)) {
+            activate();
+            return;
         }
-    };
 
-    const scheduleLoad = () => {
-        if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(loadShowroom, { timeout: 1200 });
-        } else {
-            window.setTimeout(loadShowroom, 180);
-        }
-    };
-
-    if ('IntersectionObserver' in window) {
         const visibility = new IntersectionObserver(([entry], observer) => {
             if (!entry.isIntersecting) return;
+            activate();
             observer.disconnect();
-            scheduleLoad();
-        }, { rootMargin: '240px 0px', threshold: 0.01 });
+        }, { threshold: 0.2 });
+
         visibility.observe(root);
-    } else {
-        scheduleLoad();
-    }
+        root._mcLightShowroomCleanup = () => {
+            visibility.disconnect();
+            root.classList.remove('is-active');
+            delete root._mcLightShowroomCleanup;
+        };
+    });
 };
 
 const initEasterEggs = () => {
@@ -404,16 +382,16 @@ const initMotion = () => {
     initMenu();
     initHeroMotion();
     initCardTilt();
-    void initShowroom();
+    initLightShowroom();
     initEasterEggs();
 };
 
-const cleanupShowrooms = () => {
-    document.querySelectorAll('[data-autoverse-showroom]').forEach((root) => root._mcShowroomCleanup?.());
+const cleanupLightShowrooms = () => {
+    document.querySelectorAll('[data-light-showroom]').forEach((root) => root._mcLightShowroomCleanup?.());
 };
 
 ready(() => {
     initMotion();
-    document.addEventListener('livewire:navigating', cleanupShowrooms);
+    document.addEventListener('livewire:navigating', cleanupLightShowrooms);
     document.addEventListener('livewire:navigated', initMotion);
 });
