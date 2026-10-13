@@ -6,7 +6,7 @@ use Livewire\Volt\Component;
 new #[Layout('components.layouts.auth')] class extends Component {}; ?>
 
 <div class="flex flex-col gap-6">
-    <x-auth-header title="Entre no MotorClub" description="Use sua conta Google para entrar ou se cadastrar." />
+    <x-auth-header title="Entre na Autoverse" description="Use sua conta Google para entrar ou se cadastrar." />
     @error('google')
         <p role="alert" class="rounded-lg border border-red-300 p-4 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
     @enderror

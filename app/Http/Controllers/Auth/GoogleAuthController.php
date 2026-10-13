@@ -24,7 +24,7 @@ class GoogleAuthController extends Controller
     public function redirect(Request $request): RedirectResponse
     {
         if (! $this->configured()) {
-            return to_route('login')->withErrors(['google' => 'O acesso com Google ainda está sendo configurado. Tente novamente mais tarde.']);
+            return to_route('login')->withErrors(['google' => 'Não foi possível iniciar o acesso com Google. Tente novamente mais tarde.']);
         }
 
         if (app()->environment('local') && $request->getHost() !== parse_url(config('services.google.redirect'), PHP_URL_HOST)) {

@@ -1,17 +1,17 @@
-<x-layouts.public title="MotorClub — Seu carro. Sua história. Sua comunidade.">
+<x-layouts.public title="Autoverse — Seu carro. Sua história. Seu universo.">
     <section class="mc-home-hero">
-        <div class="mc-intro border-0!">
-            <p class="mc-edition mb-6">MotorClub</p>
-            <h1>Seu carro.<br>Sua história.<br><span>Sua comunidade.</span></h1>
-            <p class="mt-8 max-w-lg text-lg leading-relaxed">Organize sua garagem, compartilhe seus projetos e encontre quem também vive essa paixão.</p>
-            <div class="mt-8 flex flex-wrap gap-4"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem →</a><a class="mc-text-link" href="{{ route('explore') }}">Explorar a comunidade</a></div>
+        <div class="mc-home-copy">
+            <p class="mc-edition">Autoverse · Garagens que contam histórias</p>
+            <h1>Seu carro merece mais que <strong>uma publicação.</strong></h1>
+            <p class="mt-7 max-w-xl text-lg leading-relaxed mc-muted">Crie sua garagem digital, registre a evolução dos seus projetos e descubra fotografias e pessoas que compartilham sua paixão por carros.</p>
+            <div class="mt-8 flex flex-wrap gap-4"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem</a><a class="mc-text-link" href="{{ route('shots.index') }}">Explorar fotografias</a></div>
         </div>
-        <aside class="mc-home-poster" aria-label="Manifesto MotorClub"><span class="mc-edition">O que nos move / 01</span><p>Alguns veem<br>um carro.<br><em>A gente vê<br>uma história.</em></p><span class="mc-edition">Garagem · Memórias · Estrada</span></aside>
+        <aside class="mc-home-poster" aria-label="Manifesto Autoverse"><span class="mc-edition">Seu carro · Sua história · Seu universo</span><x-brand-mark /><p>Alguns veem<br>um carro.<br>A gente vê<br>um universo.</p><span class="mc-edition">Garagem · Projetos · Shots</span></aside>
     </section>
     <section class="mc-home-features" aria-label="O que você pode fazer">
-        <article><span class="mc-edition">01 / Sua identidade</span><h2>Uma garagem com a sua cara.</h2><p>Cadastre seus veículos, adicione fotos e escolha o que fica privado ou público.</p></article>
-        <article><span class="mc-edition">02 / Seus projetos</span><h2>O cuidado vira história.</h2><p>Registre cada etapa, peça e memória de um projeto do seu jeito.</p></article>
-        <article><span class="mc-edition">03 / Shots</span><h2>Fotos que ficam.</h2><p>Encontre fotógrafos e galerias automotivas para guardar os melhores momentos.</p><a class="mc-text-link" href="{{ route('shots.index') }}">Ver Shots →</a></article>
+        <article><span class="mc-edition">01 / Garagem</span><h2>Seu carro, em todos os detalhes.</h2><p>Cadastre veículos, organize fotos e defina o que pertence à sua garagem ou ao mundo.</p></article>
+        <article><span class="mc-edition">02 / Projetos</span><h2>A evolução merece registro.</h2><p>Conecte peças, etapas e memórias ao veículo que torna cada projeto pessoal.</p></article>
+        <article><span class="mc-edition">03 / Shots</span><h2>O olhar de quem entende.</h2><p>Descubra fotógrafos e galerias automotivas para guardar os melhores momentos.</p><a class="mc-text-link mt-4" href="{{ route('shots.index') }}">Conhecer Shots</a></article>
     </section>
-    <section class="border-t border-zinc-400 pt-8"><p class="mc-edition mb-3">Conheça a comunidade</p><h2 class="text-2xl font-bold">A garagem é o começo.</h2><p class="mt-3 max-w-3xl">Explore veículos, membros, fotógrafos e galerias que fazem parte do MotorClub.</p><div class="mt-6 flex flex-wrap gap-6"><a class="mc-text-link" href="{{ route('explore') }}">Explorar →</a></div></section>
+    <section class="border-t border-[var(--mc-line)] pt-8"><p class="mc-edition mb-3">Conheça a comunidade</p><h2 class="text-2xl font-bold">A garagem é só o começo.</h2><p class="mt-3 max-w-3xl mc-muted">Explore veículos, projetos, fotógrafos e galerias da comunidade Autoverse.</p><div class="mt-6 flex flex-wrap gap-6"><a class="mc-text-link" href="{{ route('explore') }}">Explorar a comunidade</a></div></section>
 </x-layouts.public>

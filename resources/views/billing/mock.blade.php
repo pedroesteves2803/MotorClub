@@ -1,7 +1,7 @@
-<x-layouts.app title="Pagamento simulado — MotorClub">
+<x-layouts.app title="Assinatura — Autoverse">
     <p class="mc-muted text-sm uppercase tracking-widest">Assinatura para oficinas · Simulação local</p>
-    <h1 class="mc-title mt-3 text-4xl">Teste o pagamento do começo ao fim.</h1>
-    <div class="mc-notice mt-6 rounded-xl p-5">Nenhuma cobrança real. Não precisamos de cartão, banco ou conta Stripe. Os valores e comprovantes abaixo são fictícios. Todos os recursos do site continuam liberados.</div>
+    <h1 class="mc-title mt-3 text-4xl">Assinaturas indisponíveis.</h1>
+    <div class="mc-notice mt-6 rounded-xl p-5">Não precisamos de cartão para continuar usando a plataforma enquanto as assinaturas são preparadas.</div>
     @if(session('status'))<p role="status" class="mc-surface mt-4 rounded-xl p-4">{{ session('status') }}</p>@endif
     @if($errors->any())<div role="alert" class="mc-notice mt-4 p-4">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
     <div class="mt-8 grid gap-8 md:grid-cols-2">

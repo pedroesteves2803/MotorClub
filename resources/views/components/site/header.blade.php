@@ -1,6 +1,6 @@
 <header class="mc-masthead" x-data="{ menuOpen: false }" @keydown.escape.window="menuOpen = false">
     <div class="mc-header-inner">
-        <a href="{{ route('home') }}" class="mc-wordmark">MOTORCLUB</a>
+        <a href="{{ route('home') }}" class="mc-wordmark" aria-label="Autoverse, página inicial"><x-brand-mark class="mc-mark" /><span>AUTOVERSE</span></a>
 
         <button type="button" class="mc-menu-toggle" @click="menuOpen = !menuOpen" :aria-expanded="menuOpen" aria-expanded="false" aria-controls="site-navigation">Menu <span aria-hidden="true">☰</span></button>
         <nav id="site-navigation" aria-label="Navegação principal" class="mc-nav" :class="{ 'is-open': menuOpen }">
@@ -13,7 +13,7 @@
             @auth
                 <a href="{{ route('profiles.edit') }}" @if(request()->routeIs('profiles.*','dashboard','garage.*','quotes.*','workshops.edit','shots.manage','shots.profile','settings.*')) aria-current="page" @endif>Perfil</a>
             @else
-                <a href="{{ route('login') }}" class="mc-link-button">Entrar com Google</a>
+                <a href="{{ route('login') }}" class="mc-link-button">Entrar</a>
             @endauth
         </nav>
     </div>

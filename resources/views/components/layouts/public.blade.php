@@ -1,4 +1,4 @@
-@props(['title' => 'MotorClub', 'noindex' => false])
+@props(['title' => 'Autoverse', 'noindex' => false])
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>@include('partials.head', ['title' => $title])@if($noindex)<meta name="robots" content="noindex,nofollow">@endif</head>

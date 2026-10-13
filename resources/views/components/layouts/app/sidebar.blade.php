@@ -12,7 +12,7 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group heading="MotorClub" class="grid">
+                <flux:navlist.group heading="Autoverse" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>Minha garagem</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>

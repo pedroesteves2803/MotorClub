@@ -28,8 +28,8 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('central-mc-gestao')
-            ->brandName('MotorClub Gestão')
-            ->favicon(asset('favicon.ico'))
+            ->brandName('Autoverse Gestão')
+            ->favicon(asset('autoverse-mark.svg'))
             ->login()
             ->colors([
                 'primary' => Color::Blue,

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>@include('partials.head', ['title' => $title ?? 'Minha garagem — MotorClub'])</head>
+<head>@include('partials.head', ['title' => $title ?? 'Minha garagem — Autoverse'])</head>
 <body class="mc-site min-h-screen bg-stone-100 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
     <a href="#conteudo" class="sr-only focus:not-sr-only">Pular para o conteúdo</a>
     <x-site.header />

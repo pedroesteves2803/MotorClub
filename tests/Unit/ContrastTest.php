@@ -1,9 +1,9 @@
 <?php
 
-it('keeps readable contrast for MotorClub text and surfaces in both themes', function () {
+it('keeps readable contrast for Autoverse text and surfaces in both themes', function () {
     $css = file_get_contents(__DIR__.'/../../resources/css/app.css');
-    preg_match('/\.mc-site \{([^}]+)\}/s', $css, $light);
-    preg_match('/\.dark \.mc-site, \.mc-site\.dark \{([^}]+)\}/s', $css, $dark);
+    preg_match('/\.mc-site\s*\{([^}]+)\}/s', $css, $light);
+    preg_match('/\.dark \.mc-site,\s*\.mc-site\.dark\s*\{([^}]+)\}/s', $css, $dark);
     $tokens = function ($block) {
         preg_match_all('/--mc-([\w-]+):\s*(#[a-fA-F0-9]{6});/', $block, $matches, PREG_SET_ORDER);
 
