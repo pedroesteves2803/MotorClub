@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AIReportGeneratorInterface::class, function () {
             return match (config('motorclub.ai_provider')) {
                 'fake' => new FakeAIReportGenerator,
-                default => throw new \InvalidArgumentException('Provedor MotorClub AI não configurado.'),
+                default => throw new \InvalidArgumentException('Provedor Autoverse AI não configurado.'),
             };
         });
     }

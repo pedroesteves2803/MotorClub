@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>@include('partials.head', ['title' => $title ?? 'Minha garagem — Autoverse'])</head>
+    <head>@include('partials.head', ['title' => $title ?? 'Minha garagem — Autoverse', 'robots' => 'noindex,nofollow', 'canonical' => null])</head>
 <body class="mc-site min-h-screen bg-stone-100 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100 @if(request()->routeIs('billing.*', 'shots.galleries.show')) mc-site--action-heavy @endif" data-autoverse-app data-mc-page="{{ request()->route()?->getName() ?? 'page' }}">
     <a href="#conteudo" class="sr-only focus:not-sr-only">Pular para o conteúdo</a>
     <div class="mc-scroll-progress" aria-hidden="true"></div>

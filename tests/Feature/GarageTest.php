@@ -131,6 +131,6 @@ it('shows the editorial garage with a photo cover and navigation', function () {
 });
 
 it('uses the Autoverse visual identity on garage and sign in', function () {
-    $this->get('/login')->assertOk()->assertSee('mc-auth', false)->assertSee('O universo');
+    $this->get('/login')->assertOk()->assertSee('mc-auth', false)->assertSee('Mostre a sua.');
     $this->actingAs(User::factory()->create())->get('/garagem')->assertOk()->assertSee('mc-masthead', false)->assertSee('mc-collection', false);
 });

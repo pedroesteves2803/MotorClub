@@ -42,7 +42,7 @@ class GoogleAuthController extends Controller
         }
 
         if (app()->environment('local') && $request->getHost() !== parse_url(config('services.google.redirect'), PHP_URL_HOST)) {
-            return $this->redirectToLogin($admin)->withErrors(['google' => 'Esta é uma prévia na rede local. Para entrar com Google, abra o MotorClub no computador que hospeda o site.']);
+            return $this->redirectToLogin($admin)->withErrors(['google' => 'Esta é uma prévia na rede local. Para entrar com Google, abra o Autoverse no computador que hospeda o site.']);
         }
 
         return Socialite::driver('google')->with(['prompt' => 'select_account'])->redirect();
@@ -118,7 +118,7 @@ class GoogleAuthController extends Controller
             }
 
             $user = new User;
-            $user->name = Str::limit($identity->getName() ?: 'Membro MotorClub', 255, '');
+            $user->name = Str::limit($identity->getName() ?: 'Membro Autoverse', 255, '');
             $user->email = $email;
             $user->google_id = (string) $identity->getId();
             $user->email_verified_at = now();

@@ -6,7 +6,7 @@
     @if($errors->any())<div role="alert" class="mc-notice mt-4 p-4">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
     <div class="mt-8 grid gap-8 md:grid-cols-2">
         <section class="mc-surface rounded-2xl p-8">
-            <h2 class="text-2xl font-bold">Oficina MotorClub</h2>
+            <h2 class="text-2xl font-bold">Oficina Autoverse</h2>
             <p class="my-5"><strong class="text-4xl">R$ 99</strong> / mês fictício</p>
             <ul class="list-disc space-y-2 pl-5"><li>Perfil da oficina e portfólio</li><li>Pedidos de orçamento</li><li>Assinatura mensal simulada</li></ul>
             <p class="mt-5">1. Inicie o checkout. 2. Escolha aprovação ou recusa. 3. Teste as próximas cobranças e o cancelamento.</p>

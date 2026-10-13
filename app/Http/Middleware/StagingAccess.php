@@ -21,7 +21,7 @@ class StagingAccess
             return response('Ambiente de testes indisponível: configure o acesso restrito.', 503);
         }
         if (! hash_equals((string) config('production.staging_user'), (string) $request->getUser()) || ! hash_equals($password, (string) $request->getPassword())) {
-            return response('Autenticação necessária para acessar os testes.', 401, ['WWW-Authenticate' => 'Basic realm="MotorClub - Testes", charset="UTF-8"', 'Cache-Control' => 'no-store']);
+            return response('Autenticação necessária para acessar os testes.', 401, ['WWW-Authenticate' => 'Basic realm="Autoverse - Testes", charset="UTF-8"', 'Cache-Control' => 'no-store']);
         }
 
         return $next($request);

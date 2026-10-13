@@ -25,7 +25,7 @@ class ShotDeliveryMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Suas fotos MotorClub Shots',
+            subject: 'Suas fotos Autoverse Shots',
         );
     }
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\MockBillingController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\QuoteController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ShotsController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\WorkshopController;
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Volt;
 
 Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+Route::get('sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('garagem', Index::class)->middleware(['auth', 'verified', 'feature:garage'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

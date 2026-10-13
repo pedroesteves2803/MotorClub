@@ -1,4 +1,4 @@
-<x-layouts.app title="Como testar — MotorClub">
+<x-layouts.app title="Como testar — Autoverse">
     <p class="mc-muted text-sm uppercase tracking-widest">Homologação</p>
     <h1 class="mc-title mt-3 text-4xl">Seu roteiro de teste</h1>
     <p class="mt-5 max-w-3xl">Use duas contas Google que você controla: uma como entusiasta e outra como oficina. Não há cobrança nesta versão. Use dados fictícios e fotos que você tem autorização para publicar.</p>

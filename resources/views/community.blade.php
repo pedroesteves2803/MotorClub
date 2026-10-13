@@ -1,4 +1,4 @@
-<x-layouts.public title="Conheça a comunidade — Autoverse" :noindex="true">
+<x-layouts.public title="Explorar carros, projetos e fotógrafos | Autoverse" description="Conheça carros, projetos, fotógrafos e pessoas da comunidade Autoverse." :noindex="request()->routeIs('community')" :canonical="route('explore')">
     <header class="mc-intro"><p class="mc-edition mb-5">Pessoas diferentes. A mesma paixão.</p><h1>Uma garagem.<br><span>Muitas histórias.</span></h1><p class="mt-6 max-w-xl text-lg">Clássicos, esportivos e carros do dia a dia. Conheça as histórias e os projetos de quem compartilha a cultura automotiva na Autoverse.</p></header>
     <form method="GET" class="flex gap-3"><input class="mc-input" name="q" value="{{ request('q') }}" placeholder="Pessoa, marca ou modelo" aria-label="Buscar na comunidade"><button class="mc-link-button">Buscar</button></form>
     @if($people->isEmpty())<p>Nenhum perfil encontrado.</p>@endif

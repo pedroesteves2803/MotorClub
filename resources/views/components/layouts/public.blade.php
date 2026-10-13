@@ -1,7 +1,15 @@
-@props(['title' => 'Autoverse', 'noindex' => false])
+@props([
+    'title' => 'Autoverse',
+    'description' => config('seo.default_description'),
+    'canonical' => null,
+    'noindex' => false,
+    'ogType' => 'website',
+    'image' => null,
+    'jsonLd' => null,
+])
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>@include('partials.head', ['title' => $title])@if($noindex)<meta name="robots" content="noindex,nofollow">@endif</head>
+<head>@include('partials.head', ['title' => $title, 'description' => $description, 'canonical' => $canonical, 'robots' => $noindex ? 'noindex,nofollow' : 'index,follow', 'ogType' => $ogType, 'image' => $image, 'jsonLd' => $jsonLd])</head>
 <body class="mc-site antialiased @if(request()->routeIs('billing.*', 'shots.galleries.show')) mc-site--action-heavy @endif" data-autoverse-app data-mc-page="{{ request()->route()?->getName() ?? 'page' }}">
 <a href="#conteudo" class="sr-only focus:not-sr-only">Pular para o conteúdo</a>
 <div class="mc-scroll-progress" aria-hidden="true"></div>

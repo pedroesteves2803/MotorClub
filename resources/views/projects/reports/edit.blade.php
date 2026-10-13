@@ -1,6 +1,6 @@
-<x-layouts.public :title="'Relatório do projeto · MotorClub'">
+<x-layouts.public :title="'Relatório do projeto · Autoverse'">
     <section class="space-y-5">
-        <p class="mc-edition">MotorClub AI · relatório demonstrativo v{{ $report->version }}</p>
+        <p class="mc-edition">Autoverse AI · relatório demonstrativo v{{ $report->version }}</p>
         <h1 class="mc-title">Revise o relatório</h1>
         <p>Este texto foi montado por templates locais a partir do projeto. Revise, corrija e aprove antes de publicar.</p>
         @if($report->missing_information)

@@ -1,6 +1,23 @@
-<x-layouts.public :title="$gallery->title.' · MotorClub Shots'" :noindex="!$gallery->is_public">
+@php
+    $galleryDescription = \Illuminate\Support\Str::of($gallery->description ?: 'Galeria de fotografia automotiva no Autoverse Shots.')->squish()->limit(155);
+    $galleryBreadcrumb = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [['@type' => 'ListItem', 'position' => 1, 'name' => 'Shots', 'item' => route('shots.index')], ['@type' => 'ListItem', 'position' => 2, 'name' => $gallery->title, 'item' => route('shots.galleries.show', $gallery)]]];
+    $galleryStructuredData = [
+        '@context' => 'https://schema.org',
+        '@type' => 'ImageGallery',
+        'name' => $gallery->title,
+        'description' => (string) $galleryDescription,
+        'url' => route('shots.galleries.show', $gallery),
+        'inLanguage' => 'pt-BR',
+        'datePublished' => $gallery->shot_on?->toDateString(),
+        'author' => ['@type' => 'Person', 'name' => $gallery->user->photographerProfile->professional_name],
+    ];
+    if ($gallery->previewPhoto) {
+        $galleryStructuredData['image'] = route('shots.photos.preview', $gallery->previewPhoto);
+    }
+@endphp
+<x-layouts.public :title="$gallery->title.' — Fotos automotivas | Autoverse Shots'" :description="$galleryDescription" :noindex="!$gallery->is_public" ogType="article" :canonical="route('shots.galleries.show', $gallery)" :jsonLd="[$galleryStructuredData, $galleryBreadcrumb]" :image="$gallery->previewPhoto ? route('shots.photos.preview', $gallery->previewPhoto) : null">
     <section class="space-y-4">
-        <p class="mc-edition">MotorClub Shots · {{ $gallery->city }} / {{ $gallery->state }}</p>
+        <p class="mc-edition">Autoverse Shots · {{ $gallery->city }} / {{ $gallery->state }}</p>
         <h1 class="mc-title">{{ $gallery->title }}</h1>
         <p>{{ $gallery->description }}</p>
         <p>Por <a class="mc-text-link" href="{{ route('profiles.show', $gallery->user) }}">{{ $gallery->user->photographerProfile->professional_name }}</a> · {{ $gallery->shot_on->format('d/m/Y') }}</p>

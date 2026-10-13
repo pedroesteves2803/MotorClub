@@ -1,5 +1,25 @@
-@php($vehicleName = $vehicle->public_name ?: $vehicle->brand.' '.$vehicle->model)
-<x-layouts.public :title="$vehicleName.' — MotorClub'" :noindex="(bool) $vehicle->user->is_demo">
+@php
+    $vehicleName = $vehicle->public_name ?: $vehicle->brand.' '.$vehicle->model;
+    $vehicleFacts = collect([$vehicle->brand.' '.$vehicle->model, $vehicle->trim, $vehicle->model_year])->filter()->implode(' · ');
+    $vehicleDescription = collect(['Conheça '.$vehicleName, $vehicleFacts, 'e acompanhe suas fotos, modificações e evolução no Autoverse.'])->filter()->implode(' — ');
+    $vehicleBreadcrumb = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [['@type' => 'ListItem', 'position' => 1, 'name' => 'Explorar', 'item' => route('explore')], ['@type' => 'ListItem', 'position' => 2, 'name' => $vehicleName, 'item' => route('vehicles.show', $vehicle)]]];
+    $vehicleStructuredData = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Vehicle',
+        'name' => $vehicleName,
+        'url' => route('vehicles.show', $vehicle),
+        'brand' => ['@type' => 'Brand', 'name' => $vehicle->brand],
+        'model' => $vehicle->model,
+        'modelDate' => (string) $vehicle->model_year,
+    ];
+    if ($vehicle->color) {
+        $vehicleStructuredData['color'] = $vehicle->color;
+    }
+    if ($vehicle->photos->first()) {
+        $vehicleStructuredData['image'] = route('vehicle-photos.show', $vehicle->photos->first());
+    }
+@endphp
+<x-layouts.public :title="$vehicleName.' — '.$vehicleFacts.' | Autoverse'" :description="$vehicleDescription" :noindex="(bool) $vehicle->user->is_demo" :canonical="route('vehicles.show', $vehicle)" :jsonLd="[$vehicleStructuredData, $vehicleBreadcrumb]" :image="$vehicle->photos->first() ? route('vehicle-photos.show', $vehicle->photos->first()) : null">
     <a href="{{ route('community') }}" class="mc-text-link">← Conhecer a comunidade</a>
     <header class="mc-intro"><p class="mc-edition mb-5">{{ $vehicle->brand }} / {{ $vehicle->model_year }}</p><h1>{{ $vehicleName }}<br><span>{{ $vehicle->trim }}</span></h1><p class="mt-6 text-xl">{{ $vehicle->brand }} {{ $vehicle->model }} · {{ $vehicle->engine }} · {{ $vehicle->model_year }}</p>@if($vehicle->color || $vehicle->mileage || $vehicle->location)<p class="mc-muted">{{ $vehicle->color }}{{ $vehicle->mileage ? ' · '.number_format($vehicle->mileage, 0, ',', '.').' km'.($vehicle->mileage_approximate ? ' (aprox.)' : '') : '' }}{{ $vehicle->location ? ' · '.$vehicle->location : '' }}</p>@endif @if($vehicle->instagram_url)<a class="mc-text-link" href="{{ $vehicle->instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram do carro ↗</a>@endif</header>
     @if($vehicle->user->profile_public)<p>Na garagem de <a class="mc-text-link" href="{{ route('profiles.show',$vehicle->user) }}">{{ $vehicle->user->name }}</a></p>@endif

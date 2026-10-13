@@ -11,8 +11,9 @@ it('requires email verification before entering the dashboard', function () {
 it('apresenta a proposta da V1', function () {
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('Seu carro merece mais que')
-        ->assertSee('uma publicação.')
-        ->assertSee('Seu universo')
+        ->assertSee('Todo carro tem uma história.')
+        ->assertSee('Mostre a sua.')
+        ->assertSee('Criar minha garagem')
+        ->assertSee('Explorar projetos')
         ->assertSee('Explorar a comunidade');
 });

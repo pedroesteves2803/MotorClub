@@ -3,7 +3,7 @@
     $modificationStatuses = ['planned' => 'Planejada', 'in_progress' => 'Em andamento', 'completed' => 'Concluída'];
     $partStatuses = ['planned' => 'Planejada', 'in_progress' => 'Em andamento', 'installed' => 'Instalada'];
 @endphp
-<x-layouts.public :title="$project->exists ? 'Editar projeto · MotorClub' : 'Novo projeto · MotorClub'">
+<x-layouts.public :title="$project->exists ? 'Editar projeto · Autoverse' : 'Novo projeto · Autoverse'">
     <div class="mx-auto max-w-6xl space-y-10">
         <header>
             <p class="mc-edition">Autoverse · organização do build</p>

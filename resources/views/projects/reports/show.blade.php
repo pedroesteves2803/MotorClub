@@ -1,6 +1,6 @@
-<x-layouts.public :title="'Relatório: '.$project->title.' · MotorClub'" :noindex="!$report->publiclyVisible()">
+<x-layouts.public :title="'Relatório: '.$project->title.' · Autoverse'" :noindex="!$report->publiclyVisible()">
     <section class="space-y-5">
-        <p class="mc-edition">MotorClub AI · relatório demonstrativo v{{ $report->version }}</p>
+        <p class="mc-edition">Autoverse AI · relatório demonstrativo v{{ $report->version }}</p>
         <h1 class="mc-title">{{ $project->title }}</h1>
         <p>Relatório revisado pelo proprietário. Dados registrados e orientações estão identificados em cada seção.</p>
         @foreach($report->sections as $section)

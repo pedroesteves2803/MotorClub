@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CarEvent;
-use App\Models\PhotographerProfile;
 use App\Models\FeatureSetting;
+use App\Models\PhotographerProfile;
 use App\Models\ShotGallery;
 use App\Models\ShotPhoto;
 use App\Models\ShotPurchaseRequest;
@@ -177,7 +177,7 @@ class ShotsController extends Controller
         $data = $request->validate(['vehicle_id' => ['nullable', Rule::exists('vehicles', 'id')->where('user_id', $request->user()->id)], 'message' => 'nullable|string|max:1000']);
         ShotPurchaseRequest::firstOrCreate(['shot_photo_id' => $photo->id, 'buyer_id' => $request->user()->id], $data + ['status' => 'pending']);
 
-        return back()->with('status', 'Interesse registrado. O fotógrafo poderá responder pelo MotorClub.');
+        return back()->with('status', 'Interesse registrado. O fotógrafo poderá responder pelo Autoverse.');
     }
 
     public function report(Request $request, ShotPhoto $photo)

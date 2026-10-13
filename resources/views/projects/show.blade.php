@@ -1,4 +1,23 @@
-<x-layouts.public :title="$project->title.' · Autoverse Magazine'" :noindex="!$project->publiclyVisible()">
+@php
+    $projectVehicle = $project->vehicle;
+    $projectFacts = collect([
+        trim($projectVehicle->brand.' '.$projectVehicle->model),
+        $projectVehicle->model_year,
+        $projectVehicle->trim,
+    ])->filter()->implode(' · ');
+    $projectDescription = \Illuminate\Support\Str::of($project->description ?: 'Projeto automotivo documentado no Autoverse.')->squish()->limit(150);
+    $projectBreadcrumb = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [['@type' => 'ListItem', 'position' => 1, 'name' => 'Projetos', 'item' => route('projects.index')], ['@type' => 'ListItem', 'position' => 2, 'name' => $project->title, 'item' => route('projects.show', $project)]]];
+    $projectStructuredData = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $project->title,
+        'description' => (string) $projectDescription,
+        'url' => route('projects.show', $project),
+        'inLanguage' => 'pt-BR',
+        'about' => $projectFacts,
+    ];
+@endphp
+<x-layouts.public :title="$project->title.' · '.$projectFacts.' | Autoverse'" :description="(string) $projectDescription" :noindex="!$project->publiclyVisible()" ogType="article" :canonical="route('projects.show', $project)" :jsonLd="[$projectStructuredData, $projectBreadcrumb]" :image="$project->previewPhoto ? route('projects.image', $project->previewPhoto) : ($projectVehicle->previewPhoto ? route('vehicle-photos.show', $projectVehicle->previewPhoto) : null)">
     <div class="av-magazine" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="magazine">
         <header class="av-magazine__intro">
             <div>

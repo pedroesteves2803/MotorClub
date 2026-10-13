@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /central-mc-gestao
+Disallow: /configuracoes
+Disallow: /meu-perfil
+Disallow: /garagem
+Disallow: /projetos/novo
+Disallow: /projetos/*/editar
+Disallow: /projetos/*/relatorios/*/editar
+Disallow: /shots/solicitacoes
+Disallow: /meus-shots
+Disallow: /orcamentos
+Disallow: /assinatura
+Disallow: /stripe
+Disallow: /como-testar
+Disallow: /shots/fotos/*/download
+
+Sitemap: /sitemap.xml
