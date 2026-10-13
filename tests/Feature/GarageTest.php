@@ -3,7 +3,41 @@
 use App\Livewire\Garage\Index;
 use App\Models\User;
 use App\Models\Vehicle;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+
+it('cria carro projeto principal e várias fotos em um único fluxo', function () {
+    Storage::fake('local');
+    $user = User::factory()->create();
+    Livewire::actingAs($user)->test(Index::class)
+        ->call('create')
+        ->set('brand', 'Volkswagen')
+        ->set('model', 'Golf')
+        ->set('trim', 'Highline')
+        ->set('model_year', '2017')
+        ->set('engine', '1.4 TSI')
+        ->set('project_title', 'Golf de rua')
+        ->set('project_description', 'Registro completo do carro e dos próximos passos.')
+        ->set('project_category', 'maintenance')
+        ->set('project_status', 'ongoing')
+        ->set('photos', [UploadedFile::fake()->image('frente.jpg'), UploadedFile::fake()->image('interior.jpg')])
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSee('Veículo salvo com o projeto principal e 2 foto(s).');
+
+    $vehicle = Vehicle::with('projects')->sole();
+    expect($vehicle->projects)->toHaveCount(1)
+        ->and($vehicle->projects->sole()->title)->toBe('Golf de rua')
+        ->and($vehicle->photos()->count())->toBe(2);
+    foreach ($vehicle->photos as $photo) {
+        Storage::disk('local')->assertExists($photo->path);
+    }
+});
+
+it('abre o cadastro combinado quando acessado pelo atalho de projetos', function () {
+    $this->actingAs(User::factory()->create())->get('/garagem?novo=1')->assertOk()->assertSee('Novo carro e projeto');
+});
 
 it('creates a private vehicle owned by the authenticated user', function () {
     $user = User::factory()->create();

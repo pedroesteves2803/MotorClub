@@ -49,6 +49,11 @@ class Vehicle extends Model
         return $this->hasMany(VehiclePhoto::class);
     }
 
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
     public function previewPhoto(): HasOne
     {
         return $this->hasOne(VehiclePhoto::class)->latestOfMany();

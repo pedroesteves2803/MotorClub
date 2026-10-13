@@ -42,6 +42,8 @@ class Details extends Component
 
     public $photo;
 
+    public array $photos = [];
+
     private function ensureFeatureEnabled(): void
     {
         abort_unless(FeatureSetting::enabled('garage'), 404);
@@ -124,21 +126,37 @@ class Details extends Component
     {
         $this->ensureFeatureEnabled();
         $vehicle = $this->vehicle();
-        if ($vehicle->photos()->count() >= 12) {
-            $this->addError('photo', 'O limite é de 12 fotos por veículo.');
+        $uploads = $this->photos ?: ($this->photo ? [$this->photo] : []);
+        if ($vehicle->photos()->count() + count($uploads) > 12) {
+            $this->addError($this->photos ? 'photos' : 'photo', 'O limite é de 12 fotos por veículo.');
 
             return;
         }
-        $this->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photo.required' => 'Escolha uma foto.', 'photo.image' => 'Envie uma imagem válida.', 'photo.mimes' => 'Use JPEG, PNG ou WebP.', 'photo.max' => 'A foto deve ter até 5 MB.', 'photo.dimensions' => 'A foto deve ter no máximo 4096 × 4096 pixels.']);
-        $path = $images->store($this->photo);
+        if (! $uploads) {
+            $this->addError('photos', 'Escolha pelo menos uma foto.');
+
+            return;
+        }
+        if ($this->photos) {
+            $this->validate(['photos' => ['array', 'max:12'], 'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.']);
+        } else {
+            $this->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photo.required' => 'Escolha uma foto.', 'photo.image' => 'Envie uma imagem válida.', 'photo.mimes' => 'Use JPEG, PNG ou WebP.', 'photo.max' => 'A foto deve ter até 5 MB.', 'photo.dimensions' => 'A foto deve ter no máximo 4096 × 4096 pixels.']);
+        }
+        $storedPaths = [];
         try {
-            $vehicle->photos()->create(['path' => $path]);
+            foreach ($uploads as $upload) {
+                $path = $images->store($upload);
+                $storedPaths[] = $path;
+                $vehicle->photos()->create(['path' => $path]);
+            }
         } catch (\Throwable $e) {
-            Storage::disk(config('filesystems.private_disk'))->delete($path);
+            foreach ($storedPaths as $path) {
+                Storage::disk(config('filesystems.private_disk'))->delete($path);
+            }
             throw $e;
         }
-        $this->reset('photo');
-        session()->flash('status', 'Foto adicionada.');
+        $this->reset('photo', 'photos');
+        session()->flash('status', count($uploads) === 1 ? 'Foto adicionada.' : count($uploads).' fotos adicionadas.');
     }
 
     public function deletePhoto(int $id): void

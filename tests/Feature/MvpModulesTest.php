@@ -95,6 +95,15 @@ it('salva fotos com controle de acesso e remove arquivos ao excluir a conta', fu
     Storage::disk('local')->assertMissing($photo->path);
     expect(ProjectPhoto::count())->toBe(0);
 });
+it('aceita várias fotos do projeto em um único envio', function () {
+    Storage::fake('local');
+    $project = mvpProject();
+    $this->actingAs($project->vehicle->user)->post(route('projects.photo', $project), ['photos' => [UploadedFile::fake()->image('frente.jpg'), UploadedFile::fake()->image('traseira.jpg')]])->assertSessionHasNoErrors();
+    expect($project->photos()->count())->toBe(2);
+    foreach ($project->photos as $photo) {
+        Storage::disk('local')->assertExists($photo->path);
+    }
+});
 it('rejeita fotos inválidas e limita a galeria', function () {
     $project = mvpProject();
     $this->actingAs($project->vehicle->user);

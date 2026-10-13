@@ -13,6 +13,7 @@ use App\Services\VehicleImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
@@ -138,17 +139,34 @@ class ProjectController extends Controller
     public function photo(Request $request, Project $project, VehicleImages $images)
     {
         Gate::authorize('update', $project);
-        abort_if($project->photos()->count() >= 12, 422, 'Limite de 12 fotos.');
-        $request->validate(['photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120|dimensions:max_width=4096,max_height=4096']);
-        $path = $images->store($request->file('photo'));
+        $files = $request->file('photos', []);
+        if (! is_array($files)) {
+            $files = [$files];
+        }
+        if ($files === [] && $request->hasFile('photo')) {
+            $files = [$request->file('photo')];
+        }
+        abort_if($project->photos()->count() + count($files) > 12, 422, 'Limite de 12 fotos.');
+        if ($request->hasFile('photo') && ! $request->hasFile('photos')) {
+            $request->validate(['photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120|dimensions:max_width=4096,max_height=4096']);
+        } else {
+            Validator::make(['photos' => $files], ['photos' => ['required', 'array', 'max:12'], 'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photos.required' => 'Escolha pelo menos uma foto.', 'photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.'])->validate();
+        }
+        $storedPaths = [];
         try {
-            $project->photos()->create(['path' => $path]);
+            foreach ($files as $file) {
+                $path = $images->store($file);
+                $storedPaths[] = $path;
+                $project->photos()->create(['path' => $path]);
+            }
         } catch (\Throwable $e) {
-            Storage::disk(config('filesystems.private_disk'))->delete($path);
+            foreach ($storedPaths as $path) {
+                Storage::disk(config('filesystems.private_disk'))->delete($path);
+            }
             throw $e;
         }
 
-        return back()->with('status', 'Foto adicionada.');
+        return back()->with('status', count($files) === 1 ? 'Foto adicionada.' : count($files).' fotos adicionadas.');
     }
 
     public function deletePhoto(ProjectPhoto $photo)
