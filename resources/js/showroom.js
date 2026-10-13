@@ -324,13 +324,14 @@ export const initShowroomScene = (root) => {
         themeState.dark = isDarkTheme();
         themeState.targetLight = themeState.dark ? 0.12 : 2.65;
         themeState.targetOpacity = themeState.dark ? 0.28 : 1;
-        const background = themeState.dark ? 0x050912 : 0x172641;
+        const background = themeState.dark ? 0x050912 : 0xe5edf7;
         scene.background = new THREE.Color(background);
         scene.fog = new THREE.Fog(background, 8, 16);
+        hemiLight.groundColor.set(themeState.dark ? 0x0b1220 : 0xd8e5f3);
         hemiLight.intensity = themeState.dark ? 0.46 : 1.12;
         keyLight.intensity = themeState.dark ? 1.35 : 2.45;
         rimLight.intensity = themeState.dark ? 1.15 : 1.8;
-        floor.material.color.set(themeState.dark ? 0x080d16 : 0x18273f);
+        floor.material.color.set(themeState.dark ? 0x080d16 : 0xc5d4e6);
         needsRender = true;
     };
     syncTheme();
