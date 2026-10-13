@@ -424,8 +424,9 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 
 /* Autoverse Magazine: a light editorial layer over the existing project data. */
 .av-magazine { --av-paper: color-mix(in srgb, var(--mc-paper) 92%, var(--mc-action) 8%); --av-paper-ink: var(--mc-ink); --av-paper-muted: var(--mc-muted); --av-paper-line: var(--mc-line); --av-blue: var(--mc-action); display: grid; gap: clamp(2rem, 4vw, 4rem); }
-.av-magazine__intro { align-items: end; border-bottom: 1px solid var(--mc-line); display: flex; gap: 2rem; justify-content: space-between; padding-bottom: 2.5rem; }
-.av-magazine__intro h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 7vw, 6rem); font-weight: 520; letter-spacing: -.08em; line-height: .9; margin-top: .7rem; max-width: 12ch; }
+.av-magazine__intro { align-items: end; border-bottom: 1px solid var(--mc-line); display: flex; gap: 2rem; justify-content: space-between; min-width: 0; padding-bottom: 2.5rem; }
+.av-magazine__intro > * { max-width: 100%; min-width: 0; }
+.av-magazine__intro h1 { font-family: var(--font-display); font-size: clamp(2.5rem, 7vw, 6rem); font-weight: 520; letter-spacing: -.08em; line-height: .9; margin-top: .7rem; max-width: 12ch; overflow-wrap: anywhere; }
 .av-magazine__intro > div:first-child > p:last-child { color: var(--mc-muted); font-size: 1.1rem; margin-top: 1.1rem; }
 .av-magazine__actions { align-items: center; display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; }
 .av-magazine__actions form { display: inline-flex; }
