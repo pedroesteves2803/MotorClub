@@ -23,6 +23,19 @@ it('validates dates category costs and empty descriptions', function () {
     Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])->set('category', 'bad')->set('occurred_on', now()->addDay()->toDateString())->set('cost', '-10')->call('saveEntry')->assertHasErrors(['title', 'description', 'category', 'occurred_on', 'cost']);
     expect($v->entries()->count())->toBe(0);
 });
+
+it('allows a private history entry without inventing an unknown date', function () {
+    $v = Vehicle::factory()->create();
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('title', 'Serviço anterior informado pelo proprietário')
+        ->set('description', 'A data original não foi informada; manter como histórico privado para atualização posterior.')
+        ->set('occurred_on', '')
+        ->call('saveEntry')
+        ->assertHasNoErrors();
+
+    expect($v->entries()->sole()->occurred_on)->toBeNull();
+});
 it('blocks other accounts from managing history and photos', function () {
     $v = Vehicle::factory()->create(['visibility' => 'public']);
     Livewire::actingAs(User::factory()->create())->test(Details::class, ['vehicle' => $v])->assertForbidden();

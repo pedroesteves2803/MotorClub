@@ -15,7 +15,7 @@
         <p>O histórico e os valores ficam visíveis somente para você nesta etapa.</p>
         <form wire:submit="saveEntry" class="grid gap-4 sm:grid-cols-2">
             <flux:select wire:model="category" label="Tipo"><flux:select.option value="maintenance">Manutenção</flux:select.option><flux:select.option value="modification">Modificação</flux:select.option></flux:select>
-            <flux:input wire:model="occurred_on" type="date" label="Data" max="{{ now()->toDateString() }}" required />
+            <flux:input wire:model="occurred_on" type="date" label="Data (opcional)" max="{{ now()->toDateString() }}" />
             <flux:input wire:model="title" label="Título" maxlength="150" required />
             <flux:input wire:model="cost" label="Valor em R$ (opcional)" type="number" min="0" max="9999999999.99" step="0.01" />
             <flux:textarea wire:model="description" label="Descrição" maxlength="5000" required />
@@ -25,7 +25,7 @@
         </form>
     </section>
     <section id="historico" class="space-y-5"><h2 class="text-2xl font-semibold">Histórico</h2>
-        @forelse($entries as $entry)<article wire:key="entry-{{ $entry->id }}" class="space-y-3 rounded-2xl mc-surface p-6 shadow-sm  md:p-8"><p>{{ $entry->occurred_on->format('d/m/Y') }} · {{ $entry->category === 'maintenance' ? 'Manutenção' : 'Modificação' }}</p><h3 class="text-xl font-semibold">{{ $entry->title }}</h3><p class="whitespace-pre-line">{{ $entry->description }}</p>@if($entry->parts)<p class="whitespace-pre-line">Peças: {{ $entry->parts }}</p>@endif @if($entry->services)<p class="whitespace-pre-line">Serviços: {{ $entry->services }}</p>@endif @if($entry->cost !== null)<p>Valor: R$ {{ number_format((float) $entry->cost, 2, ',', '.') }}</p>@endif<flux:button wire:click="editEntry({{ $entry->id }})">Editar registro</flux:button><flux:button wire:click="deleteEntry({{ $entry->id }})" wire:confirm="Excluir este registro permanentemente?">Excluir registro</flux:button></article>@empty<p>Nenhuma manutenção ou modificação registrada.</p>@endforelse
+        @forelse($entries as $entry)<article wire:key="entry-{{ $entry->id }}" class="space-y-3 rounded-2xl mc-surface p-6 shadow-sm  md:p-8"><p>{{ $entry->occurred_on?->format('d/m/Y') ?? 'Data não informada' }} · {{ $entry->category === 'maintenance' ? 'Manutenção' : 'Modificação' }}</p><h3 class="text-xl font-semibold">{{ $entry->title }}</h3><p class="whitespace-pre-line">{{ $entry->description }}</p>@if($entry->parts)<p class="whitespace-pre-line">Peças: {{ $entry->parts }}</p>@endif @if($entry->services)<p class="whitespace-pre-line">Serviços: {{ $entry->services }}</p>@endif @if($entry->cost !== null)<p>Valor: R$ {{ number_format((float) $entry->cost, 2, ',', '.') }}</p>@endif<flux:button wire:click="editEntry({{ $entry->id }})">Editar registro</flux:button><flux:button wire:click="deleteEntry({{ $entry->id }})" wire:confirm="Excluir este registro permanentemente?">Excluir registro</flux:button></article>@empty<p>Nenhuma manutenção ou modificação registrada.</p>@endforelse
         {{ $entries->links() }}
     </section>
 </div>
