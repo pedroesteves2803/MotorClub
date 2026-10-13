@@ -187,10 +187,10 @@ class Index extends Component
         $vehicle->save();
         $storedPaths = [];
         try {
-            foreach ($this->photos as $photo) {
+            foreach ($this->photos as $index => $photo) {
                 $path = $images->store($photo);
                 $storedPaths[] = $path;
-                $vehicle->photos()->create(['path' => $path]);
+                $vehicle->photos()->create(['path' => $path, 'kind' => $vehicle->photos()->exists() ? 'galeria' : 'capa', 'sort_order' => $vehicle->photos()->count(), 'is_primary' => ! $vehicle->photos()->where('is_primary', true)->exists() && $index === 0]);
             }
             if ($this->project_enabled) {
                 $project = $this->projectId ? $vehicle->projects()->find($this->projectId) : null;

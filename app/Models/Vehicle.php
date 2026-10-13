@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 
 class Vehicle extends Model
@@ -36,6 +37,7 @@ class Vehicle extends Model
                     throw new \RuntimeException('Não foi possível remover as fotos do veículo. Tente novamente.');
                 }
             }
+            $vehicle->mediaPhotos()->get()->each->delete();
         });
     }
 
@@ -46,7 +48,7 @@ class Vehicle extends Model
 
     public function photos(): HasMany
     {
-        return $this->hasMany(VehiclePhoto::class);
+        return $this->hasMany(VehiclePhoto::class)->orderByDesc('is_primary')->orderBy('sort_order')->orderBy('id');
     }
 
     public function projects(): HasMany
@@ -54,9 +56,19 @@ class Vehicle extends Model
         return $this->hasMany(Project::class);
     }
 
+    public function project(): HasOne
+    {
+        return $this->hasOne(Project::class)->latestOfMany();
+    }
+
     public function previewPhoto(): HasOne
     {
         return $this->hasOne(VehiclePhoto::class)->latestOfMany();
+    }
+
+    public function mediaPhotos(): MorphMany
+    {
+        return $this->morphMany(MediaPhoto::class, 'imageable')->orderBy('sort_order')->orderBy('id');
     }
 
     public function user(): BelongsTo

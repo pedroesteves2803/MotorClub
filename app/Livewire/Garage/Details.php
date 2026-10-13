@@ -44,6 +44,8 @@ class Details extends Component
 
     public array $photos = [];
 
+    public string $photo_kind = 'galeria';
+
     private function ensureFeatureEnabled(): void
     {
         abort_unless(FeatureSetting::enabled('garage'), 404);
@@ -138,16 +140,16 @@ class Details extends Component
             return;
         }
         if ($this->photos) {
-            $this->validate(['photos' => ['array', 'max:12'], 'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.']);
+            $this->validate(['photos' => ['array', 'max:12'], 'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'], 'photo_kind' => ['required', Rule::in(['capa', 'galeria', 'interno', 'externo', 'evento', 'detalhe'])]], ['photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.']);
         } else {
-            $this->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photo.required' => 'Escolha uma foto.', 'photo.image' => 'Envie uma imagem válida.', 'photo.mimes' => 'Use JPEG, PNG ou WebP.', 'photo.max' => 'A foto deve ter até 5 MB.', 'photo.dimensions' => 'A foto deve ter no máximo 4096 × 4096 pixels.']);
+            $this->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'], 'photo_kind' => ['required', Rule::in(['capa', 'galeria', 'interno', 'externo', 'evento', 'detalhe'])]], ['photo.required' => 'Escolha uma foto.', 'photo.image' => 'Envie uma imagem válida.', 'photo.mimes' => 'Use JPEG, PNG ou WebP.', 'photo.max' => 'A foto deve ter até 5 MB.', 'photo.dimensions' => 'A foto deve ter no máximo 4096 × 4096 pixels.']);
         }
         $storedPaths = [];
         try {
             foreach ($uploads as $upload) {
                 $path = $images->store($upload);
                 $storedPaths[] = $path;
-                $vehicle->photos()->create(['path' => $path]);
+                $vehicle->photos()->create(['path' => $path, 'kind' => $this->photo_kind, 'sort_order' => $vehicle->photos()->count() + count($storedPaths) - 1, 'is_primary' => ! $vehicle->photos()->where('is_primary', true)->exists() && count($storedPaths) === 1]);
             }
         } catch (\Throwable $e) {
             foreach ($storedPaths as $path) {
@@ -155,7 +157,8 @@ class Details extends Component
             }
             throw $e;
         }
-        $this->reset('photo', 'photos');
+        $this->reset('photo', 'photos', 'photo_kind');
+        $this->photo_kind = 'galeria';
         session()->flash('status', count($uploads) === 1 ? 'Foto adicionada.' : count($uploads).' fotos adicionadas.');
     }
 
@@ -170,6 +173,14 @@ class Details extends Component
             return;
         }
         $photo->delete();
+    }
+
+    public function setPrimaryPhoto(int $id): void
+    {
+        $this->ensureFeatureEnabled();
+        $photo = $this->vehicle()->photos()->findOrFail($id);
+        $this->vehicle()->photos()->update(['is_primary' => false]);
+        $photo->update(['is_primary' => true]);
     }
 
     public function render()

@@ -82,6 +82,17 @@ Route::middleware(['auth', 'verified', 'feature:garage'])->group(function () {
     Route::delete('projetos/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::post('projetos/{project}/fotos', [ProjectController::class, 'photo'])->middleware('throttle:20,1')->name('projects.photo');
     Route::delete('fotos-projetos/{photo}', [ProjectController::class, 'deletePhoto'])->name('projects.photo.delete');
+    Route::put('fotos-projetos/{photo}', [ProjectController::class, 'updatePhoto'])->name('projects.photo.update');
+    Route::post('projetos/{project}/modificacoes', [ProjectController::class, 'storeModification'])->name('projects.modifications.store');
+    Route::put('projetos/{project}/modificacoes/{modification}', [ProjectController::class, 'updateModification'])->name('projects.modifications.update');
+    Route::delete('projetos/{project}/modificacoes/{modification}', [ProjectController::class, 'deleteModification'])->name('projects.modifications.destroy');
+    Route::post('projetos/{project}/modificacoes/{modification}/pecas', [ProjectController::class, 'storePart'])->name('projects.parts.store');
+    Route::put('projetos/{project}/modificacoes/{modification}/pecas/{part}', [ProjectController::class, 'updatePart'])->name('projects.parts.update');
+    Route::delete('projetos/{project}/modificacoes/{modification}/pecas/{part}', [ProjectController::class, 'deletePart'])->name('projects.parts.destroy');
+    Route::post('projetos/{project}/modificacoes/{modification}/fotos', [ProjectController::class, 'modificationPhoto'])->middleware('throttle:20,1')->name('projects.modifications.photos.store');
+    Route::post('projetos/{project}/modificacoes/{modification}/pecas/{part}/fotos', [ProjectController::class, 'partPhoto'])->middleware('throttle:20,1')->name('projects.parts.photos.store');
+    Route::put('midias-projetos/{photo}', [ProjectController::class, 'updateMedia'])->name('projects.media.update');
+    Route::delete('midias-projetos/{photo}', [ProjectController::class, 'deleteMedia'])->name('projects.media.destroy');
 });
 Route::middleware(['auth', 'verified', 'feature:ai_reports'])->group(function () {
     Route::post('projetos/{project}/relatorios', [ProjectController::class, 'generateReport'])->name('projects.reports.generate');
@@ -123,8 +134,11 @@ Route::middleware(['auth', 'verified', 'feature:shots'])->group(function () {
 });
 
 Route::get('projetos/{project}', [ProjectController::class, 'show'])->middleware('feature:garage')->name('projects.show');
+Route::get('projetos/{project}/modificacoes/{modification}', [ProjectController::class, 'showModification'])->middleware('feature:garage')->name('projects.modifications.show');
+Route::get('projetos/{project}/modificacoes/{modification}/pecas/{part}', [ProjectController::class, 'showPart'])->middleware('feature:garage')->name('projects.parts.show');
 Route::get('projetos/{project}/relatorios/{report}', [ProjectController::class, 'showReport'])->middleware('feature:ai_reports')->name('projects.reports.show');
 Route::get('fotos-projetos/{photo}', [ProjectController::class, 'image'])->middleware('feature:garage')->name('projects.image');
+Route::get('midias-projetos/{photo}', [ProjectController::class, 'mediaImage'])->middleware('feature:garage')->name('projects.media.image');
 Route::get('oficinas/{workshop}', [WorkshopController::class, 'show'])->middleware('feature:workshops')->name('workshops.show');
 Route::get('eventos/{event}', [EventController::class, 'show'])->middleware('feature:events')->name('events.show');
 Route::get('pessoas/{person}', [PublicProfileController::class, 'show'])->middleware('feature:explore')->name('profiles.show');

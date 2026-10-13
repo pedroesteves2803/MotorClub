@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
 
 class Project extends Model
@@ -27,7 +29,17 @@ class Project extends Model
 
     public function photos()
     {
-        return $this->hasMany(ProjectPhoto::class);
+        return $this->hasMany(ProjectPhoto::class)->orderByDesc('is_primary')->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function mediaPhotos(): MorphMany
+    {
+        return $this->morphMany(MediaPhoto::class, 'imageable')->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function modifications(): HasMany
+    {
+        return $this->hasMany(ProjectModification::class)->orderBy('sort_order')->orderBy('id');
     }
 
     public function previewPhoto(): HasOne
@@ -58,6 +70,8 @@ class Project extends Model
                     throw new \RuntimeException('Não foi possível excluir as fotos.');
                 }
             }
+            $project->mediaPhotos()->get()->each->delete();
+            $project->modifications()->get()->each->delete();
         });
     }
 }

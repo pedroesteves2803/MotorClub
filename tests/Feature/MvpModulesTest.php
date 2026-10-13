@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\CarEvent;
+use App\Models\MediaPhoto;
 use App\Models\Project;
+use App\Models\ProjectModification;
+use App\Models\ProjectPart;
 use App\Models\ProjectPhoto;
 use App\Models\QuoteRequest;
 use App\Models\User;
@@ -128,6 +131,54 @@ it('rejeita fotos inválidas e limita a galeria', function () {
         $project->photos()->create(['path' => 'teste'.$i.'.webp']);
     }
     $this->post(route('projects.photo', $project), ['photo' => UploadedFile::fake()->image('foto.jpg')])->assertStatus(422);
+});
+it('separa modificações, peças e fotos por nível com controle de acesso', function () {
+    Storage::fake('local');
+    $project = mvpProject();
+    $owner = $project->vehicle->user;
+    $this->actingAs($owner);
+
+    $this->post(route('projects.modifications.store', $project), [
+        'title' => 'Rodas forjadas',
+        'category' => 'rodas',
+        'status' => 'in_progress',
+        'description' => 'Conjunto em instalação.',
+        'is_public' => 1,
+    ])->assertSessionHasNoErrors();
+    $modification = ProjectModification::sole();
+
+    $this->post(route('projects.parts.store', [$project, $modification]), [
+        'name' => 'Roda dianteira',
+        'brand' => 'Autoverse Parts',
+        'model' => '18x8',
+        'status' => 'installed',
+        'description' => 'Foto e especificação da peça instalada.',
+        'is_public' => 1,
+    ])->assertSessionHasNoErrors();
+    $part = ProjectPart::sole();
+
+    $this->post(route('projects.modifications.photos.store', [$project, $modification]), [
+        'photos' => [UploadedFile::fake()->image('rodas.jpg')],
+        'kind' => 'depois',
+        'caption' => 'Resultado instalado',
+        'is_public' => 1,
+    ])->assertSessionHasNoErrors();
+    $modificationPhoto = MediaPhoto::sole();
+    Storage::disk('local')->assertExists($modificationPhoto->path);
+    $this->get(route('projects.media.image', $modificationPhoto))->assertOk();
+
+    $this->post(route('projects.parts.photos.store', [$project, $modification, $part]), [
+        'photos' => [UploadedFile::fake()->image('roda-detalhe.jpg')],
+        'kind' => 'detalhe',
+        'caption' => 'Detalhe da roda',
+        'is_public' => 1,
+    ])->assertSessionHasNoErrors();
+    expect(MediaPhoto::count())->toBe(2);
+    $this->get(route('projects.show', $project))->assertSee('Rodas forjadas')->assertSee('Roda dianteira');
+    $this->get(route('projects.modifications.show', [$project, $modification]))->assertOk()->assertSee('Rodas forjadas');
+    $this->get(route('projects.parts.show', [$project, $modification, $part]))->assertOk()->assertSee('Roda dianteira');
+
+    $this->actingAs(User::factory()->create())->delete(route('projects.modifications.destroy', [$project, $modification]))->assertForbidden();
 });
 it('mantém oficinas privadas fora dos catálogos e permite cadastro edição e exclusão', function () {
     $user = User::factory()->create();

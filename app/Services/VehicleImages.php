@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class VehicleImages
 {
-    public function store(UploadedFile $file): string
+    public function store(UploadedFile $file, string $directory = 'vehicles'): string
     {
         $image = @imagecreatefromstring(file_get_contents($file->getRealPath()));
         if (! $image) {
@@ -20,7 +20,7 @@ class VehicleImages
         imagewebp($image, null, 85);
         $bytes = ob_get_clean();
         imagedestroy($image);
-        $path = 'vehicles/'.Str::uuid().'.webp';
+        $path = trim($directory, '/').'/'.Str::uuid().'.webp';
         if (! Storage::disk(config('filesystems.private_disk'))->put($path, $bytes)) {
             throw ValidationException::withMessages(['photo' => 'Não foi possível salvar a foto. Tente novamente.']);
         }

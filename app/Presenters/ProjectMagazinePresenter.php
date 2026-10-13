@@ -2,7 +2,9 @@
 
 namespace App\Presenters;
 
+use App\Models\MediaPhoto;
 use App\Models\Project;
+use App\Models\ProjectPart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,13 +22,17 @@ class ProjectMagazinePresenter
         $disk = Storage::disk(config('filesystems.private_disk'));
         $projectPhotos = $project->photos->filter(fn ($photo) => $disk->exists($photo->path))->map(fn ($photo) => [
             'url' => route('projects.image', $photo),
-            'alt' => 'Foto do projeto '.$project->title,
+            'alt' => $photo->caption ?: 'Foto do projeto '.$project->title,
             'source' => 'projeto',
+            'kind' => $photo->kind ?? 'editorial',
         ]);
+        $projectMediaPhotos = $project->mediaPhotos->filter(fn ($photo) => $disk->exists($photo->path) && ($ownerCanEdit || $photo->is_public))->map(fn ($photo) => $this->mediaPhoto($photo, 'projeto'));
+        $projectPhotos = $projectPhotos->concat($projectMediaPhotos);
         $vehiclePhotos = $vehicle->photos->filter(fn ($photo) => $disk->exists($photo->path))->map(fn ($photo) => [
             'url' => route('vehicle-photos.show', $photo),
-            'alt' => 'Foto de '.$this->vehicleName($vehicle),
+            'alt' => $photo->caption ?: 'Foto de '.$this->vehicleName($vehicle),
             'source' => 'carro',
+            'kind' => $photo->kind ?? 'galeria',
         ]);
         $photos = $projectPhotos->isNotEmpty() ? $projectPhotos : $vehiclePhotos;
 
@@ -74,6 +80,32 @@ class ProjectMagazinePresenter
                 $project->parts,
                 $photos->slice(1, 2),
                 ['status' => $this->statusLabel($project->status)]
+            ));
+        }
+
+        $modifications = $project->modifications
+            ->filter(fn ($modification) => $ownerCanEdit || $modification->is_public)
+            ->values();
+        foreach ($modifications as $modification) {
+            $modificationPhotos = $modification->photos
+                ->filter(fn ($photo) => $disk->exists($photo->path) && ($ownerCanEdit || $photo->is_public))
+                ->map(fn ($photo) => $this->mediaPhoto($photo, 'modificação'));
+            $parts = $modification->parts
+                ->filter(fn ($part) => $ownerCanEdit || $part->is_public)
+                ->map(fn ($part) => $this->part($part, $ownerCanEdit, $disk))
+                ->values();
+            $body = collect([$modification->description, $parts->map(function (array $part) {
+                return trim($part['name'].' · '.$part['status'].($part['brand'] ? ' · '.$part['brand'] : '').($part['model'] ? ' '.$part['model'] : ''));
+            })->implode("\n")])->filter()->implode("\n\n");
+            $chapters->push($this->chapter(
+                $chapterNumber++,
+                'modificacao-'.$modification->id,
+                $modification->title,
+                'Modificação · '.$this->modificationStatus($modification->status),
+                $modificationPhotos->isNotEmpty() ? 'photo-text' : 'technical',
+                $body,
+                $modificationPhotos,
+                ['status' => $this->modificationStatus($modification->status), 'parts' => $parts->all()]
             ));
         }
 
@@ -192,6 +224,33 @@ class ProjectMagazinePresenter
         ];
     }
 
+    private function mediaPhoto(MediaPhoto $photo, string $source): array
+    {
+        return [
+            'url' => route('projects.media.image', $photo),
+            'alt' => $photo->caption ?: 'Foto de '.$source,
+            'source' => $source,
+            'kind' => $photo->kind,
+        ];
+    }
+
+    private function part(ProjectPart $part, bool $ownerCanEdit, $disk): array
+    {
+        $photos = $part->photos
+            ->filter(fn ($photo) => $disk->exists($photo->path) && ($ownerCanEdit || $photo->is_public))
+            ->map(fn ($photo) => $this->mediaPhoto($photo, 'peça'))
+            ->values();
+
+        return [
+            'name' => $part->name,
+            'brand' => $part->brand,
+            'model' => $part->model,
+            'status' => $this->partStatus($part->status),
+            'description' => $part->description,
+            'photos' => $photos->all(),
+        ];
+    }
+
     private function chapter(int $number, string $id, string $title, string $kicker, string $layout, ?string $body, Collection $photos, array $meta): array
     {
         return [
@@ -252,6 +311,16 @@ class ProjectMagazinePresenter
     private function statusLabel(?string $status): string
     {
         return config('motorclub.project_status.'.$status, Str::headline((string) $status));
+    }
+
+    private function modificationStatus(?string $status): string
+    {
+        return ['planned' => 'Planejada', 'in_progress' => 'Em andamento', 'completed' => 'Concluída'][$status] ?? Str::headline((string) $status);
+    }
+
+    private function partStatus(?string $status): string
+    {
+        return ['planned' => 'Planejada', 'in_progress' => 'Em andamento', 'installed' => 'Instalada'][$status] ?? Str::headline((string) $status);
     }
 
     private function coverDescription(Project $project): string

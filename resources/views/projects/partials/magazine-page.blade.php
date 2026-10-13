@@ -46,8 +46,8 @@
                 </div>
             @elseif($page['layout'] === 'technical' || $page['layout'] === 'photo-text')
                 <div class="av-magazine-split">
-                    <div class="av-magazine-split__copy">@if($page['description'])<p class="av-magazine-lede">{{ $page['description'] }}</p>@endif @if(!empty($page['meta']['planned']))<blockquote>{{ $page['meta']['planned'] }}</blockquote>@endif</div>
-                    @if(!empty($page['photos']))<div class="av-magazine-split__photos">@foreach($page['photos'] as $photo)<figure><img loading="lazy" src="{{ $photo['url'] }}" alt="{{ $photo['alt'] }}"><figcaption>{{ $photo['source'] === 'carro' ? 'Arquivo do carro' : 'Arquivo do projeto' }}</figcaption></figure>@endforeach</div>@endif
+                    <div class="av-magazine-split__copy">@if($page['description'])<p class="av-magazine-lede">{{ $page['description'] }}</p>@endif @if(!empty($page['meta']['planned']))<blockquote>{{ $page['meta']['planned'] }}</blockquote>@endif @if(!empty($page['meta']['parts']))<div class="av-magazine-parts"><p class="av-magazine-kicker">Peças relacionadas</p>@foreach($page['meta']['parts'] as $part)<div><strong>{{ $part['name'] }}</strong><span>{{ $part['status'] }}@if($part['brand']) · {{ $part['brand'] }}@endif @if($part['model']) · {{ $part['model'] }}@endif</span></div>@endforeach</div>@endif</div>
+                    @if(!empty($page['photos']))<div class="av-magazine-split__photos">@foreach($page['photos'] as $photo)<figure><img loading="lazy" src="{{ $photo['url'] }}" alt="{{ $photo['alt'] }}"><figcaption>{{ match($photo['source']) { 'carro' => 'Arquivo do carro', 'modificação' => 'Arquivo da modificação', 'peça' => 'Arquivo da peça', default => 'Arquivo do projeto' } }}</figcaption></figure>@endforeach</div>@endif
                 </div>
             @elseif($page['layout'] === 'spec-sheet')
                 <div class="av-magazine-specs">@foreach($page['meta']['costs'] ?? [] as $cost)<div><span>{{ $cost['label'] }}</span><strong>R$ {{ number_format($cost['value'], 2, ',', '.') }}</strong></div>@endforeach</div>
@@ -55,7 +55,7 @@
             @elseif($page['layout'] === 'quote')
                 <blockquote class="av-magazine-quote">{{ $page['description'] }}</blockquote><p class="av-magazine-quote__body">{{ $page['meta']['planned'] ?? '' }}</p>
             @elseif($page['layout'] === 'gallery')
-                <div class="av-magazine-gallery">@foreach($page['photos'] as $photo)<figure><img loading="lazy" src="{{ $photo['url'] }}" alt="{{ $photo['alt'] }}"><figcaption>{{ $photo['source'] === 'carro' ? 'Arquivo do carro' : 'Arquivo do projeto' }}</figcaption></figure>@endforeach</div>
+                <div class="av-magazine-gallery">@foreach($page['photos'] as $photo)<figure><img loading="lazy" src="{{ $photo['url'] }}" alt="{{ $photo['alt'] }}"><figcaption>{{ match($photo['source']) { 'carro' => 'Arquivo do carro', 'modificação' => 'Arquivo da modificação', 'peça' => 'Arquivo da peça', default => 'Arquivo do projeto' } }}</figcaption></figure>@endforeach</div>
             @endif
         @endif
         @if($pageNumber)<span class="av-magazine-page__number" aria-hidden="true">{{ $pageNumber }}</span>@endif
