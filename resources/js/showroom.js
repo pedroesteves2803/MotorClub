@@ -224,7 +224,7 @@ export const initShowroomScene = (root) => {
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.08;
         renderer.shadowMap.enabled = !coarsePointer;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
     } catch {
         showFallback(root, 'Modo visual estático ativado neste dispositivo.');
         root.dataset.mcShowroomReady = 'false';
@@ -278,7 +278,6 @@ export const initShowroomScene = (root) => {
 
     const status = root.querySelector('[data-showroom-status]');
     const fallback = root.querySelector('[data-showroom-fallback]');
-    const initialStatus = status?.textContent || 'Arraste para explorar';
     const modelUrl = root.dataset.modelUrl?.trim();
     if (modelUrl) {
         root.dataset.mcShowroomModel = 'loading-spectral-gt-rs';
@@ -298,7 +297,7 @@ export const initShowroomScene = (root) => {
             root.classList.remove('is-loading');
             root.classList.remove('is-fallback');
             fallback?.setAttribute('aria-hidden', 'true');
-            if (status) status.textContent = initialStatus;
+            if (status) status.textContent = 'Arraste para explorar';
             start();
         }, undefined, (error) => {
             root.dataset.mcShowroomModel = 'procedural-fallback';
