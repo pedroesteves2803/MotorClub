@@ -79,6 +79,13 @@ html, body { max-width: 100%; overflow-x: clip; }
 .mc-masthead { background: color-mix(in srgb, var(--mc-paper) 88%, transparent); border-bottom: 1px solid var(--mc-line); position: sticky; top: 0; z-index: 30; backdrop-filter: blur(18px); }
 .mc-header-inner { @apply mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-4 lg:px-10; }
 .mc-wordmark { align-items: center; color: var(--mc-ink); display: inline-flex; font-family: var(--font-display); font-size: 1rem; font-weight: 650; gap: .72rem; letter-spacing: .14em; white-space: nowrap; }
+.mc-header-controls { align-items: center; display: flex; gap: .65rem; }
+.mc-theme-toggle { align-items: center; background: transparent; border: 0; border-radius: .75rem; color: var(--mc-action); cursor: pointer; display: inline-flex; justify-content: center; min-height: 2.75rem; min-width: 2.75rem; padding: .55rem; transition: color 180ms ease-out, transform 180ms ease-out, filter 180ms ease-out; }
+.mc-theme-toggle:hover { filter: brightness(1.12); }
+.mc-theme-toggle:hover .mc-theme-toggle__mark { transform: scale(1.04); }
+.mc-theme-toggle:active { transform: scale(.94); }
+.mc-theme-toggle:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-action) 35%, transparent); outline: none; }
+.mc-theme-toggle__mark { height: 1.45rem; width: 2rem; transition: transform 180ms ease-out; }
 .mc-mark { color: var(--mc-action); display: block; height: 2rem; width: 2.7rem; }
 .mc-mark[data-theme-headlight] { overflow: visible; }
 .mc-mark[data-theme-headlight] .mc-headlight-base { opacity: .48; stroke: color-mix(in srgb, currentColor 52%, #718097 48%); }

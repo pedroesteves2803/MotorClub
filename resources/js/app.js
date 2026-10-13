@@ -160,6 +160,17 @@ const initThemeHeadlights = () => {
             mark.classList.add('is-initializing', 'is-ready');
             window.requestAnimationFrame(() => mark.classList.remove('is-initializing'));
         });
+
+        document.querySelectorAll('[data-theme-toggle-button]').forEach((control) => {
+            const state = dark
+                ? 'Tema escuro, farol apagado. Ativar tema claro.'
+                : 'Tema claro, farol aceso. Ativar tema escuro.';
+
+            control.setAttribute('aria-label', state);
+            control.setAttribute('title', state);
+            control.setAttribute('aria-pressed', String(!dark));
+            control.querySelector('[data-theme-toggle-status]')?.replaceChildren(document.createTextNode(state));
+        });
     };
 
     sync();

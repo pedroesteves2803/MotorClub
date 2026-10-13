@@ -14,3 +14,12 @@ it('oferece menu responsivo acessível nas páginas públicas', function () {
         $this->get($url)->assertOk()->assertSee('aria-controls="site-navigation"', false)->assertSee('aria-expanded="false"', false)->assertSee('mc-menu-toggle', false);
     }
 });
+
+it('usa o próprio farol como controle acessível de tema', function () {
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('data-theme-toggle-button', false)
+        ->assertSee('data-theme-toggle-status', false)
+        ->assertSee('aria-label="Alternar tema"', false)
+        ->assertDontSee('<select aria-label="Tema" data-theme-toggle', false);
+});
