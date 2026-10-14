@@ -265,6 +265,7 @@ const initHeroMotion = () => {
     if (!hero || reduceMotion.matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches || hero.dataset.mcBound) return;
 
     hero.dataset.mcBound = 'true';
+    hero.classList.add('is-visible');
     let frame = 0;
     let pointer = { x: 0, y: 0 };
 
