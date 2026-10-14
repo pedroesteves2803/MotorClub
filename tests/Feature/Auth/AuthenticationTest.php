@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Auth\MultiFactor\Actions\SetUpAppAuthenticationAction;
 use App\Models\User;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
@@ -100,4 +101,20 @@ it('deletes a Google account with recent login and explicit confirmation', funct
     Volt::test('settings.delete-user-form')->set('confirmation', 'EXCLUIR')->call('deleteUser')->assertHasNoErrors();
     expect($user->fresh())->toBeNull();
     $this->assertGuest();
+});
+
+it('accepts a recent Google login as reauthentication for authenticator setup', function () {
+    $user = User::factory()->create(['google_id' => 'google-123']);
+
+    $this->actingAs($user)->withSession(['google_authenticated_at' => now()->timestamp]);
+
+    expect(SetUpAppAuthenticationAction::hasRecentGoogleAuthentication())->toBeTrue();
+});
+
+it('does not accept an old Google login as reauthentication for authenticator setup', function () {
+    $user = User::factory()->create(['google_id' => 'google-123']);
+
+    $this->actingAs($user)->withSession(['google_authenticated_at' => now()->subMinutes(11)->timestamp]);
+
+    expect(SetUpAppAuthenticationAction::hasRecentGoogleAuthentication())->toBeFalse();
 });

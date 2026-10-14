@@ -2,10 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\MultiFactor\GoogleAwareAppAuthentication;
 use App\Filament\Widgets\MotorClubOverview;
 use App\Http\Middleware\AuthenticateFilamentSession;
 use App\Http\Middleware\AuthenticateFilamentWithApplication;
-use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
-            ->multiFactorAuthentication(AppAuthentication::make(), isRequired: fn (): bool => app()->environment('production'))
+            ->multiFactorAuthentication(GoogleAwareAppAuthentication::make(), isRequired: fn (): bool => app()->environment('production'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

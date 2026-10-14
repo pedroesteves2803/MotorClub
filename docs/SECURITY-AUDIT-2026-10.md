@@ -47,6 +47,7 @@ Este documento registra evidências do código e dos testes executados. Ele não
 4. Acrescentados testes para o header CSP e os atributos do cookie.
 5. Atualizado o teste da página 404 para o texto da página de erro branded vigente.
 6. Documentadas `CSP_REPORT_ONLY` e `CSP_REPORT_URI` no `.env.example`.
+7. Ajustado o cadastro de MFA do Filament para contas Google: uma autenticação Google recente (até 10 minutos) substitui a senha local aleatória que o usuário não possui; contas com senha continuam usando `current_password`.
 
 Nenhuma dependência foi atualizada nesta etapa e nenhum dado de produção foi apagado.
 
@@ -54,7 +55,7 @@ Nenhuma dependência foi atualizada nesta etapa e nenhum dado de produção foi 
 
 - `./vendor/bin/pint`: passou.
 - `php artisan view:cache`: passou.
-- `php artisan test`: **191 passed, 1.216 assertions**.
+- `php artisan test`: **193 passed, 1.218 assertions**.
 - O conjunto focado de segurança, produção, rotas administrativas e módulos também passou antes da execução completa.
 - `composer audit --no-interaction --locked`: sem advisories conhecidos.
 - `git diff --check`: sem erros de whitespace.
