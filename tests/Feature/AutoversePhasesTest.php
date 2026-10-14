@@ -58,6 +58,55 @@ it('gera QR Code público e downloads autenticados sem expor o ID na URL', funct
     $this->actingAs($vehicle->user)->get(route('garage.share.qr.download', [$vehicle, 'format' => 'png']))->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('Content-Disposition');
 });
 
+it('mantém a identidade pública do QR mesmo quando o slug legível muda', function () {
+    $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $owner = $vehicle->user;
+
+    $this->actingAs($owner)->get(route('garage.share.edit', $vehicle))->assertOk();
+    $publicKey = $vehicle->fresh()->public_key;
+    expect($publicKey)->not->toBeNull();
+
+    $this->actingAs($owner)->post(route('garage.share.slug', $vehicle), ['slug' => 'novo-endereco'])->assertRedirect();
+    $this->get(route('vehicles.public.show', ['key' => $publicKey]))
+        ->assertOk()
+        ->assertSee($vehicle->model);
+    $this->actingAs($owner)->get(route('garage.share.qr.download', [$vehicle, 'format' => 'sticker']))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/svg+xml; charset=UTF-8')
+        ->assertSee('Autoverse', false);
+});
+
+it('salva capa, destaques, ordem e publicação da edição', function () {
+    $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $project = phaseProject($vehicle);
+    $first = $vehicle->photos()->create(['path' => 'vehicles/first.webp', 'caption' => 'Frente', 'sort_order' => 1]);
+    $second = $vehicle->photos()->create(['path' => 'vehicles/second.webp', 'caption' => 'Traseira', 'sort_order' => 2]);
+
+    $this->actingAs($vehicle->user)->put(route('garage.magazine.update', $vehicle), [
+        'primary_color' => '#123456',
+        'theme' => 'dark',
+        'editorial_style' => 'racing',
+        'title' => 'Edição Venom',
+        'subtitle' => 'Uma evolução em movimento',
+        'palette' => 'racing',
+        'is_published' => 1,
+        'cover_photo_id' => $second->id,
+        'highlight_photo_ids' => [$first->id, $second->id],
+        'chapter_order' => ['evolucao', 'historia'],
+    ])->assertRedirect();
+
+    $settings = $vehicle->fresh()->magazineSetting;
+    expect($settings->title)->toBe('Edição Venom')
+        ->and($settings->palette)->toBe('racing')
+        ->and($settings->cover_photo_id)->toBe($second->id)
+        ->and($settings->highlight_photo_ids)->toBe([$first->id, $second->id]);
+
+    $slug = app(VehicleSlugService::class)->ensure($vehicle->fresh());
+    $this->get(route('vehicles.slug.magazine', ['slug' => $slug]))
+        ->assertOk()
+        ->assertSee('Edição Venom');
+});
+
 it('não expõe localização privada na página pública do veículo', function () {
     $vehicle = Vehicle::factory()->create(['visibility' => 'public', 'location' => 'Rua privada, 123']);
     $slug = app(VehicleSlugService::class)->ensure($vehicle);

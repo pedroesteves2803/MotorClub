@@ -14,7 +14,7 @@ class PublicVehicleController extends Controller
     {
         $slugs->ensure($vehicle);
 
-        return $this->render($vehicle);
+        return $this->render($vehicle, $slugs);
     }
 
     public function showBySlug(string $slug, VehicleSlugService $slugs): Response|RedirectResponse
@@ -29,12 +29,20 @@ class PublicVehicleController extends Controller
             return redirect()->route('vehicles.slug.show', ['slug' => $history->vehicle->slug], 301);
         }
 
-        return $this->render($vehicle);
+        return $this->render($vehicle, $slugs);
     }
 
-    private function render(Vehicle $vehicle): Response
+    public function showByKey(string $key, VehicleSlugService $slugs): Response
+    {
+        $vehicle = Vehicle::query()->where('public_key', $key)->firstOrFail();
+
+        return $this->render($vehicle, $slugs);
+    }
+
+    private function render(Vehicle $vehicle, VehicleSlugService $slugs): Response
     {
         abort_unless($vehicle->visibility === 'public', 404);
+        $slugs->ensurePublicKey($vehicle);
         $vehicle->load(['photos', 'user', 'entries' => fn ($query) => $query->where('is_public', true)->orderByDesc('occurred_on')->orderByDesc('id')]);
 
         return response()->view('vehicle', compact('vehicle'))->header('Cache-Control', 'private, no-store');

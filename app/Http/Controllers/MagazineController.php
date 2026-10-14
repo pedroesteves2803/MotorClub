@@ -13,13 +13,21 @@ use Illuminate\Support\Facades\Gate;
 
 class MagazineController extends Controller
 {
-    public function edit(Vehicle $vehicle, MagazineService $magazines): Response
+    public function edit(Vehicle $vehicle, MagazineService $magazines, ProjectMagazinePresenter $presenter): Response
     {
         Gate::authorize('update', $vehicle);
 
+        $vehicle->load('photos');
+        $project = $vehicle->projects()
+            ->with('photos', 'mediaPhotos', 'modifications.parts.photos', 'modifications.photos', 'vehicle.user', 'vehicle.photos', 'vehicle.entries')
+            ->latest('id')
+            ->first();
+
         return response()->view('magazine.customize', [
-            'vehicle' => $vehicle->load('photos'),
-            'settings' => $magazines->settingsFor($vehicle),
+            'vehicle' => $vehicle,
+            'project' => $project,
+            'settings' => $settings = $magazines->settingsFor($vehicle),
+            'magazine' => $project ? $presenter->present($project, true) : null,
         ]);
     }
 
@@ -35,6 +43,13 @@ class MagazineController extends Controller
         return back()->with('status', 'Personalização da revista salva.');
     }
 
+    public function showPublicByKey(string $key, ProjectMagazinePresenter $presenter, MagazineService $magazines): Response
+    {
+        $vehicle = Vehicle::query()->where('public_key', $key)->firstOrFail();
+
+        return $this->renderPublic($vehicle, $presenter, $magazines);
+    }
+
     public function showPublic(string $slug, ProjectMagazinePresenter $presenter, MagazineService $magazines): Response|RedirectResponse
     {
         $vehicle = Vehicle::query()->where('slug', $slug)->first();
@@ -45,15 +60,24 @@ class MagazineController extends Controller
             return redirect()->route('vehicles.slug.magazine', ['slug' => $history->vehicle->slug], 301);
         }
         abort_unless($vehicle->visibility === 'public', 404);
+
+        return $this->renderPublic($vehicle, $presenter, $magazines);
+    }
+
+    private function renderPublic(Vehicle $vehicle, ProjectMagazinePresenter $presenter, MagazineService $magazines): Response
+    {
+        abort_unless($vehicle->visibility === 'public', 404);
         $project = Project::query()->where('vehicle_id', $vehicle->id)->where('is_public', true)->latest('id')->first();
         abort_unless($project, 404);
+        $settings = $magazines->settingsFor($vehicle);
+        abort_unless($settings->is_published, 404);
         $project->load('photos', 'mediaPhotos', 'modifications.parts.photos', 'modifications.photos', 'vehicle.user', 'vehicle.photos', 'vehicle.entries');
 
         return response()->view('magazine.public', [
             'vehicle' => $vehicle,
             'project' => $project,
             'magazine' => $presenter->present($project),
-            'settings' => $magazines->settingsFor($vehicle),
+            'settings' => $settings,
         ])->header('Cache-Control', 'private, no-store');
     }
 }

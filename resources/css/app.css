@@ -542,6 +542,17 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 .av-magazine-reading__page .av-magazine-page--cover { min-height: 42rem; }
 .av-magazine-reading__reports { display: grid; gap: 1rem; max-width: 72rem; }
 .av-magazine-reading__reports article { display: flex; align-items: center; gap: 1rem; justify-content: space-between; }
+.av-magazine--palette-carbon { --av-blue: #ff6b35; }
+.av-magazine--palette-minimal { --av-blue: #334155; }
+.av-magazine--palette-racing { --av-blue: #ef4444; }
+.av-magazine--palette-performance { --av-blue: #38bdf8; }
+.av-magazine--palette-sporty { --av-blue: #54d68a; }
+.av-magazine--palette-custom { --av-blue: var(--av-accent); }
+.av-magazine--style-racing .av-magazine-page__header h2, .av-magazine--style-racing .av-magazine-cover__copy h2 { text-transform: uppercase; }
+.av-magazine--style-classic .av-magazine-page__header h2, .av-magazine--style-classic .av-magazine-cover__copy h2 { font-family: Georgia, serif; letter-spacing: -.045em; }
+.av-magazine--style-minimal .av-magazine-page__inner { padding-inline: clamp(2rem, 6vw, 5rem); }
+.av-magazine-reading__page { opacity: .35; transform: translateY(1.5rem); transition: opacity 520ms ease, transform 680ms cubic-bezier(.23,1,.32,1); }
+.av-magazine-reading__page.is-visible { opacity: 1; transform: translateY(0); }
 @keyframes av-magazine-page-enter { from { opacity: .2; transform: rotateY(-10deg) translateX(1rem); } to { opacity: 1; transform: rotateY(0) translateX(0); } }
 @media (max-width: 860px) {
     .av-magazine__intro { align-items: start; flex-direction: column; }
@@ -576,6 +587,7 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 @media (prefers-reduced-motion: reduce) {
     .av-magazine__progress-line i { transition: none; }
     .av-magazine__slot.is-entering { animation: none; }
+    .av-magazine-reading__page, .av-magazine-reading__page.is-visible { opacity: 1; transform: none; transition: none; }
 }
 
 /* Keep the home introduction about the product, at a readable measure. */

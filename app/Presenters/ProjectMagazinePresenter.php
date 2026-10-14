@@ -20,6 +20,7 @@ class ProjectMagazinePresenter
     {
         $vehicle = $project->vehicle;
         $vehicle->loadMissing(['magazineSetting.coverPhoto', 'shotAssets.shotPhoto.gallery.user.photographerProfile']);
+        $settings = $vehicle->magazineSetting;
         $disk = Storage::disk(config('filesystems.private_disk'));
         $projectPhotos = $project->photos->filter(fn ($photo) => $disk->exists($photo->path))->map(fn ($photo) => [
             'url' => route('projects.image', $photo),
@@ -30,6 +31,7 @@ class ProjectMagazinePresenter
         $projectMediaPhotos = $project->mediaPhotos->filter(fn ($photo) => $disk->exists($photo->path) && ($ownerCanEdit || $photo->is_public))->map(fn ($photo) => $this->mediaPhoto($photo, 'projeto'));
         $projectPhotos = $projectPhotos->concat($projectMediaPhotos);
         $vehiclePhotos = $vehicle->photos->filter(fn ($photo) => $disk->exists($photo->path))->map(fn ($photo) => [
+            'id' => $photo->id,
             'url' => route('vehicle-photos.show', $photo),
             'alt' => $photo->caption ?: 'Foto de '.$this->vehicleName($vehicle),
             'source' => 'carro',
@@ -43,9 +45,13 @@ class ProjectMagazinePresenter
                 'source' => 'shots',
                 'kind' => 'licenciada · '.($asset->credit ?: 'crédito preservado'),
             ]);
-        $photos = $projectPhotos->concat($shotPhotos)->isNotEmpty() ? $projectPhotos->concat($shotPhotos) : $vehiclePhotos;
+        $allPhotos = $projectPhotos->concat($shotPhotos)->concat($vehiclePhotos)->values();
+        $highlightIds = collect($settings?->highlight_photo_ids ?? [])->map(fn ($id) => (int) $id);
+        $highlightPhotos = $vehiclePhotos->filter(fn (array $photo) => $highlightIds->contains((int) ($photo['id'] ?? 0)));
+        $photos = $highlightPhotos->concat($allPhotos)->unique('url')->values();
         $coverPhoto = $vehicle->magazineSetting?->coverPhoto;
         $coverUrl = $coverPhoto && $disk->exists($coverPhoto->path) ? [
+            'id' => $coverPhoto->id,
             'url' => route('vehicle-photos.show', $coverPhoto),
             'alt' => $coverPhoto->caption ?: 'Capa de '.$this->vehicleName($vehicle),
             'source' => 'carro',
@@ -113,14 +119,16 @@ class ProjectMagazinePresenter
             $body = collect([$modification->description, $parts->map(function (array $part) {
                 return trim($part['name'].' · '.$part['status'].($part['brand'] ? ' · '.$part['brand'] : '').($part['model'] ? ' '.$part['model'] : ''));
             })->implode("\n")])->filter()->implode("\n\n");
+            $partPhotos = $parts->flatMap(fn (array $part) => $part['photos'] ?? [])->values();
+            $chapterPhotos = $modificationPhotos->concat($partPhotos)->unique('url')->values();
             $chapters->push($this->chapter(
                 $chapterNumber++,
                 'modificacao-'.$modification->id,
                 $modification->title,
                 'Modificação · '.$this->modificationStatus($modification->status),
-                $modificationPhotos->isNotEmpty() ? 'photo-text' : 'technical',
+                $chapterPhotos->isNotEmpty() ? 'photo-text' : 'technical',
                 $body,
-                $modificationPhotos,
+                $chapterPhotos,
                 ['status' => $this->modificationStatus($modification->status), 'parts' => $parts->all()]
             ));
         }
@@ -178,6 +186,23 @@ class ProjectMagazinePresenter
             ));
         }
 
+        $chapterOrder = collect($settings?->chapter_order ?? [])->values();
+        if ($chapterOrder->isNotEmpty()) {
+            $chapters = $chapters->sortBy(function (array $chapter) use ($chapterOrder) {
+                $position = $chapterOrder->search($chapter['id']);
+
+                return $position === false ? $chapterOrder->count() + $chapter['number'] : $position;
+            })->values()->map(function (array $chapter, int $index) {
+                $chapter['number'] = $index + 1;
+                $chapter['chapter'] = sprintf('%02d', $index + 1);
+
+                return $chapter;
+            });
+        }
+
+        $magazineTitle = filled($settings?->title) ? $settings->title : $project->title;
+        $magazineSubtitle = filled($settings?->subtitle) ? $settings->subtitle : $this->vehicleName($vehicle);
+
         $pages = collect([
             [
                 'type' => 'cover',
@@ -185,8 +210,8 @@ class ProjectMagazinePresenter
                 'number' => null,
                 'chapter' => null,
                 'kicker' => 'Revista do projeto',
-                'title' => $project->title,
-                'subtitle' => $this->vehicleName($vehicle),
+                'title' => $magazineTitle,
+                'subtitle' => $magazineSubtitle,
                 'description' => $this->coverDescription($project),
                 'photos' => $coverUrl ? [$coverUrl] : [],
                 'meta' => $this->coverMeta($project, $vehicle),
@@ -227,7 +252,8 @@ class ProjectMagazinePresenter
         })->values();
 
         return [
-            'title' => $project->title,
+            'title' => $magazineTitle,
+            'subtitle' => $magazineSubtitle,
             'vehicleName' => $this->vehicleName($vehicle),
             'ownerName' => $vehicle->user?->name,
             'status' => $this->statusLabel($project->status),
@@ -237,6 +263,9 @@ class ProjectMagazinePresenter
             'chapters' => $chapters->values()->all(),
             'pages' => $pages->all(),
             'pageCount' => $pages->count(),
+            'palette' => $settings?->palette ?? 'carbon',
+            'editorialStyle' => $settings?->editorial_style ?? 'editorial',
+            'isPublished' => $settings?->is_published ?? true,
         ];
     }
 

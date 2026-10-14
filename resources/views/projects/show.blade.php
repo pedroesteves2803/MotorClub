@@ -18,7 +18,7 @@
     ];
 @endphp
 <x-layouts.public :title="$project->title.' · '.$projectFacts.' | Autoverse'" :description="(string) $projectDescription" :noindex="!$project->publiclyVisible()" ogType="article" :canonical="route('projects.show', $project)" :jsonLd="[$projectStructuredData, $projectBreadcrumb]" :image="$project->previewPhoto ? route('projects.image', $project->previewPhoto) : ($projectVehicle->previewPhoto ? route('vehicle-photos.show', $projectVehicle->previewPhoto) : null)">
-    <div class="av-magazine @if($magazineSettings->theme === 'light') av-magazine--light @endif" style="--av-accent: {{ $magazineSettings->primary_color }}" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="magazine">
+    <div class="av-magazine av-magazine--palette-{{ $magazineSettings->palette ?: 'carbon' }} av-magazine--style-{{ $magazineSettings->editorial_style ?: 'editorial' }} @if($magazineSettings->theme === 'light') av-magazine--light @endif" style="--av-accent: {{ $magazineSettings->primary_color }}" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="magazine">
         <header class="av-magazine__intro">
             <div>
                 <p class="av-magazine-kicker">{{ $magazine['category'] }} · {{ $magazine['status'] }}</p>

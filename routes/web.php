@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::get('veiculos/{slug}', [PublicVehicleController::class, 'showBySlug'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.show');
+Route::get('v/{key}', [PublicVehicleController::class, 'showByKey'])->where('key', '[a-z0-9-]+')->middleware('feature:garage')->name('vehicles.public.show');
+Route::get('v/{key}/revista', [MagazineController::class, 'showPublicByKey'])->where('key', '[a-z0-9-]+')->middleware('feature:garage')->name('vehicles.public.magazine');
 Route::get('veiculos/{slug}/evolucao', [VehicleEvolutionController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.evolution');
 Route::get('veiculos/{slug}/revista', [MagazineController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.magazine');
 Route::get('veiculos/{slug}/revista/leitura', [MagazineController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.magazine.reading');
@@ -100,6 +102,7 @@ Route::middleware(['auth', 'verified', 'feature:garage'])->group(function () {
     Route::put('garagem/{vehicle}/revista/personalizar', [MagazineController::class, 'update'])->whereNumber('vehicle')->name('garage.magazine.update');
     Route::get('garagem/{vehicle}/compartilhar', [VehicleShareController::class, 'edit'])->whereNumber('vehicle')->name('garage.share.edit');
     Route::post('garagem/{vehicle}/slug', [VehicleShareController::class, 'updateSlug'])->whereNumber('vehicle')->name('garage.share.slug');
+    Route::put('garagem/{vehicle}/qr-code/settings', [VehicleShareController::class, 'updateQrSettings'])->whereNumber('vehicle')->name('garage.share.qr.settings');
     Route::get('garagem/{vehicle}/qr-code', [VehicleShareController::class, 'qrCode'])->whereNumber('vehicle')->name('garage.share.qr');
     Route::get('garagem/{vehicle}/qr-code/download', [VehicleShareController::class, 'download'])->whereNumber('vehicle')->name('garage.share.qr.download');
     Route::get('projetos/novo', [ProjectController::class, 'create'])->name('projects.create');

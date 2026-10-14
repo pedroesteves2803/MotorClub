@@ -15,7 +15,7 @@ class Vehicle extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vehicle_type', 'brand', 'model', 'public_name', 'slug', 'slug_updated_at', 'trim', 'generation', 'color', 'model_year', 'engine',
+        'vehicle_type', 'brand', 'model', 'public_name', 'slug', 'public_key', 'slug_updated_at', 'trim', 'generation', 'color', 'model_year', 'engine',
         'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility',
     ];
 

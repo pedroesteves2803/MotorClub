@@ -530,6 +530,22 @@ const initMagazine = () => {
             if (mode === 'reading') reading.querySelector('h2')?.focus?.({preventScroll: true});
         };
 
+        const readingPages = [...root.querySelectorAll('[data-av-reading-page]')];
+        if (readingPages.length) {
+            if (reduceMotion.matches || !('IntersectionObserver' in window)) {
+                readingPages.forEach((page) => page.classList.add('is-visible'));
+            } else {
+                const observer = new IntersectionObserver((entries, instance) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        entry.target.classList.add('is-visible');
+                        instance.unobserve(entry.target);
+                    });
+                }, { threshold: 0.16 });
+                readingPages.forEach((page) => observer.observe(page));
+            }
+        }
+
         const goTo = (target, animate = true) => {
             const nextIndex = clamp(Number(target), 0, total - 1);
             if (nextIndex === index) return;
@@ -560,6 +576,40 @@ const initMagazine = () => {
         window.addEventListener('resize', () => sync(), {passive: true});
         setMode(mode);
         sync();
+    });
+};
+
+const initMagazineEditor = () => {
+    document.querySelectorAll('[data-magazine-order]').forEach((list) => {
+        if (list.dataset.magazineOrderReady) return;
+        list.dataset.magazineOrderReady = 'true';
+        let dragged = null;
+
+        const move = (item, direction) => {
+            const sibling = direction === 'up' ? item.previousElementSibling : item.nextElementSibling;
+            if (!sibling) return;
+            list.insertBefore(item, direction === 'up' ? sibling : sibling.nextElementSibling);
+        };
+
+        list.querySelectorAll('[data-magazine-move]').forEach((button) => {
+            button.addEventListener('click', () => move(button.closest('[data-magazine-chapter]'), button.dataset.magazineMove));
+        });
+        list.querySelectorAll('[data-magazine-chapter]').forEach((item) => {
+            item.addEventListener('dragstart', () => {
+                dragged = item;
+                item.classList.add('opacity-50');
+            });
+            item.addEventListener('dragend', () => {
+                dragged = null;
+                item.classList.remove('opacity-50');
+            });
+            item.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                if (!dragged || dragged === item) return;
+                const bounds = item.getBoundingClientRect();
+                list.insertBefore(dragged, event.clientY < bounds.top + bounds.height / 2 ? item : item.nextElementSibling);
+            });
+        });
     });
 };
 
@@ -642,6 +692,7 @@ const initMotion = () => {
     initCardTilt();
     initLightShowroom();
     initMagazine();
+    initMagazineEditor();
     initShareLinks();
     initEasterEggs();
 };

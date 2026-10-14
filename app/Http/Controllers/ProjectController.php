@@ -87,8 +87,9 @@ class ProjectController extends Controller
         $reports = $ownerCanEdit
             ? $project->reports()->latest('version')->get()
             : $project->reports()->where('status', 'approved')->where('is_public', true)->latest('version')->get();
-        $magazine = $magazinePresenter->present($project, $ownerCanEdit);
         $magazineSettings = $magazines->settingsFor($project->vehicle);
+        abort_unless($ownerCanEdit || $magazineSettings->is_published, 404);
+        $magazine = $magazinePresenter->present($project, $ownerCanEdit);
 
         return response()->view('projects.show', compact('project', 'reports', 'magazine', 'magazineSettings'))->header('Cache-Control', 'private, no-store');
     }
