@@ -48,9 +48,8 @@ class SeoController extends Controller
             ['loc' => route('projects.index')],
             ['loc' => route('shots.index')],
             ['loc' => route('legal.terms')],
-            ['loc' => route('legal.privacy')],
-            ['loc' => route('legal.cookies')],
-            ['loc' => route('legal.community')],
+            ['loc' => route('legal.privacy.short')],
+            ['loc' => route('legal.regulation')],
             ['loc' => route('legal.help')],
         ]);
 

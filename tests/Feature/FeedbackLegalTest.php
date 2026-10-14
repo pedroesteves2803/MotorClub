@@ -10,10 +10,27 @@ use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as GoogleUser;
 
 it('publica os documentos institucionais como documentos vigentes', function () {
-    foreach (['termos-de-uso', 'politica-de-privacidade', 'politica-de-cookies', 'diretrizes-da-comunidade', 'ajuda-e-contato'] as $path) {
-        $this->get('/'.$path)->assertOk()->assertSee('Autoverse')->assertDontSee('Minuta')->assertDontSee('Revisão pendente');
+    foreach (['termos-de-uso', 'privacidade', 'regulamento'] as $path) {
+        $this->get('/'.$path)->assertOk()->assertSee('Autoverse')->assertSee('ATUALIZADO EM')->assertDontSee('Minuta')->assertDontSee('Revisão pendente');
     }
-    $this->get('/configuracoes-de-cookies')->assertOk()->assertSee('Necessários');
+    $this->get('/ajuda-e-contato')->assertOk()->assertSee('Autoverse');
+    $this->get('/politica-de-privacidade')->assertRedirect('/privacidade');
+    $this->get('/politica-de-cookies')->assertRedirect('/privacidade');
+    $this->get('/diretrizes-da-comunidade')->assertOk()->assertSee('Regulamento da Comunidade');
+});
+
+it('exibe o aviso discreto de cookies apenas quando opcionais estão disponíveis', function () {
+    config(['legal.optional_cookies_available' => true]);
+
+    $this->get('/')->assertOk()
+        ->assertSee('Sua privacidade importa')
+        ->assertSee('Aceitar opcionais')
+        ->assertSee('Rejeitar opcionais')
+        ->assertSee('/privacidade#cookies', false);
+
+    $this->withCookie('autoverse_cookie_consent_id', 'consent-id')
+        ->get('/')
+        ->assertDontSee('Sua privacidade importa');
 });
 
 it('sanitiza HTML de documentos legais publicados', function () {

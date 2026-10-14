@@ -5,6 +5,6 @@
             <article class="mc-surface rounded-2xl p-6"><h2 class="text-2xl font-bold">Ajude a melhorar</h2><p class="mt-3 mc-muted">Sugestões, bugs e elogios chegam diretamente para a equipe.</p><a class="mc-link-button mt-5" href="{{ route('feedback.create') }}">Enviar feedback</a></article>
             <article class="mc-surface rounded-2xl p-6"><h2 class="text-2xl font-bold">Contato</h2><p class="mt-3 mc-muted">Para suporte, privacidade ou denúncias, use o e-mail:</p><a class="mt-3 inline-block underline" href="mailto:{{ config('legal.contact_email') }}">{{ config('legal.contact_email') }}</a></article>
         </div>
-        <div class="mc-surface rounded-2xl p-6"><h2 class="text-2xl font-bold">Conteúdo e moderação</h2><p class="mt-3 mc-muted">Consulte as <a class="underline" href="{{ route('legal.community') }}">Diretrizes da Comunidade</a> para entender as regras, denúncias e contestação de decisões.</p></div>
+        <div class="mc-surface rounded-2xl p-6"><h2 class="text-2xl font-bold">Conteúdo e moderação</h2><p class="mt-3 mc-muted">Consulte o <a class="underline" href="{{ route('legal.regulation') }}">Regulamento da Comunidade</a> para entender as regras, denúncias e contestação de decisões.</p></div>
     </section>
 </x-layouts.public>

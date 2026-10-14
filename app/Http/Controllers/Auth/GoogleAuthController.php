@@ -25,7 +25,7 @@ class GoogleAuthController extends Controller
     public function redirect(Request $request): RedirectResponse
     {
         if (app()->environment('production') && ! $request->session()->has('terms_consent')) {
-            return $this->redirectToLogin()->withErrors(['google' => 'Leia e aceite os Termos de Uso e as Diretrizes da Comunidade antes de continuar.']);
+            return $this->redirectToLogin()->withErrors(['google' => 'Leia e aceite os Termos de Uso e o Regulamento da Comunidade antes de continuar.']);
         }
 
         if (! $this->configured()) {
@@ -75,7 +75,7 @@ class GoogleAuthController extends Controller
         $user = User::where('google_id', $googleId)->first();
 
         if (! $user && app()->environment('production') && ! $request->session()->has('terms_consent')) {
-            return $this->redirectToLogin()->withErrors(['google' => 'Aceite os Termos de Uso e as Diretrizes da Comunidade para criar sua conta.']);
+            return $this->redirectToLogin()->withErrors(['google' => 'Aceite os Termos de Uso e o Regulamento da Comunidade para criar sua conta.']);
         }
 
         if (! $user) {
@@ -99,7 +99,7 @@ class GoogleAuthController extends Controller
         }
 
         if (app()->environment('production') && ! $request->session()->has('terms_consent') && ! app(TermsAcceptanceService::class)->hasCurrentAcceptance($user)) {
-            return $this->redirectToLogin()->withErrors(['google' => 'Leia e aceite a versão atual dos Termos de Uso e das Diretrizes da Comunidade.']);
+            return $this->redirectToLogin()->withErrors(['google' => 'Leia e aceite a versão atual dos Termos de Uso e do Regulamento da Comunidade.']);
         }
 
         Auth::login($user);

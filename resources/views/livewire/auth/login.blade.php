@@ -17,7 +17,7 @@ new #[Layout('components.layouts.auth')] class extends Component {}; ?>
         @csrf
         <label class="flex items-start gap-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
             <input type="checkbox" name="terms_accepted" value="1" required class="mt-1 rounded border-zinc-300">
-            <span>Li e concordo com os <a class="underline" href="{{ route('legal.terms') }}" target="_blank" rel="noopener">Termos de Uso</a> e as <a class="underline" href="{{ route('legal.community') }}" target="_blank" rel="noopener">Diretrizes da Comunidade</a>. A <a class="underline" href="{{ route('legal.privacy') }}" target="_blank" rel="noopener">Política de Privacidade</a> explica o tratamento dos dados.</span>
+            <span>Li e concordo com os <a class="underline" href="{{ route('legal.terms') }}" target="_blank" rel="noopener">Termos de Uso</a> e o <a class="underline" href="{{ route('legal.regulation') }}" target="_blank" rel="noopener">Regulamento da Comunidade</a> do Autoverse.<br><span class="mc-muted">Seus dados serão tratados conforme nossa <a class="underline" href="{{ route('legal.privacy.short') }}" target="_blank" rel="noopener">Política de Privacidade</a>.</span></span>
         </label>
         <button type="submit" class="flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-300 bg-white px-5 py-3 font-semibold text-zinc-900 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-4">
             Continuar com Google
