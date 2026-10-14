@@ -14,5 +14,4 @@
 <h2>7. Disponibilidade e mudanças</h2>
 <p>Recursos podem mudar, ser descontinuados ou ficar temporariamente indisponíveis. Avisaremos quando uma alteração relevante exigir nova aceitação.</p>
 <h2>8. Contato e lei aplicável</h2>
-<p>O responsável indicado para revisão deste documento é {{ config('legal.responsible_party') }}. Contato: {{ config('legal.contact_email') }}. Aplicam-se as leis brasileiras, sem prejuízo dos direitos previstos ao usuário.</p>
-<p><strong>Revisão pendente:</strong> os dados do responsável legal e os canais definitivos devem ser confirmados antes da publicação.</p>
+<p>Este documento é mantido por {{ config('legal.responsible_party') }}. Contato: {{ config('legal.contact_email') }}. Aplicam-se as leis brasileiras, sem prejuízo dos direitos previstos ao usuário.</p>

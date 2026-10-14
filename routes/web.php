@@ -62,7 +62,7 @@ Route::get('v/{key}/revista', [MagazineController::class, 'showPublicByKey'])->w
 Route::get('veiculos/{slug}/evolucao', [VehicleEvolutionController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.evolution');
 Route::get('veiculos/{slug}/revista', [MagazineController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.magazine');
 Route::get('veiculos/{slug}/revista/leitura', [MagazineController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.magazine.reading');
-Route::get('veiculos/{slug}/qr-code', [VehicleShareController::class, 'publicQr'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('vehicles.slug.qr');
+Route::get('veiculos/{slug}/qr-code', [VehicleShareController::class, 'publicQr'])->where('slug', '[a-z][a-z0-9-]*')->middleware(['feature:garage', 'throttle:60,1'])->name('vehicles.slug.qr');
 Route::get('veiculos/{vehicle}', [PublicVehicleController::class, 'showById'])->whereNumber('vehicle')->middleware('feature:garage')->name('vehicles.show');
 Route::get('garagem/{vehicle}', Details::class)->whereNumber('vehicle')->middleware(['auth', 'verified', 'feature:garage'])->name('garage.details');
 Route::get('garagem/novo', fn () => redirect()->to('/garagem?novo=1'))->middleware(['auth', 'verified', 'feature:garage'])->name('garage.create');
@@ -71,7 +71,7 @@ Route::get('garagem/{slug}/evolucao', [VehicleEvolutionController::class, 'showP
 Route::get('garagem/{slug}/revista', [MagazineController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('public.garage.magazine');
 Route::get('garagem/{slug}/revista/leitura', [MagazineController::class, 'showPublic'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('public.garage.magazine.reading');
 Route::get('garagem/{slug}/fotos', [PublicVehicleController::class, 'showBySlug'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('public.garage.photos');
-Route::get('garagem/{slug}/qr-code', [VehicleShareController::class, 'publicQr'])->where('slug', '[a-z][a-z0-9-]*')->middleware('feature:garage')->name('public.garage.qr');
+Route::get('garagem/{slug}/qr-code', [VehicleShareController::class, 'publicQr'])->where('slug', '[a-z][a-z0-9-]*')->middleware(['feature:garage', 'throttle:60,1'])->name('public.garage.qr');
 Route::get('fotos/{photo}', function (VehiclePhoto $photo) {
     abort_unless(Gate::allows('view', $photo->vehicle), 404);
     abort_unless(Storage::disk(config('filesystems.private_disk'))->exists($photo->path), 404);

@@ -7,7 +7,7 @@ return [
     'community_version' => env('AUTOVERSE_COMMUNITY_VERSION', '2026.10'),
     // No analytics, advertising or other optional provider is loaded by default.
     'optional_cookies_available' => (bool) env('AUTOVERSE_OPTIONAL_COOKIES', false),
-    'responsible_party' => env('AUTOVERSE_RESPONSIBLE_PARTY', '[REVISAR: razão social ou nome do responsável]'),
+    'responsible_party' => env('AUTOVERSE_RESPONSIBLE_PARTY', 'Autoverse'),
     'contact_email' => env('AUTOVERSE_CONTACT_EMAIL', 'suporte@motorclub.example'),
     'privacy_email' => env('AUTOVERSE_PRIVACY_EMAIL', 'privacidade@motorclub.example'),
 ];

@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\CookieConsent;
 use App\Models\LegalDocument;
+use App\Services\LegalContentSanitizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class LegalController extends Controller
 {
-    public function show(string $slug)
+    public function show(string $slug, LegalContentSanitizer $sanitizer)
     {
         abort_unless(array_key_exists($slug, $this->documents()), 404);
         $document = LegalDocument::query()->where('slug', $slug)->where('is_published', true)->latest('published_at')->first();
@@ -20,8 +21,7 @@ class LegalController extends Controller
             'slug' => $slug,
             'title' => $document?->title ?: $fallback['title'],
             'version' => $document?->version ?: $fallback['version'],
-            'content' => $document?->content ?: $fallback['content'],
-            'isDraft' => ! $document,
+            'content' => $sanitizer->sanitize($document?->content ?: $fallback['content']),
         ]);
     }
 

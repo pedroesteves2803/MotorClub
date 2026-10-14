@@ -2,17 +2,36 @@
 
 use App\Models\CookieConsent;
 use App\Models\Feedback;
+use App\Models\LegalDocument;
 use App\Models\TermsAcceptance;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as GoogleUser;
 
-it('publica os documentos institucionais como minutas revisáveis', function () {
+it('publica os documentos institucionais como documentos vigentes', function () {
     foreach (['termos-de-uso', 'politica-de-privacidade', 'politica-de-cookies', 'diretrizes-da-comunidade', 'ajuda-e-contato'] as $path) {
-        $this->get('/'.$path)->assertOk()->assertSee('Autoverse');
+        $this->get('/'.$path)->assertOk()->assertSee('Autoverse')->assertDontSee('Minuta')->assertDontSee('Revisão pendente');
     }
     $this->get('/configuracoes-de-cookies')->assertOk()->assertSee('Necessários');
+});
+
+it('sanitiza HTML de documentos legais publicados', function () {
+    LegalDocument::create([
+        'slug' => 'termos',
+        'title' => 'Termos revisados',
+        'version' => '2026.11',
+        'content' => '<p>Conteúdo seguro</p><script>alert(1)</script><a href="javascript:alert(2)" onclick="alert(3)">Link</a>',
+        'is_published' => true,
+        'published_at' => now(),
+    ]);
+
+    $this->get('/termos-de-uso')
+        ->assertOk()
+        ->assertSee('Conteúdo seguro')
+        ->assertDontSee('alert(1)', false)
+        ->assertDontSee('javascript:', false)
+        ->assertDontSee('onclick=', false);
 });
 
 it('recebe feedback de visitante com proteção de anexo', function () {

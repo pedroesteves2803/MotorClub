@@ -6,4 +6,3 @@
 <p>Você pode denunciar fotos, veículos, projetos e perfis pelo recurso disponível ou pelo suporte. A equipe pode solicitar contexto, limitar alcance, remover conteúdo, emitir aviso ou suspender uma conta de forma proporcional. Decisões podem ser contestadas pelo contato de suporte.</p>
 <h2>4. Transparência</h2>
 <p>Não publicamos feedbacks ou denúncias sem autorização. Registros administrativos são usados para segurança, auditoria e melhoria do serviço.</p>
-<p><strong>Revisão pendente:</strong> o procedimento e os prazos definitivos de contestação devem ser confirmados antes da publicação.</p>

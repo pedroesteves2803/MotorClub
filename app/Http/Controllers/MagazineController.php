@@ -38,6 +38,10 @@ class MagazineController extends Controller
         if (($data['cover_photo_id'] ?? null) !== null) {
             abort_unless($vehicle->photos()->whereKey($data['cover_photo_id'])->exists(), 422);
         }
+        if (array_key_exists('highlight_photo_ids', $data)) {
+            $allowedPhotoIds = $vehicle->photos()->whereIn('id', $data['highlight_photo_ids'] ?? [])->pluck('id');
+            abort_unless($allowedPhotoIds->count() === count($data['highlight_photo_ids'] ?? []), 422);
+        }
         $magazines->settingsFor($vehicle)->update($data);
 
         return back()->with('status', 'Personalização da revista salva.');

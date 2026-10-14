@@ -5,4 +5,4 @@
 <h2>3. Preferências</h2>
 <p>Você pode consultar, salvar ou revogar preferências em <a href="{{ route('cookies.settings') }}">Configurações de cookies</a>. Recusar opções não impede o uso das funcionalidades essenciais.</p>
 <h2>4. Versão e contato</h2>
-<p>Versão {{ config('legal.cookies_version') }}. Dúvidas: {{ config('legal.privacy_email') }}. Esta é uma minuta para revisão jurídica.</p>
+<p>Versão {{ config('legal.cookies_version') }}. Dúvidas: {{ config('legal.privacy_email') }}.</p>

@@ -107,6 +107,21 @@ it('salva capa, destaques, ordem e publicação da edição', function () {
         ->assertSee('Edição Venom');
 });
 
+it('não aceita destaque de foto pertencente a outro veículo', function () {
+    $vehicle = Vehicle::factory()->create();
+    $foreignVehicle = Vehicle::factory()->create();
+    $foreignPhoto = $foreignVehicle->photos()->create(['path' => 'vehicles/foreign.webp']);
+
+    $this->actingAs($vehicle->user)->put(route('garage.magazine.update', $vehicle), [
+        'primary_color' => '#123456',
+        'theme' => 'dark',
+        'editorial_style' => 'minimal',
+        'highlight_photo_ids' => [$foreignPhoto->id],
+    ])->assertStatus(422);
+
+    expect($vehicle->fresh()->magazineSetting)->toBeNull();
+});
+
 it('não expõe localização privada na página pública do veículo', function () {
     $vehicle = Vehicle::factory()->create(['visibility' => 'public', 'location' => 'Rua privada, 123']);
     $slug = app(VehicleSlugService::class)->ensure($vehicle);

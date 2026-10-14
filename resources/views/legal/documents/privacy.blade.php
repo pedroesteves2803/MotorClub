@@ -11,4 +11,4 @@
 <h2>6. Transferências internacionais</h2>
 <p>Alguns fornecedores podem processar dados fora do Brasil. Quando isso ocorrer, adotaremos medidas contratuais e técnicas compatíveis com a LGPD e informaremos mudanças relevantes.</p>
 <h2>7. Contato</h2>
-<p>Para privacidade, escreva para {{ config('legal.privacy_email') }}. Este texto é uma minuta baseada no funcionamento atual e precisa de revisão jurídica antes da publicação definitiva.</p>
+<p>Para questões de privacidade, escreva para {{ config('legal.privacy_email') }}.</p>
