@@ -11,7 +11,10 @@ class FeedbackController extends Controller
 {
     public function create(Request $request)
     {
-        return view('feedback.create', ['email' => $request->user()?->email]);
+        return view('feedback.create', [
+            'email' => $request->user()?->email,
+            'categories' => $this->categories(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

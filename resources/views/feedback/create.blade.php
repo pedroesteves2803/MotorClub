@@ -4,7 +4,7 @@
         <form method="POST" action="{{ route('feedback.store') }}" enctype="multipart/form-data" class="mc-surface mc-form rounded-2xl p-6 md:p-8">
             @csrf
             <div aria-hidden="true" class="hidden"><label>Website<input name="website" tabindex="-1" autocomplete="off"></label></div>
-            <x-select-field name="category" label="Sobre o que você quer falar?" :options="app(App\\Http\\Controllers\\FeedbackController::class)->categories()" required />
+            <x-select-field name="category" label="Sobre o que você quer falar?" :options="$categories" required />
             <x-field name="title" label="Título" placeholder="Ex.: Quero organizar fotos por etapa" maxlength="160" required />
             <x-area name="description" label="Conte mais" placeholder="Explique o que aconteceu ou o que você gostaria de ver." maxlength="5000" required />
             <x-field name="image" label="Imagem ou captura de tela (opcional)" type="file" accept="image/jpeg,image/png,image/webp" />
