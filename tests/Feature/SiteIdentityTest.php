@@ -34,6 +34,8 @@ it('mantém a home focada na comunidade automotiva', function () {
         ->assertOk()
         ->assertSee('Criar minha garagem')
         ->assertSee('Explorar projetos')
+        ->assertSee('mc-light-showroom__art', false)
+        ->assertSee('mc-light-showroom__body', false)
         ->assertDontSee('Autoverse / assinatura')
         ->assertDontSee('Design em movimento.')
         ->assertDontSee('Sem excesso.')
