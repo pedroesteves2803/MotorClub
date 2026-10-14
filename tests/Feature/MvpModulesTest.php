@@ -316,6 +316,6 @@ it('explica a restrição do Google na prévia de rede local', function () {
 });
 
 it('apresenta erros e validação em português', function () {
-    $this->get('/pagina-inexistente')->assertNotFound()->assertSee('Não encontramos esta página');
+    $this->get('/pagina-inexistente')->assertNotFound()->assertSee('Essa rota não foi encontrada');
     $this->actingAs(User::factory()->create())->post(route('events.store'), [])->assertSessionHasErrors(['title' => 'Preencha o campo título.', 'description' => 'Preencha o campo descrição.']);
 });

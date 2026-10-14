@@ -6,7 +6,8 @@ it('aplica cabeçalhos de segurança nas páginas públicas', function () {
     $this->get('/')->assertOk()
         ->assertHeader('X-Content-Type-Options', 'nosniff')
         ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
-        ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+        ->assertHeader('Content-Security-Policy-Report-Only');
 });
 
 it('não oferece perfis de demonstração quando desativados', function () {

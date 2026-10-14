@@ -67,9 +67,11 @@ it('recebe feedback de visitante com proteção de anexo', function () {
 it('salva preferências de cookies e permite revogar opções', function () {
     $response = $this->post('/configuracoes-de-cookies', ['analytics' => 1, 'personalization' => 1]);
     $response->assertRedirect()->assertCookie('autoverse_cookie_consent_id');
+    $consentCookie = collect($response->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === 'autoverse_cookie_consent_id');
+    expect($consentCookie->isHttpOnly())->toBeTrue()
+        ->and($consentCookie->getSameSite())->toBe('lax');
     expect(CookieConsent::sole()->analytics)->toBeTrue();
 
-    $consentCookie = collect($response->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === 'autoverse_cookie_consent_id');
     $response = $this->withCookie('autoverse_cookie_consent_id', $consentCookie->getValue())
         ->post('/configuracoes-de-cookies', []);
     $response->assertRedirect();

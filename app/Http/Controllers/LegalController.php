@@ -59,7 +59,17 @@ class LegalController extends Controller
             'user_agent_hash' => hash_hmac('sha256', (string) $request->userAgent(), (string) config('app.key')),
         ]);
 
-        return back()->withCookie(cookie('autoverse_cookie_consent_id', $visitorId, 60 * 24 * 365))->with('status', 'Preferências de cookies salvas.');
+        return back()->withCookie(cookie(
+            'autoverse_cookie_consent_id',
+            $visitorId,
+            60 * 24 * 365,
+            '/',
+            null,
+            app()->environment('production') || $request->isSecure(),
+            true,
+            false,
+            'lax',
+        ))->with('status', 'Preferências de cookies salvas.');
     }
 
     private function documents(): array
