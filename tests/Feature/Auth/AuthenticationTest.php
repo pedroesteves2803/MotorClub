@@ -119,8 +119,16 @@ it('uses the recent application login even when the legacy account has no Google
     expect(SetUpAppAuthenticationAction::hasRecentGoogleAuthentication())->toBeTrue();
 });
 
-it('does not accept an old Google login as reauthentication for authenticator setup', function () {
+it('does not ask a linked Google account for a local password after the session ages', function () {
     $user = User::factory()->create(['google_id' => 'google-123']);
+
+    $this->actingAs($user)->withSession(['google_authenticated_at' => now()->subMinutes(11)->timestamp]);
+
+    expect(SetUpAppAuthenticationAction::hasRecentGoogleAuthentication())->toBeTrue();
+});
+
+it('does not accept an old session without a linked Google identity', function () {
+    $user = User::factory()->create(['google_id' => null]);
 
     $this->actingAs($user)->withSession(['google_authenticated_at' => now()->subMinutes(11)->timestamp]);
 

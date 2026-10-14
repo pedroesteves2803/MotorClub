@@ -49,10 +49,17 @@ class SetUpAppAuthenticationAction
 {
     public static function hasRecentGoogleAuthentication(): bool
     {
+        $user = Filament::auth()->user() ?? auth()->user();
+
         // The marker is written only after the application completes Google's
         // verified OAuth callback and regenerates the session. Do not require a
         // local password or a second admin credential for that same login.
-        return (int) session('google_authenticated_at', 0) >= now()->subMinutes(10)->timestamp;
+        // Existing Google-only accounts may have an older session without the
+        // marker; their linked Google identity is still the application's
+        // authentication source and must not be asked for a nonexistent local
+        // password during the first MFA enrollment.
+        return (int) session('google_authenticated_at', 0) >= now()->subMinutes(10)->timestamp
+            || filled(data_get($user, 'google_id'));
     }
 
     public static function make(AppAuthentication $appAuthentication): Action
