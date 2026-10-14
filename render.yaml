@@ -19,7 +19,7 @@ services:
       - key: ADMIN_EMAILS
         sync: false
       - key: MOTORCLUB_RELEASE
-        value: "4ccc76d"
+        value: "20aabf9"
       - key: APP_URL
         fromService:
           type: web
