@@ -1,6 +1,9 @@
 <?php
 
 use App\Livewire\Garage\Details;
+use App\Models\MediaPhoto;
+use App\Models\ProjectModification;
+use App\Models\ProjectPart;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\UploadedFile;
@@ -35,6 +38,58 @@ it('allows a private history entry without inventing an unknown date', function 
         ->assertHasNoErrors();
 
     expect($v->entries()->sole()->occurred_on)->toBeNull();
+});
+
+it('creates a quick modification with an optional photo and keeps its planned status', function () {
+    Storage::fake('local');
+    $v = Vehicle::factory()->create();
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('quick_modification_title', 'Rodas forjadas')
+        ->set('quick_modification_status', 'planned')
+        ->set('quick_modification_photos', [UploadedFile::fake()->image('rodas.jpg')])
+        ->call('saveQuickModification')
+        ->assertHasNoErrors();
+
+    $modification = ProjectModification::sole();
+    expect($modification->title)->toBe('Rodas forjadas')
+        ->and($modification->status)->toBe('planned')
+        ->and(MediaPhoto::where('imageable_type', ProjectModification::class)->count())->toBe(1);
+});
+
+it('adds a minimal optional-detail part to an existing modification', function () {
+    $v = Vehicle::factory()->create();
+    $project = $v->projects()->create(['title' => 'Projeto principal', 'category' => 'maintenance', 'status' => 'planning', 'description' => 'Registro']);
+    $modification = $project->modifications()->create(['title' => 'Freios', 'category' => 'outro', 'status' => 'planned']);
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('quick_part_modification_id', $modification->id)
+        ->set('quick_part_name', 'Pastilha cerâmica')
+        ->set('quick_part_status', 'planned')
+        ->call('saveQuickPart')
+        ->assertHasNoErrors();
+
+    $part = ProjectPart::sole();
+    expect($part->name)->toBe('Pastilha cerâmica')
+        ->and($part->status)->toBe('planned')
+        ->and($part->brand)->toBeNull();
+});
+
+it('routes maintenance photos to a maintenance entry without orphaning files', function () {
+    Storage::fake('local');
+    $v = Vehicle::factory()->create();
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('photo_context', 'maintenance')
+        ->set('photo_context_title', 'Troca de óleo')
+        ->set('photo_context_description', 'Óleo e filtro substituídos.')
+        ->set('photos', [UploadedFile::fake()->image('oleo.jpg')])
+        ->call('uploadPhoto')
+        ->assertHasNoErrors();
+
+    $entry = $v->entries()->sole();
+    expect($entry->photos()->count())->toBe(1);
+    Storage::disk('local')->assertExists($entry->photos()->sole()->path);
 });
 it('blocks other accounts from managing history and photos', function () {
     $v = Vehicle::factory()->create(['visibility' => 'public']);
@@ -78,8 +133,12 @@ it('removes stored photos when the vehicle is deleted', function () {
     $v = Vehicle::factory()->create();
     Storage::disk('local')->put('vehicles/test.webp', 'test');
     $v->photos()->create(['path' => 'vehicles/test.webp']);
+    $entry = $v->entries()->create(['category' => 'maintenance', 'title' => 'Troca', 'description' => 'Óleo']);
+    Storage::disk('local')->put('media/entry.webp', 'entry');
+    $entry->photos()->create(['path' => 'media/entry.webp', 'kind' => 'galeria']);
     $v->delete();
     Storage::disk('local')->assertMissing('vehicles/test.webp');
+    Storage::disk('local')->assertMissing('media/entry.webp');
 });
 it('exposes only explicitly public history on public pages', function () {
     $v = Vehicle::factory()->create(['visibility' => 'public']);

@@ -67,7 +67,9 @@ class ShotsController extends Controller
 
     public function createGallery(Request $request)
     {
-        $this->ensurePhotographer($request);
+        if (! $this->ensurePhotographer($request)) {
+            return redirect()->route('shots.profile')->with('status', 'Ative seu perfil de fotógrafo para criar uma galeria.');
+        }
 
         return $this->galleryForm($request, new ShotGallery);
     }
@@ -86,7 +88,9 @@ class ShotsController extends Controller
 
     public function storeGallery(Request $request)
     {
-        $this->ensurePhotographer($request);
+        if (! $this->ensurePhotographer($request)) {
+            return redirect()->route('shots.profile')->with('status', 'Ative seu perfil de fotógrafo para criar uma galeria.');
+        }
         $gallery = ShotGallery::create($this->galleryData($request) + ['user_id' => $request->user()->id]);
 
         return redirect()->route('shots.galleries.edit', $gallery)->with('status', 'Galeria criada. Adicione suas fotos.');
@@ -257,9 +261,9 @@ class ShotsController extends Controller
         return $request->validate(['title' => 'required|string|max:150', 'description' => 'required|string|max:5000', 'city' => 'required|string|max:100', 'state' => ['required', Rule::in(config('motorclub.states'))], 'shot_on' => 'required|date|before_or_equal:today', 'car_event_id' => ['nullable', Rule::exists('car_events', 'id')->where(fn ($query) => $query->where('is_public', true)->orWhere('user_id', $request->user()->id))], 'is_public' => 'required|boolean']);
     }
 
-    private function ensurePhotographer(Request $request): void
+    private function ensurePhotographer(Request $request): bool
     {
-        abort_unless($request->user()->photographerProfile()->exists(), 422, 'Ative seu perfil de fotógrafo antes de criar galerias.');
+        return $request->user()->photographerProfile()->exists();
     }
 
     private function ownsGallery(Request $request, ShotGallery $gallery): void

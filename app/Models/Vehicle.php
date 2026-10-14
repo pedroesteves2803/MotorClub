@@ -31,6 +31,7 @@ class Vehicle extends Model
     protected static function booted(): void
     {
         static::deleting(function (Vehicle $vehicle) {
+            $vehicle->entries()->get()->each->delete();
             Project::where('vehicle_id', $vehicle->id)->each(fn (Project $project) => $project->delete());
             foreach ($vehicle->photos as $photo) {
                 if (! Storage::disk(config('filesystems.private_disk'))->delete($photo->path)) {

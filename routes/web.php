@@ -18,8 +18,10 @@ use App\Http\Controllers\VehicleShareController;
 use App\Http\Controllers\WorkshopController;
 use App\Livewire\Garage\Details;
 use App\Livewire\Garage\Index;
+use App\Models\MediaPhoto;
 use App\Models\ShotDownloadGrant;
 use App\Models\ShotPhoto;
+use App\Models\VehicleEntry;
 use App\Models\VehiclePhoto;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -164,6 +166,13 @@ Route::get('projetos/{project}/modificacoes/{modification}/pecas/{part}', [Proje
 Route::get('projetos/{project}/relatorios/{report}', [ProjectController::class, 'showReport'])->middleware('feature:ai_reports')->name('projects.reports.show');
 Route::get('fotos-projetos/{photo}', [ProjectController::class, 'image'])->middleware('feature:garage')->name('projects.image');
 Route::get('midias-projetos/{photo}', [ProjectController::class, 'mediaImage'])->middleware('feature:garage')->name('projects.media.image');
+Route::get('midias-historico/{photo}', function (MediaPhoto $photo) {
+    $entry = $photo->imageable;
+    abort_unless($entry instanceof VehicleEntry && Gate::allows('update', $entry->vehicle), 404);
+    abort_unless(Storage::disk(config('filesystems.private_disk'))->exists($photo->path), 404);
+
+    return Storage::disk(config('filesystems.private_disk'))->response($photo->path, null, ['Content-Type' => 'image/webp', 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+})->middleware('feature:garage')->name('vehicle-entry-media.show');
 Route::get('oficinas/{workshop}', [WorkshopController::class, 'show'])->middleware('feature:workshops')->name('workshops.show');
 Route::get('eventos/{event}', [EventController::class, 'show'])->middleware('feature:events')->name('events.show');
 Route::get('pessoas/{person}', [PublicProfileController::class, 'show'])->middleware('feature:explore')->name('profiles.show');

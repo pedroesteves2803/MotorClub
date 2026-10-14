@@ -73,8 +73,8 @@ it('saves the real vehicle profile details without exposing it by default', func
         ->and($vehicle->visibility)->toBe('private');
 });
 
-it('validates required fields year and visibility', function () {
-    Livewire::actingAs(User::factory()->create())->test(Index::class)->set('brand', '   ')->set('model_year', '1800')->set('visibility', 'invalid')->call('save')->assertHasErrors(['brand', 'model', 'trim', 'engine', 'model_year', 'visibility']);
+it('validates the minimum vehicle identity fields', function () {
+    Livewire::actingAs(User::factory()->create())->test(Index::class)->set('brand', '   ')->set('model_year', '1800')->set('visibility', 'invalid')->call('save')->assertHasErrors(['brand', 'model', 'model_year', 'visibility']);
     expect(Vehicle::count())->toBe(0);
 });
 

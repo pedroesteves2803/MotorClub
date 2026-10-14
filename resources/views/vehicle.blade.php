@@ -23,7 +23,7 @@
 @endphp
 <x-layouts.public :title="$vehicleName.' — '.$vehicleFacts.' | Autoverse'" :description="$vehicleDescription" :noindex="(bool) $vehicle->user->is_demo" :canonical="$vehiclePublicUrl" :jsonLd="[$vehicleStructuredData, $vehicleBreadcrumb]" :image="$vehicle->photos->first() ? route('vehicle-photos.show', $vehicle->photos->first()) : null">
     <a href="{{ route('community') }}" class="mc-text-link">← Conhecer a comunidade</a>
-    <header class="mc-intro"><p class="mc-edition mb-5">{{ $vehicle->brand }} / {{ $vehicle->model_year }}</p><h1>{{ $vehicleName }}<br><span>{{ $vehicle->trim }}</span></h1><p class="mt-6 text-xl">{{ $vehicle->brand }} {{ $vehicle->model }} · {{ $vehicle->engine }} · {{ $vehicle->model_year }}</p>@if($vehicle->color || $vehicle->mileage)<p class="mc-muted">{{ $vehicle->color }}{{ $vehicle->mileage ? ' · '.number_format($vehicle->mileage, 0, ',', '.').' km'.($vehicle->mileage_approximate ? ' (aprox.)' : '') : '' }}</p>@endif @if($vehicle->instagram_url)<a class="mc-text-link" href="{{ $vehicle->instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram do carro ↗</a>@endif</header>
+    <header class="mc-intro"><p class="mc-edition mb-5">{{ $vehicle->brand }} / {{ $vehicle->model_year }}</p><h1>{{ $vehicleName }}@if($vehicle->trim)<br><span>{{ $vehicle->trim }}</span>@endif</h1><p class="mt-6 text-xl">{{ collect([$vehicle->brand.' '.$vehicle->model, $vehicle->engine, $vehicle->model_year])->filter()->implode(' · ') }}</p>@if($vehicle->color || $vehicle->mileage)<p class="mc-muted">{{ $vehicle->color }}{{ $vehicle->mileage ? ' · '.number_format($vehicle->mileage, 0, ',', '.').' km'.($vehicle->mileage_approximate ? ' (aprox.)' : '') : '' }}</p>@endif @if($vehicle->instagram_url)<a class="mc-text-link" href="{{ $vehicle->instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram do carro ↗</a>@endif</header>
     @if($vehicle->user->profile_public)<p>Na garagem de <a class="mc-text-link" href="{{ route('profiles.show',$vehicle->user) }}">{{ $vehicle->user->name }}</a></p>@endif
     @if($vehicle->user->is_demo)<p class="mc-notice border-l-2 border-[var(--mc-action)] p-4">Veículo fictício de demonstração.</p>@endif
     <nav class="flex flex-wrap gap-4" aria-label="Explorar veículo">
@@ -35,7 +35,7 @@
         @forelse($vehicle->photos as $photo)
             <figure class="{{ $loop->first ? 'md:col-span-2' : '' }}"><img src="{{ route('vehicle-photos.show', $photo) }}" alt="Foto de {{ $vehicleName }}" class="max-h-[650px] w-full object-cover" /></figure>
         @empty
-            <div class="mc-home-poster min-h-72! md:col-span-2"><span class="mc-edition">{{ $vehicle->brand }}</span><p>{{ $vehicleName }}<em> / {{ $vehicle->trim }}</em></p><span class="mc-edition">Este veículo ainda não tem fotos</span></div>
+            <div class="mc-home-poster min-h-72! md:col-span-2"><span class="mc-edition">{{ $vehicle->brand }}</span><p>{{ $vehicleName }}@if($vehicle->trim)<em> / {{ $vehicle->trim }}</em>@endif</p><span class="mc-edition">Este veículo ainda não tem fotos</span></div>
         @endforelse
     </section>
     @if($vehicle->user->is_demo && ($details = config('verified_cars.'.strtolower($vehicle->model).($vehicle->trim === 'GTI' ? '-gti' : ''))))

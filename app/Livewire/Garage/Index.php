@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Garage;
 
+use App\Actions\CreateVehicleWithMainProject;
 use App\Models\FeatureSetting;
 use App\Models\Vehicle;
 use App\Services\VehicleImages;
@@ -24,6 +25,10 @@ class Index extends Component
     public ?int $editingId = null;
 
     public bool $formOpen = false;
+
+    public bool $showAdvanced = false;
+
+    public ?int $createdVehicleId = null;
 
     public string $vehicle_type = 'car';
 
@@ -123,7 +128,7 @@ class Index extends Component
         $this->formOpen = true;
     }
 
-    public function save(VehicleImages $images): void
+    public function save(CreateVehicleWithMainProject $creator, VehicleImages $images): void
     {
         $this->ensureFeatureEnabled();
         $vehicle = $this->editingId ? Vehicle::findOrFail($this->editingId) : new Vehicle;
@@ -138,11 +143,11 @@ class Index extends Component
             'brand' => ['required', 'string', 'max:80'],
             'model' => ['required', 'string', 'max:80'],
             'public_name' => ['nullable', 'string', 'max:120'],
-            'trim' => ['required', 'string', 'max:100'],
+            'trim' => ['nullable', 'string', 'max:100'],
             'generation' => ['nullable', 'string', 'max:50'],
             'color' => ['nullable', 'string', 'max:50'],
             'model_year' => ['required', 'integer', 'min:1886', 'max:'.(now()->year + 1)],
-            'engine' => ['required', 'string', 'max:100'],
+            'engine' => ['nullable', 'string', 'max:100'],
             'mileage' => ['nullable', 'integer', 'min:0', 'max:2000000'],
             'mileage_approximate' => ['required', 'boolean'],
             'acquired_on' => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
@@ -168,7 +173,7 @@ class Index extends Component
             'integer' => 'Informe um ano válido.',
             'in' => 'Selecione uma opção válida.',
         ], ['vehicle_type' => 'tipo de veículo', 'brand' => 'marca', 'model' => 'modelo', 'public_name' => 'nome público', 'trim' => 'versão', 'generation' => 'geração', 'color' => 'cor', 'model_year' => 'ano', 'engine' => 'motorização', 'mileage' => 'quilometragem', 'mileage_approximate' => 'quilometragem aproximada', 'acquired_on' => 'data de aquisição', 'location' => 'localização', 'instagram_url' => 'Instagram', 'visibility' => 'visibilidade', 'photos.*' => 'fotos', 'project_title' => 'título do projeto', 'project_description' => 'descrição do projeto', 'project_cost' => 'custo do projeto']);
-        if ($this->project_enabled && (trim($this->project_title) !== '' || trim($this->project_description) !== '')) {
+        if ($this->editingId && $this->project_enabled && (trim($this->project_title) !== '' || trim($this->project_description) !== '')) {
             $this->validate([
                 'project_title' => ['required', 'string', 'max:150'],
                 'project_category' => ['required', Rule::in(array_keys(config('motorclub.categories')))],
@@ -184,10 +189,35 @@ class Index extends Component
             return;
         }
         $vehicleData = collect($data)->only(['vehicle_type', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility'])->all();
-        $vehicle->fill($vehicleData);
+
         if (! $vehicle->exists) {
-            $vehicle->user_id = Auth::id();
+            $created = $creator->handle(
+                Auth::id(),
+                $vehicleData,
+                [
+                    'title' => $this->project_title,
+                    'category' => $this->project_category,
+                    'status' => $this->project_status,
+                    'description' => $this->project_description,
+                    'parts' => $this->project_parts,
+                    'services' => $this->project_services,
+                    'cost' => $this->project_cost,
+                    'show_cost' => $this->project_show_cost,
+                    'is_public' => $this->project_is_public,
+                ],
+                $this->photos,
+                $images,
+            );
+            $this->createdVehicleId = $created->id;
+            $photoCount = count($this->photos);
+            $this->resetForm();
+            $this->resetPage();
+            session()->flash('status', 'Veículo salvo com o projeto principal'.($photoCount ? " e {$photoCount} foto(s)" : '').'.');
+
+            return;
         }
+
+        $vehicle->fill($vehicleData);
         $vehicle->save();
         app(VehicleSlugService::class)->ensure($vehicle);
         $storedPaths = [];
@@ -243,7 +273,7 @@ class Index extends Component
 
     public function resetForm(): void
     {
-        $this->reset('editingId', 'formOpen', 'vehicle_type', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility', 'projectId', 'project_enabled', 'project_title', 'project_category', 'project_status', 'project_description', 'project_parts', 'project_services', 'project_cost', 'project_show_cost', 'project_is_public', 'photos');
+        $this->reset('editingId', 'formOpen', 'showAdvanced', 'vehicle_type', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility', 'projectId', 'project_enabled', 'project_title', 'project_category', 'project_status', 'project_description', 'project_parts', 'project_services', 'project_cost', 'project_show_cost', 'project_is_public', 'photos');
         $this->vehicle_type = 'car';
         $this->visibility = 'private';
         $this->project_enabled = true;
