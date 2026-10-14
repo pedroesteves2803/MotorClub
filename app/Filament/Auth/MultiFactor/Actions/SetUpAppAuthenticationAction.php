@@ -49,10 +49,10 @@ class SetUpAppAuthenticationAction
 {
     public static function hasRecentGoogleAuthentication(): bool
     {
-        $user = auth()->user();
-
-        return filled(data_get($user, 'google_id'))
-            && (int) session('google_authenticated_at', 0) >= now()->subMinutes(10)->timestamp;
+        // The marker is written only after the application completes Google's
+        // verified OAuth callback and regenerates the session. Do not require a
+        // local password or a second admin credential for that same login.
+        return (int) session('google_authenticated_at', 0) >= now()->subMinutes(10)->timestamp;
     }
 
     public static function make(AppAuthentication $appAuthentication): Action
@@ -88,6 +88,7 @@ class SetUpAppAuthenticationAction
             )
             ->password()
             ->revealable(Filament::arePasswordsRevealable())
+            ->visible(fn (): bool => ! self::hasRecentGoogleAuthentication())
             ->required(fn (): bool => ! self::hasRecentGoogleAuthentication())
             ->helperText(fn (): ?string => self::hasRecentGoogleAuthentication()
                 ? 'Sua autenticação recente com Google confirma este acesso.'

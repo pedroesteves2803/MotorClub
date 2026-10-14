@@ -111,6 +111,14 @@ it('accepts a recent Google login as reauthentication for authenticator setup', 
     expect(SetUpAppAuthenticationAction::hasRecentGoogleAuthentication())->toBeTrue();
 });
 
+it('uses the recent application login even when the legacy account has no Google id', function () {
+    $user = User::factory()->create(['google_id' => null]);
+
+    $this->actingAs($user)->withSession(['google_authenticated_at' => now()->timestamp]);
+
+    expect(SetUpAppAuthenticationAction::hasRecentGoogleAuthentication())->toBeTrue();
+});
+
 it('does not accept an old Google login as reauthentication for authenticator setup', function () {
     $user = User::factory()->create(['google_id' => 'google-123']);
 
