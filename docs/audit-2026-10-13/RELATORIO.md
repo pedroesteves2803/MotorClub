@@ -85,6 +85,8 @@ Em 13/10/2026, a auditoria visual foi repetida no ambiente publicado em `/`, `/l
 
 O fluxo OAuth foi executado diretamente em produção a partir de `/login`. O provedor exibiu o domínio publicado como destino, o callback concluiu a sessão e a página autenticada “Minha garagem” foi carregada com os atalhos de garagem, Shots, explorar e perfil. O teste usou a sessão Google já disponível no navegador, sem digitar ou registrar credenciais.
 
+Com a mesma sessão autenticada, foram repetidas em produção as rotas `/shots`, `/meus-shots`, `/comunidade`, `/configuracoes/perfil` e `/configuracoes/aparencia`. Todas carregaram seus títulos, navegação e conteúdo sem redirecionar para login; nenhuma criação ou alteração de dados foi feita durante a captura.
+
 O formulário combinado de carro e projeto foi revisado em 390×844. A leitura, a ordem das três seções, os controles de arquivo e os alvos de toque permaneceram intactos; no mobile, o card passou a usar `1rem` de padding, os grupos passaram de `1.25rem/1.75rem` para `1rem/1.5rem` e os formulários públicos receberam a mesma compactação de ritmo. Os valores de desktop continuam preservados a partir dos breakpoints `sm`/`md`.
 
 Foram aplicados três ajustes de interface após essa rodada:
