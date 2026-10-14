@@ -301,7 +301,8 @@ const initThemeHeadlights = () => {
             control.setAttribute('aria-label', state);
             control.setAttribute('title', state);
             control.setAttribute('aria-pressed', String(!dark));
-            control.querySelector('[data-theme-toggle-status]')?.replaceChildren(document.createTextNode(state));
+            const status = control.querySelector('[data-theme-toggle-status]');
+            if (status && status.textContent !== state) status.replaceChildren(document.createTextNode(state));
         });
     };
 
@@ -653,6 +654,14 @@ ready(() => {
     initMotion();
     document.addEventListener('livewire:navigating', cleanupLightShowrooms);
     document.addEventListener('livewire:navigated', initMotion);
-    const observer = new MutationObserver(() => initMotion());
+    let observerFrame = 0;
+    const scheduleMotionInit = () => {
+        if (observerFrame) return;
+        observerFrame = window.requestAnimationFrame(() => {
+            observerFrame = 0;
+            initMotion();
+        });
+    };
+    const observer = new MutationObserver(scheduleMotionInit);
     observer.observe(document.body, {childList: true, subtree: true});
 });
