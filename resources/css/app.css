@@ -482,6 +482,14 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 }
 
 /* QR sharing surface: a focused, print-aware handoff for vehicle projects. */
+.profile-photo-preview { align-items: center; background: linear-gradient(135deg, var(--mc-graphite), color-mix(in srgb, var(--mc-action) 45%, var(--mc-graphite))); border: 1px solid var(--mc-line); border-radius: 50%; color: #fff; display: flex; flex: 0 0 7rem; font-family: var(--font-display); font-size: 2rem; font-weight: 600; height: 7rem; justify-content: center; overflow: hidden; width: 7rem; }
+.profile-photo-preview img { height: 100%; object-fit: cover; width: 100%; }
+.profile-photo-preview--small { flex-basis: 4.8rem; font-size: 1.25rem; height: 4.8rem; width: 4.8rem; }
+.profile-photo-picker { align-items: center; border: 1px solid var(--mc-line); border-radius: .65rem; cursor: pointer; display: inline-flex; min-height: 2.65rem; padding: .65rem .85rem; position: relative; }
+.profile-photo-picker:hover { border-color: var(--mc-action); }
+.profile-photo-picker input { height: 1px; opacity: 0; overflow: hidden; position: absolute; width: 1px; }
+.public-profile-heading { align-items: center; display: flex; gap: 1rem; }
+
 .av-qr-page {
     --av-qr-ink: var(--mc-ink);
     --av-qr-muted: var(--mc-muted);

@@ -9,11 +9,11 @@ use Illuminate\Validation\ValidationException;
 
 class VehicleImages
 {
-    public function store(UploadedFile $file, string $directory = 'vehicles'): string
+    public function store(UploadedFile $file, string $directory = 'vehicles', string $errorKey = 'photo'): string
     {
         $image = @imagecreatefromstring(file_get_contents($file->getRealPath()));
         if (! $image) {
-            throw ValidationException::withMessages(['photo' => 'Não foi possível processar esta imagem.']);
+            throw ValidationException::withMessages([$errorKey => 'Não foi possível processar esta imagem.']);
         }
         $image = $this->correctOrientation($image, $file);
         $image = $this->resize($image, (int) config('motorclub.photo_max_dimension', 2400));
@@ -24,7 +24,7 @@ class VehicleImages
         imagedestroy($image);
         $path = trim($directory, '/').'/'.Str::uuid().'.webp';
         if (! Storage::disk(config('filesystems.private_disk'))->put($path, $bytes)) {
-            throw ValidationException::withMessages(['photo' => 'Não foi possível salvar a foto. Tente novamente.']);
+            throw ValidationException::withMessages([$errorKey => 'Não foi possível salvar a foto. Tente novamente.']);
         }
 
         return $path;

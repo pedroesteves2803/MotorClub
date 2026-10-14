@@ -11,4 +11,81 @@
         'mainEntity' => ['@type' => 'Person', 'name' => $profileName],
     ];
 @endphp
-<x-layouts.public :title="$profileName.' · Comunidade Autoverse'" :description="$profileDescription" :noindex="!$person->profile_public || $person->is_demo" :canonical="route('profiles.show', $person)" :jsonLd="[$profileStructuredData, $profileBreadcrumb]"><section class="space-y-5 mc-page-intro"><p class="mc-edition">{{ $person->photographerProfile ? 'Fotógrafo · ' : '' }}{{ $person->account_type==='workshop' ? 'Profissional de oficina' : 'Entusiasta' }} · {{ $person->city }}</p><h1 class="mc-title">{{ $person->photographerProfile?->professional_name ?? $person->name }}</h1>@if($person->is_demo)<p class="mc-notice p-4 rounded-xl">Perfil fictício de demonstração.</p>@endif<p class="whitespace-pre-line">{{ $person->photographerProfile?->description ?? $person->bio }}</p></section><section class="space-y-6"><h2 class="text-3xl font-bold">Garagem pública</h2><div class="mc-gallery-grid grid gap-6 md:grid-cols-3">@forelse($vehicles as $vehicle)@php($publicMagazine = $vehicle->magazineSetting?->is_published && $vehicle->projects->isNotEmpty())<article class="mc-surface overflow-hidden rounded-xl">@if($vehicle->previewPhoto)<img loading="lazy" decoding="async" class="h-52 w-full object-cover" src="{{ route('vehicle-photos.show',$vehicle->previewPhoto) }}" alt="{{ $vehicle->model }}">@endif<div class="p-6"><h3 class="text-2xl font-bold"><a href="{{ route('vehicles.slug.show', ['slug' => $vehicle->slug]) }}">{{ $vehicle->brand }} {{ $vehicle->model }}</a></h3><p>{{ $vehicle->model_year }} · {{ $vehicle->engine }}</p>@if($publicMagazine)<a class="av-magazine-chip mt-4" href="{{ route('vehicles.slug.magazine', ['slug' => $vehicle->slug]) }}">@if($vehicle->magazineSetting->coverPhoto)<img src="{{ route('vehicle-photos.show', $vehicle->magazineSetting->coverPhoto) }}" alt="" loading="lazy">@endif<span><strong>Revista digital</strong><small>{{ $vehicle->magazineSetting->title ?: 'Explorar a história' }}</small></span><span aria-hidden="true">↗</span></a>@endif</div></article>@empty<p>Nenhum veículo público.</p>@endforelse</div></section><section class="space-y-6"><h2 class="text-3xl font-bold">Projetos</h2><x-project-cards :projects="$projects" /></section>@if($shotGalleries->isNotEmpty())<section class="space-y-6"><h2 class="text-3xl font-bold">Portfólio Shots</h2><div class="mc-gallery-grid grid gap-6 md:grid-cols-3">@foreach($shotGalleries as $gallery)<a class="mc-surface overflow-hidden rounded-xl" href="{{ route('shots.galleries.show',$gallery) }}">@if($gallery->previewPhoto)<img loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover" src="{{ route('shots.photos.preview',$gallery->previewPhoto) }}" alt="{{ $gallery->title }}">@endif<div class="p-5">{{ $gallery->title }}</div></a>@endforeach</div></section>@endif</x-layouts.public>
+
+<x-layouts.public
+    :title="$profileName.' · Comunidade Autoverse'"
+    :description="$profileDescription"
+    :noindex="!$person->profile_public || $person->is_demo"
+    :canonical="route('profiles.show', $person)"
+    :jsonLd="[$profileStructuredData, $profileBreadcrumb]"
+>
+    <section class="space-y-5 mc-page-intro">
+        <div class="public-profile-heading">
+            <div class="profile-photo-preview profile-photo-preview--small" aria-hidden="true">
+                @if($person->profile_photo_path)
+                    <img src="{{ route('profiles.photo', $person) }}" alt="">
+                @else
+                    <span>{{ $person->initials() }}</span>
+                @endif
+            </div>
+            <div>
+                <p class="mc-edition">{{ $person->photographerProfile ? 'Fotógrafo · ' : '' }}{{ $person->account_type === 'workshop' ? 'Profissional de oficina' : 'Entusiasta' }} · {{ $person->city }}</p>
+                <h1 class="mc-title">{{ $profileName }}</h1>
+            </div>
+        </div>
+        @if($person->is_demo)
+            <p class="mc-notice rounded-xl p-4">Perfil fictício de demonstração.</p>
+        @endif
+        <p class="whitespace-pre-line">{{ $person->photographerProfile?->description ?? $person->bio }}</p>
+    </section>
+
+    <section class="space-y-6">
+        <h2 class="text-3xl font-bold">Garagem pública</h2>
+        <div class="mc-gallery-grid grid gap-6 md:grid-cols-3">
+            @forelse($vehicles as $vehicle)
+                @php($publicMagazine = $vehicle->magazineSetting?->is_published && $vehicle->projects->isNotEmpty())
+                <article class="mc-surface overflow-hidden rounded-xl">
+                    @if($vehicle->previewPhoto)
+                        <img loading="lazy" decoding="async" class="h-52 w-full object-cover" src="{{ route('vehicle-photos.show', $vehicle->previewPhoto) }}" alt="{{ $vehicle->model }}">
+                    @endif
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold"><a href="{{ route('vehicles.slug.show', ['slug' => $vehicle->slug]) }}">{{ $vehicle->brand }} {{ $vehicle->model }}</a></h3>
+                        <p>{{ $vehicle->model_year }} · {{ $vehicle->engine }}</p>
+                        @if($publicMagazine)
+                            <a class="av-magazine-chip mt-4" href="{{ route('vehicles.slug.magazine', ['slug' => $vehicle->slug]) }}">
+                                @if($vehicle->magazineSetting->coverPhoto)
+                                    <img src="{{ route('vehicle-photos.show', $vehicle->magazineSetting->coverPhoto) }}" alt="" loading="lazy">
+                                @endif
+                                <span><strong>Revista digital</strong><small>{{ $vehicle->magazineSetting->title ?: 'Explorar a história' }}</small></span>
+                                <span aria-hidden="true">↗</span>
+                            </a>
+                        @endif
+                    </div>
+                </article>
+            @empty
+                <p>Nenhum veículo público.</p>
+            @endforelse
+        </div>
+    </section>
+
+    <section class="space-y-6">
+        <h2 class="text-3xl font-bold">Projetos</h2>
+        <x-project-cards :projects="$projects" />
+    </section>
+
+    @if($shotGalleries->isNotEmpty())
+        <section class="space-y-6">
+            <h2 class="text-3xl font-bold">Portfólio Shots</h2>
+            <div class="mc-gallery-grid grid gap-6 md:grid-cols-3">
+                @foreach($shotGalleries as $gallery)
+                    <a class="mc-surface overflow-hidden rounded-xl" href="{{ route('shots.galleries.show', $gallery) }}">
+                        @if($gallery->previewPhoto)
+                            <img loading="lazy" decoding="async" class="aspect-[4/3] w-full object-cover" src="{{ route('shots.photos.preview', $gallery->previewPhoto) }}" alt="{{ $gallery->title }}">
+                        @endif
+                        <div class="p-5">{{ $gallery->title }}</div>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+</x-layouts.public>

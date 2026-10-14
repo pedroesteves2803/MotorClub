@@ -11,6 +11,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, MustVerifyEmail
@@ -78,6 +79,9 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         static::deleting(function (User $user) {
             ShotGallery::where('user_id', $user->id)->each(fn (ShotGallery $gallery) => $gallery->delete());
             Vehicle::where('user_id', $user->id)->each(fn (Vehicle $vehicle) => $vehicle->delete());
+            if ($user->profile_photo_path) {
+                Storage::disk(config('filesystems.private_disk'))->delete($user->profile_photo_path);
+            }
         });
     }
 

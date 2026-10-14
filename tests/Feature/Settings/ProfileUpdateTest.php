@@ -4,6 +4,8 @@ namespace Tests\Feature\Settings;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
@@ -70,6 +72,25 @@ class ProfileUpdateTest extends TestCase
 
         $this->assertNull($user->fresh());
         $this->assertFalse(auth()->check());
+    }
+
+    public function test_user_can_upload_and_remove_a_profile_photo(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->create(['profile_public' => true]);
+
+        $this->actingAs($user)
+            ->post(route('profiles.photo.update'), ['profile_photo' => UploadedFile::fake()->image('perfil.jpg')])
+            ->assertSessionHasNoErrors();
+
+        $path = $user->fresh()->profile_photo_path;
+        $this->assertNotNull($path);
+        Storage::disk('local')->assertExists($path);
+        $this->get(route('profiles.photo', $user))->assertOk()->assertHeader('Content-Type', 'image/webp');
+
+        $this->delete(route('profiles.photo.destroy'))->assertSessionHasNoErrors();
+        $this->assertNull($user->fresh()->profile_photo_path);
+        Storage::disk('local')->assertMissing($path);
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void

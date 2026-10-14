@@ -1,5 +1,29 @@
 <x-layouts.public title="Perfil · Autoverse" :noindex="true">
     <section class="space-y-3"><p class="mc-edition">Área pessoal</p><h1 class="mc-title">Seu perfil</h1><p class="max-w-2xl mc-muted">Organize sua presença, garagem, projetos e preferências em um único lugar.</p></section>
+    @if(session('status'))<p class="mc-notice mt-6 rounded-xl p-4" role="status">{{ session('status') }}</p>@endif
+    <section class="mc-surface mt-8 flex flex-col gap-6 rounded-2xl p-6 md:flex-row md:items-center md:p-8" aria-labelledby="profile-photo-title">
+        <div class="profile-photo-preview" aria-hidden="true">
+            @if($person->profile_photo_path)
+                <img src="{{ route('profiles.photo', $person) }}" alt="">
+            @else
+                <span>{{ $person->initials() }}</span>
+            @endif
+        </div>
+        <div class="min-w-0 flex-1">
+            <p class="mc-edition">Identidade</p>
+            <h2 id="profile-photo-title" class="mt-1 text-2xl font-bold">Foto de perfil</h2>
+            <p class="mt-2 mc-muted">Use uma imagem quadrada para aparecer no seu perfil público.</p>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+                <form method="POST" action="{{ route('profiles.photo.update') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
+                    @csrf
+                    <label class="profile-photo-picker"><span>Escolher foto</span><input name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+                    <button class="mc-link-button" type="submit">Salvar foto</button>
+                </form>
+                @if($person->profile_photo_path)<form method="POST" action="{{ route('profiles.photo.destroy') }}">@csrf @method('DELETE')<button class="mc-text-link" type="submit">Remover</button></form>@endif
+            </div>
+            @error('profile_photo')<p class="mt-3 text-sm text-red-600">{{ $message }}</p>@enderror
+        </div>
+    </section>
     <section class="mt-8 grid gap-5 md:grid-cols-2" aria-label="Atalhos do perfil">
         <article class="mc-surface p-6"><p class="mc-edition">Sua comunidade</p><h2 class="mt-2 text-2xl font-bold">Garagem e projetos</h2><p class="mt-2 mc-muted">Cuide dos seus carros e registre cada evolução.</p><div class="mt-4 flex flex-wrap gap-3"><a class="mc-text-link" href="{{ route('dashboard') }}">Minha garagem</a><a class="mc-text-link" href="{{ route('projects.index',['mine'=>1]) }}">Meus projetos</a></div></article>
         <article class="mc-surface p-6"><p class="mc-edition">Autoverse Shots</p><h2 class="mt-2 text-2xl font-bold">Fotos e portfólio</h2><p class="mt-2 mc-muted">Gerencie suas galerias ou acompanhe solicitações de fotos.</p><div class="mt-4 flex flex-wrap gap-3"><a class="mc-text-link" href="{{ route('shots.manage') }}">Meus Shots</a><a class="mc-text-link" href="{{ route('shots.requests') }}">Solicitações</a><a class="mc-text-link" href="{{ route('shots.profile') }}">Perfil de fotógrafo</a></div></article>

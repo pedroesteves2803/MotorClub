@@ -108,6 +108,8 @@ Route::get('eventos', [EventController::class, 'index'])->middleware('feature:ev
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('meu-perfil', [PublicProfileController::class, 'edit'])->name('profiles.edit');
     Route::put('meu-perfil', [PublicProfileController::class, 'update'])->name('profiles.update');
+    Route::post('meu-perfil/foto', [PublicProfileController::class, 'updatePhoto'])->name('profiles.photo.update');
+    Route::delete('meu-perfil/foto', [PublicProfileController::class, 'removePhoto'])->name('profiles.photo.destroy');
 });
 Route::middleware(['auth', 'verified', 'feature:garage'])->group(function () {
     Route::get('garagem/{vehicle}/evolucao', [VehicleEvolutionController::class, 'owner'])->whereNumber('vehicle')->name('garage.evolution');
@@ -192,6 +194,7 @@ Route::get('midias-historico/{photo}', function (MediaPhoto $photo) {
 })->middleware('feature:garage')->name('vehicle-entry-media.show');
 Route::get('oficinas/{workshop}', [WorkshopController::class, 'show'])->middleware('feature:workshops')->name('workshops.show');
 Route::get('eventos/{event}', [EventController::class, 'show'])->middleware('feature:events')->name('events.show');
+Route::get('pessoas/{person}/foto', [PublicProfileController::class, 'photo'])->name('profiles.photo');
 Route::get('pessoas/{person}', [PublicProfileController::class, 'show'])->middleware('feature:explore')->name('profiles.show');
 
 Route::get('como-testar', fn () => abort_unless(config('production.test_mode'), 404) ?: view('testing-guide'))->middleware('feature:demo')->name('testing.guide');
