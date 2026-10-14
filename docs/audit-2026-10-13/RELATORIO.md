@@ -95,4 +95,4 @@ Foram aplicados três ajustes de interface após essa rodada:
 
 As capturas desta rodada foram inspecionadas diretamente no navegador de produção. O conjunto local de antes/depois permanece em `docs/audit-2026-10-13/`; rotas autenticadas continuam limitadas pelo OAuth externo no ambiente publicado, embora tenham sido verificadas anteriormente com fixtures persistidas no MySQL local.
 
-O commit desta rodada será publicado no Render e ficará **Deploy succeeded | Live** após a verificação final. Depois da publicação, `/`, `/projetos`, `/shots` e `/up` devem responder com HTTP 200.
+O commit `6b52fee` foi publicado no Render e ficou **Deploy succeeded | Live**. O build Vite e o health check `/up` passaram no deploy; a versão publicada mantém `/`, `/projetos` e `/shots` respondendo com HTTP 200.
