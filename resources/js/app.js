@@ -56,24 +56,28 @@ const initPhotoUploaders = () => {
         const preview = root.querySelector('[data-photo-preview]');
         const count = root.querySelector('[data-photo-count]');
         const status = root.querySelector('[data-photo-status]');
+        const retry = root.querySelector('[data-photo-retry]');
         if (!input || !dropzone || !preview) return;
 
         root.dataset.mcPhotoUploaderReady = 'true';
         const maxFiles = Number(root.dataset.maxFiles || 12);
+        const maxBytes = Number(root.dataset.maxSizeKb || 5120) * 1024;
         const accepted = (input.accept || '').split(',').map((type) => type.trim().toLowerCase()).filter(Boolean);
         let files = [];
         let internalChange = false;
+        let totalBytes = 0;
 
-        const fileKey = (file) => `${file.name}:${file.size}:${file.lastModified}`;
+        const fileKey = (file) => file.name + ':' + file.size + ':' + file.lastModified;
         const isAccepted = (file) => {
             if (!accepted.length || accepted.includes('*/*')) return true;
-            const extension = `.${file.name.split('.').pop()?.toLowerCase() || ''}`;
+            const extension = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
             return accepted.includes(file.type.toLowerCase()) || accepted.includes(extension);
         };
+        const formatSize = (bytes) => (bytes / 1024 / 1024).toFixed(1) + ' MB';
 
         const syncInput = (notify = true) => {
             const transfer = new DataTransfer();
-            files.forEach((file) => transfer.items.add(file));
+            files.forEach(({file}) => transfer.items.add(file));
             input.files = transfer.files;
             if (notify) {
                 internalChange = true;
@@ -84,49 +88,85 @@ const initPhotoUploaders = () => {
 
         const render = () => {
             preview.replaceChildren();
-            files.forEach((file, index) => {
+            totalBytes = files.reduce((sum, item) => sum + item.file.size, 0);
+            files.forEach((item, index) => {
                 const card = document.createElement('figure');
-                card.className = 'mc-photo-uploader__item';
+                card.className = 'mc-photo-uploader__item is-' + item.state;
+                card.setAttribute('role', 'listitem');
                 const image = document.createElement('img');
-                image.alt = file.name;
+                image.alt = item.file.name;
                 image.loading = 'lazy';
-                image.src = URL.createObjectURL(file);
-                image.addEventListener('load', () => URL.revokeObjectURL(image.src), {once: true});
+                image.src = item.previewUrl;
                 const details = document.createElement('figcaption');
-                details.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(1)} MB`;
+                details.textContent = item.file.name;
+                const meta = document.createElement('p');
+                meta.className = 'mc-photo-uploader__meta';
+                meta.textContent = item.error || (item.state === 'done' ? 'Enviada' : item.state === 'uploading' ? item.progress + '%' : formatSize(item.file.size));
+                const progress = document.createElement('progress');
+                progress.className = 'mc-photo-uploader__progress';
+                progress.max = 100;
+                progress.value = item.progress;
+                progress.setAttribute('aria-label', 'Progresso de ' + item.file.name);
                 const remove = document.createElement('button');
                 remove.type = 'button';
                 remove.className = 'mc-photo-uploader__remove';
-                remove.setAttribute('aria-label', `Remover ${file.name}`);
+                remove.setAttribute('aria-label', 'Remover ' + item.file.name);
                 remove.textContent = 'Remover';
+                remove.disabled = item.state === 'uploading';
                 remove.addEventListener('click', () => {
+                    URL.revokeObjectURL(item.previewUrl);
                     files.splice(index, 1);
                     syncInput();
                     render();
                 });
-                card.append(image, details, remove);
+                card.append(image, details, progress, meta, remove);
                 preview.append(card);
             });
-            if (count) count.textContent = files.length ? `${files.length} de ${maxFiles} fotos selecionadas` : 'Nenhuma foto selecionada';
-            if (status && !status.dataset.mcPhotoError) status.textContent = files.length ? 'Revise as miniaturas antes de salvar. Você ainda pode adicionar mais fotos.' : '';
+            if (count) count.textContent = files.length ? files.length + ' de ' + maxFiles + ' fotos' : 'Nenhuma foto selecionada';
+            preview.setAttribute('aria-busy', String(files.some((item) => item.state === 'uploading')));
+            if (retry) retry.classList.toggle('hidden', !files.some((item) => item.state === 'error'));
+        };
+
+        const updateProgress = (value) => {
+            const progress = clamp(Number(value) || 0, 0, 100) / 100;
+            let consumed = totalBytes * progress;
+            files.forEach((item) => {
+                if (item.state === 'error') return;
+                item.progress = Math.round(clamp(consumed / Math.max(item.file.size, 1), 0, 1) * 100);
+                item.state = item.progress >= 100 ? 'done' : 'uploading';
+                consumed -= item.file.size;
+            });
+            render();
         };
 
         const addFiles = (incoming) => {
             const rejected = [];
-            const existing = new Set(files.map(fileKey));
+            const existing = new Set(files.map(({file}) => fileKey(file)));
             [...incoming].forEach((file) => {
-                if (!isAccepted(file)) { rejected.push(`${file.name}: formato não permitido`); return; }
+                if (!isAccepted(file)) { rejected.push(file.name + ': formato não permitido'); return; }
+                if (file.size > maxBytes) { rejected.push(file.name + ': ultrapassa ' + formatSize(maxBytes)); return; }
                 if (existing.has(fileKey(file))) return;
-                if (files.length >= maxFiles) { rejected.push(`${file.name}: limite de ${maxFiles} fotos`); return; }
-                files.push(file);
+                if (files.length >= maxFiles) { rejected.push(file.name + ': limite de ' + maxFiles + ' fotos'); return; }
+                const item = {file, state: 'ready', progress: 0, error: '', previewUrl: URL.createObjectURL(file)};
+                files.push(item);
                 existing.add(fileKey(file));
             });
             if (status) {
-                status.dataset.mcPhotoError = rejected.length ? 'true' : '';
-                status.textContent = rejected.length ? rejected.join(' · ') : '';
                 status.classList.toggle('text-red-600', rejected.length > 0);
+                status.textContent = rejected.length ? rejected.join(' · ') : (files.length ? 'Revise as miniaturas antes de salvar.' : '');
             }
             syncInput();
+            render();
+        };
+
+        const markAll = (state, message = '') => {
+            files.forEach((item) => {
+                if (item.state !== 'error') {
+                    item.state = state;
+                    item.error = message;
+                    if (state === 'done') item.progress = 100;
+                }
+            });
             render();
         };
 
@@ -135,6 +175,23 @@ const initPhotoUploaders = () => {
             if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); input.click(); }
         });
         input.addEventListener('change', (event) => { if (!internalChange) addFiles(event.target.files); });
+        input.addEventListener('livewire-upload-start', () => {
+            files.forEach((item) => { if (item.state !== 'error') { item.state = 'uploading'; item.progress = 0; } });
+            if (status) status.textContent = 'Enviando fotos…';
+            render();
+        });
+        input.addEventListener('livewire-upload-progress', (event) => updateProgress(event.detail?.progress));
+        input.addEventListener('livewire-upload-finish', () => {
+            markAll('done');
+            root.classList.remove('is-uploading');
+            if (status) status.textContent = 'Upload concluído. Salvando…';
+        });
+        input.addEventListener('livewire-upload-error', () => {
+            files.forEach((item) => { if (item.state !== 'done') { item.state = 'error'; item.error = 'Falhou. Você pode tentar novamente.'; } });
+            root.classList.remove('is-uploading');
+            if (status) status.textContent = 'Algumas fotos falharam. Tente novamente sem perder as outras.';
+            render();
+        });
         ['dragenter', 'dragover'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
             event.preventDefault();
             dropzone.classList.add('is-dragging');
@@ -144,11 +201,54 @@ const initPhotoUploaders = () => {
             dropzone.classList.remove('is-dragging');
         }));
         dropzone.addEventListener('drop', (event) => addFiles(event.dataTransfer.files));
+        retry?.addEventListener('click', () => {
+            files.forEach((item) => { if (item.state === 'error') { item.state = 'ready'; item.error = ''; item.progress = 0; } });
+            if (status) status.textContent = 'Pronto para tentar novamente.';
+            syncInput();
+            render();
+        });
         input.form?.addEventListener('submit', () => {
             root.classList.add('is-uploading');
-            if (status) status.textContent = `Enviando ${files.length || 'as'} fotos…`;
+            files.forEach((item) => { if (item.state !== 'done') item.state = 'uploading'; });
+            if (status && files.length) status.textContent = 'Enviando ' + files.length + ' fotos…';
+            render();
         });
         render();
+    });
+};
+
+const initPhotoLibraries = () => {
+    document.querySelectorAll('[data-photo-library]').forEach((library) => {
+        if (library.dataset.mcPhotoLibraryReady) return;
+        library.dataset.mcPhotoLibraryReady = 'true';
+        let dragged = null;
+        const saveOrder = () => {
+            const ids = [...library.querySelectorAll('[data-photo-card]')].map((card) => Number(card.dataset.photoId));
+            const componentRoot = library.closest('[wire\\:id]');
+            const component = componentRoot && window.Livewire?.find(componentRoot.getAttribute('wire:id'));
+            component?.call('reorderPhotos', ids);
+        };
+        library.querySelectorAll('[data-photo-card]').forEach((card) => {
+            card.addEventListener('dragstart', () => {
+                dragged = card;
+                card.classList.add('is-dragging');
+            });
+            card.addEventListener('dragend', () => {
+                dragged?.classList.remove('is-dragging');
+                dragged = null;
+            });
+            card.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                if (!dragged || dragged === card) return;
+                const rect = card.getBoundingClientRect();
+                const after = event.clientY > rect.top + rect.height / 2;
+                library.insertBefore(dragged, after ? card.nextSibling : card);
+            });
+            card.addEventListener('drop', (event) => {
+                event.preventDefault();
+                saveOrder();
+            });
+        });
     });
 };
 
@@ -532,6 +632,7 @@ const initMotion = () => {
     initImageMotion();
     initFeedback();
     initPhotoUploaders();
+    initPhotoLibraries();
     initSectionTabs();
     initThemeHeadlights();
     initScrollProgress();
@@ -552,4 +653,6 @@ ready(() => {
     initMotion();
     document.addEventListener('livewire:navigating', cleanupLightShowrooms);
     document.addEventListener('livewire:navigated', initMotion);
+    const observer = new MutationObserver(() => initMotion());
+    observer.observe(document.body, {childList: true, subtree: true});
 });

@@ -189,11 +189,11 @@ class ProjectController extends Controller
         if ($files === [] && $request->hasFile('photo')) {
             $files = [$request->file('photo')];
         }
-        abort_if($project->photos()->count() + count($files) > 12, 422, 'Limite de 12 fotos.');
+        abort_if($project->photos()->count() + count($files) > (int) config('motorclub.photo_max_files', 12), 422, 'Limite de '.config('motorclub.photo_max_files', 12).' fotos.');
         if ($request->hasFile('photo') && ! $request->hasFile('photos')) {
-            $request->validate(['photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120|dimensions:max_width=4096,max_height=4096']);
+            $request->validate(['photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:'.config('motorclub.photo_max_upload_kb', 5120).'|dimensions:max_width=4096,max_height=4096']);
         } else {
-            Validator::make(['photos' => $files], ['photos' => ['required', 'array', 'max:12'], 'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096']], ['photos.required' => 'Escolha pelo menos uma foto.', 'photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.'])->validate();
+            Validator::make(['photos' => $files], ['photos' => ['required', 'array', 'max:'.config('motorclub.photo_max_files', 12)], 'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('motorclub.photo_max_upload_kb', 5120), 'dimensions:max_width=4096,max_height=4096']], ['photos.required' => 'Escolha pelo menos uma foto.', 'photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até '.((int) config('motorclub.photo_max_upload_kb', 5120) / 1024).' MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.'])->validate();
         }
         $storedPaths = [];
         try {
@@ -406,11 +406,11 @@ class ProjectController extends Controller
         if ($files === [] && $request->hasFile('photo')) {
             $files = [$request->file('photo')];
         }
-        abort_if($imageable->photos()->count() + count($files) > 12, 422, 'Limite de 12 fotos neste álbum.');
+        abort_if($imageable->photos()->count() + count($files) > (int) config('motorclub.photo_max_files', 12), 422, 'Limite de '.config('motorclub.photo_max_files', 12).' fotos neste álbum.');
         Validator::make(['photos' => $files], [
-            'photos' => ['required', 'array', 'max:12'],
-            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'],
-        ], ['photos.required' => 'Escolha pelo menos uma foto.', 'photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.'])->validate();
+            'photos' => ['required', 'array', 'max:'.config('motorclub.photo_max_files', 12)],
+            'photos.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('motorclub.photo_max_upload_kb', 5120), 'dimensions:max_width=4096,max_height=4096'],
+        ], ['photos.required' => 'Escolha pelo menos uma foto.', 'photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até '.((int) config('motorclub.photo_max_upload_kb', 5120) / 1024).' MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.'])->validate();
         $metadata = $request->validate([
             'kind' => ['nullable', 'string', 'max:30'],
             'caption' => ['nullable', 'string', 'max:255'],

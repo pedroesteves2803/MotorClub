@@ -3,7 +3,9 @@
 namespace App\Livewire\Garage;
 
 use App\Models\FeatureSetting;
+use App\Models\MediaPhoto;
 use App\Models\Project;
+use App\Models\ProjectPart;
 use App\Models\ShotPurchaseRequest;
 use App\Models\Vehicle;
 use App\Services\VehicleImages;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
@@ -57,6 +60,10 @@ class Details extends Component
     public string $photo_context_description = '';
 
     public ?int $photo_modification_id = null;
+
+    public ?int $photo_part_id = null;
+
+    public array $reuse_photo_ids = [];
 
     public string $quick_modification_title = '';
 
@@ -160,8 +167,8 @@ class Details extends Component
         $this->validate([
             'quick_modification_title' => ['required', 'string', 'max:150'],
             'quick_modification_status' => ['required', Rule::in(['planned', 'in_progress', 'completed'])],
-            'quick_modification_photos' => ['array', 'max:12'],
-            'quick_modification_photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'],
+            'quick_modification_photos' => ['array', 'max:'.config('motorclub.photo_max_files', 12)],
+            'quick_modification_photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('motorclub.photo_max_upload_kb', 5120), 'dimensions:max_width=4096,max_height=4096'],
         ], ['required' => 'Preencha este campo.', 'in' => 'Selecione uma opção válida.']);
 
         $storedPaths = [];
@@ -243,21 +250,99 @@ class Details extends Component
         ]);
     }
 
+    private function photoContexts(): array
+    {
+        return ['vehicle', 'project', 'new_modification', 'existing_modification', 'existing_part', 'maintenance'];
+    }
+
+    private function photoRules(): array
+    {
+        return [
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:'.config('motorclub.photo_max_upload_kb', 5120),
+            'dimensions:max_width=4096,max_height=4096',
+        ];
+    }
+
+    private function photoMessages(): array
+    {
+        return [
+            'photo.image' => 'Envie uma imagem válida.',
+            'photo.mimes' => 'Use JPG, PNG ou WebP.',
+            'photo.max' => 'Cada foto deve ter até :max KB.',
+            'photo.dimensions' => 'A foto deve ter no máximo 4096 × 4096 pixels.',
+        ];
+    }
+
+    private function resolveMediaTarget(Vehicle $vehicle): Model
+    {
+        $project = $this->mainProject($vehicle);
+
+        return match ($this->photo_context) {
+            'project' => $project,
+            'new_modification' => $project->modifications()->create([
+                'title' => trim($this->photo_context_title),
+                'category' => 'outro',
+                'status' => 'planned',
+                'is_public' => false,
+                'sort_order' => ((int) $project->modifications()->max('sort_order')) + 1,
+            ]),
+            'existing_modification' => tap($project->modifications()->find($this->photo_modification_id), function ($target): void {
+                abort_unless($target, 404);
+            }),
+            'existing_part' => tap(ProjectPart::query()
+                ->whereKey($this->photo_part_id)
+                ->whereHas('modification', fn ($query) => $query->where('project_id', $project->id))
+                ->first(), function ($target): void {
+                    abort_unless($target, 404);
+                }),
+            'maintenance' => $vehicle->entries()->create([
+                'category' => 'maintenance',
+                'title' => trim($this->photo_context_title),
+                'description' => trim($this->photo_context_description) ?: 'Fotos de manutenção do veículo.',
+                'occurred_on' => now()->toDateString(),
+                'is_public' => false,
+            ]),
+            default => throw ValidationException::withMessages(['photo_context' => 'Escolha onde estas fotos serão usadas.']),
+        };
+    }
+
+    private function mediaRelation(Model $target)
+    {
+        return $target instanceof Project ? $target->mediaPhotos() : $target->photos();
+    }
+
+    private function storeMediaPhoto(Model $target, string $path): MediaPhoto
+    {
+        $photos = $this->mediaRelation($target);
+        $isPrimary = $this->photo_kind === 'capa'
+            || (! $photos->where('is_primary', true)->exists() && $photos->count() === 0);
+
+        if ($isPrimary) {
+            $photos->update(['is_primary' => false]);
+        }
+
+        return $photos->create([
+            'path' => $path,
+            'kind' => $this->photo_kind ?: 'galeria',
+            'sort_order' => $photos->count(),
+            'is_primary' => $isPrimary,
+            'is_public' => false,
+        ]);
+    }
+
     private function storeMediaFiles(Model $target, array $uploads, VehicleImages $images, array &$storedPaths): void
     {
-        if (count($uploads) > 12 || $target->photos()->count() + count($uploads) > 12) {
-            throw ValidationException::withMessages(['photos' => 'O limite é de 12 fotos neste álbum.']);
+        $limit = (int) config('motorclub.photo_max_files', 12);
+        $photos = $this->mediaRelation($target);
+        if (count($uploads) > $limit || $photos->count() + count($uploads) > $limit) {
+            throw ValidationException::withMessages(['photos' => "O limite é de {$limit} fotos neste álbum."]);
         }
-        foreach ($uploads as $index => $upload) {
+        foreach ($uploads as $upload) {
             $path = $images->store($upload, 'media');
             $storedPaths[] = $path;
-            $target->photos()->create([
-                'path' => $path,
-                'kind' => $this->photo_kind ?: 'galeria',
-                'sort_order' => $target->photos()->count() + $index,
-                'is_primary' => ! $target->photos()->where('is_primary', true)->exists() && $index === 0,
-                'is_public' => false,
-            ]);
+            $this->storeMediaPhoto($target, $path);
         }
     }
 
@@ -272,68 +357,110 @@ class Details extends Component
     {
         $this->ensureFeatureEnabled();
         $vehicle = $this->vehicle();
-        $uploads = $this->photos ?: ($this->photo ? [$this->photo] : []);
-        if (! $uploads) {
+        $hasMultiple = $this->photos !== [];
+        $uploads = $hasMultiple ? $this->photos : ($this->photo ? [$this->photo] : []);
+        if ($uploads === []) {
             $this->addError('photos', 'Escolha pelo menos uma foto.');
 
             return;
         }
-        if ($this->photo_context === 'vehicle' && $vehicle->photos()->count() + count($uploads) > 12) {
-            $this->addError($this->photos ? 'photos' : 'photo', 'O limite é de 12 fotos por veículo.');
+
+        $this->validate([
+            'photo_context' => ['required', Rule::in($this->photoContexts())],
+            'photo_kind' => ['required', Rule::in(['capa', 'galeria', 'interno', 'externo', 'evento', 'detalhe', 'antes', 'durante', 'depois'])],
+        ], ['required' => 'Preencha este campo.', 'in' => 'Selecione uma opção válida.']);
+
+        $this->photo_context_title = trim($this->photo_context_title);
+        if (in_array($this->photo_context, ['new_modification', 'maintenance'], true) && $this->photo_context_title === '') {
+            $this->addError('photo_context_title', $this->photo_context === 'maintenance' ? 'Dê um nome para a manutenção.' : 'Dê um nome para a modificação.');
 
             return;
-        }
-        if ($this->photos) {
-            $this->validate(['photos' => ['array', 'max:12'], 'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'], 'photo_kind' => ['required', Rule::in(['capa', 'galeria', 'interno', 'externo', 'evento', 'detalhe', 'antes', 'durante', 'depois'])], 'photo_context' => ['required', Rule::in(['vehicle', 'new_modification', 'existing_modification', 'maintenance'])]], ['photos.*.image' => 'Envie imagens válidas.', 'photos.*.mimes' => 'Use JPEG, PNG ou WebP.', 'photos.*.max' => 'Cada foto deve ter até 5 MB.', 'photos.*.dimensions' => 'Cada foto deve ter no máximo 4096 × 4096 pixels.']);
-        } else {
-            $this->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'], 'photo_kind' => ['required', Rule::in(['capa', 'galeria', 'interno', 'externo', 'evento', 'detalhe', 'antes', 'durante', 'depois'])], 'photo_context' => ['required', Rule::in(['vehicle', 'new_modification', 'existing_modification', 'maintenance'])]], ['photo.required' => 'Escolha uma foto.', 'photo.image' => 'Envie uma imagem válida.', 'photo.mimes' => 'Use JPEG, PNG ou WebP.', 'photo.max' => 'A foto deve ter até 5 MB.', 'photo.dimensions' => 'A foto deve ter no máximo 4096 × 4096 pixels.']);
         }
         if ($this->photo_context === 'existing_modification' && ! $this->photo_modification_id) {
-            $this->addError('photo_modification_id', 'Selecione a modificação que receberá estas fotos.');
+            $this->addError('photo_modification_id', 'Escolha uma modificação.');
 
             return;
         }
-        $storedPaths = [];
-        try {
-            DB::transaction(function () use ($vehicle, $uploads, $images, &$storedPaths): void {
-                if ($this->photo_context === 'vehicle') {
-                    foreach ($uploads as $index => $upload) {
-                        $path = $images->store($upload);
-                        $storedPaths[] = $path;
-                        $vehicle->photos()->create(['path' => $path, 'kind' => $this->photo_kind, 'sort_order' => $vehicle->photos()->count() + $index, 'is_primary' => ! $vehicle->photos()->where('is_primary', true)->exists() && $index === 0]);
-                    }
+        if ($this->photo_context === 'existing_part' && ! $this->photo_part_id) {
+            $this->addError('photo_part_id', 'Escolha uma peça.');
 
-                    return;
-                }
-
-                $project = $this->mainProject($vehicle);
-                if ($this->photo_context === 'new_modification') {
-                    $this->photo_context_title = trim($this->photo_context_title);
-                    if ($this->photo_context_title === '') {
-                        throw ValidationException::withMessages(['photo_context_title' => 'Dê um nome para a modificação.']);
-                    }
-                    $target = $project->modifications()->create(['title' => $this->photo_context_title, 'category' => 'outro', 'status' => 'planned', 'is_public' => false, 'sort_order' => ((int) $project->modifications()->max('sort_order')) + 1]);
-                } elseif ($this->photo_context === 'existing_modification') {
-                    $target = $project->modifications()->find($this->photo_modification_id);
-                    abort_unless($target, 404);
-                } else {
-                    $this->photo_context_title = trim($this->photo_context_title);
-                    if ($this->photo_context_title === '') {
-                        throw ValidationException::withMessages(['photo_context_title' => 'Dê um nome para o registro de manutenção.']);
-                    }
-                    $target = $vehicle->entries()->create(['category' => 'maintenance', 'title' => $this->photo_context_title, 'description' => trim($this->photo_context_description) ?: 'Fotos de manutenção do veículo.', 'occurred_on' => now()->toDateString(), 'is_public' => false]);
-                }
-                $this->storeMediaFiles($target, $uploads, $images, $storedPaths);
-            });
-        } catch (\Throwable $e) {
-            $this->deleteStoredPaths($storedPaths);
-            throw $e;
+            return;
         }
-        $count = count($uploads);
-        $this->reset('photo', 'photos', 'photo_kind', 'photo_context', 'photo_context_title', 'photo_context_description', 'photo_modification_id');
-        $this->photo_kind = 'galeria';
-        $this->photo_context = 'vehicle';
-        session()->flash('status', $count === 1 ? 'Foto adicionada.' : $count.' fotos adicionadas.');
+
+        $limit = (int) config('motorclub.photo_max_files', 12);
+        $failed = [];
+        $target = null;
+        $successCount = 0;
+
+        foreach ($uploads as $index => $upload) {
+            $path = null;
+            try {
+                Validator::make(['photo' => $upload], ['photo' => $this->photoRules()], $this->photoMessages())->validate();
+                if ($this->photo_context === 'vehicle' && $vehicle->photos()->count() >= $limit) {
+                    throw ValidationException::withMessages(['photo' => "O limite é de {$limit} fotos por veículo."]);
+                }
+                if ($this->photo_context !== 'vehicle' && $target && $this->mediaRelation($target)->count() >= $limit) {
+                    throw ValidationException::withMessages(['photo' => "O limite é de {$limit} fotos neste álbum."]);
+                }
+
+                DB::transaction(function () use ($vehicle, $images, $upload, $successCount, &$target, &$path): void {
+                    if ($this->photo_context === 'vehicle') {
+                        $path = $images->store($upload);
+                        $isPrimary = ($this->photo_kind === 'capa' && $successCount === 0)
+                            || (! $vehicle->photos()->where('is_primary', true)->exists() && $vehicle->photos()->count() === 0);
+                        if ($isPrimary) {
+                            $vehicle->photos()->update(['is_primary' => false]);
+                        }
+                        $vehicle->photos()->create([
+                            'path' => $path,
+                            'kind' => $this->photo_kind,
+                            'sort_order' => $vehicle->photos()->count(),
+                            'is_primary' => $isPrimary,
+                        ]);
+
+                        return;
+                    }
+
+                    $target ??= $this->resolveMediaTarget($vehicle);
+                    $path = $images->store($upload, 'media');
+                    $this->storeMediaPhoto($target, $path);
+                });
+                $successCount++;
+            } catch (ValidationException $exception) {
+                if ($path) {
+                    $this->deleteStoredPaths([$path]);
+                }
+                $message = collect($exception->errors())->flatten()->first() ?: 'Não foi possível processar esta foto.';
+                $this->addError($hasMultiple ? "photos.{$index}" : 'photo', $message);
+                $failed[] = $upload;
+            } catch (\Throwable $exception) {
+                if ($path) {
+                    $this->deleteStoredPaths([$path]);
+                }
+                report($exception);
+                $this->addError($hasMultiple ? "photos.{$index}" : 'photo', 'Esta foto falhou. Tente novamente.');
+                $failed[] = $upload;
+            }
+        }
+
+        if ($successCount === 0) {
+            $this->addError('photos', 'Nenhuma foto foi salva. Corrija os itens indicados e tente novamente.');
+        }
+
+        if ($hasMultiple) {
+            $this->photos = $failed;
+        } elseif ($failed !== []) {
+            $this->photo = $failed[0];
+        } else {
+            $this->reset('photo');
+        }
+
+        if ($successCount > 0) {
+            $this->reset('photo_kind', 'photo_context', 'photo_context_title', 'photo_context_description', 'photo_modification_id', 'photo_part_id');
+            $this->photo_kind = 'galeria';
+            $this->photo_context = 'vehicle';
+            session()->flash('status', $successCount === 1 ? 'Foto salva.' : "{$successCount} fotos salvas.");
+        }
     }
 
     public function deletePhoto(int $id): void
@@ -349,6 +476,101 @@ class Details extends Component
         $photo->delete();
     }
 
+    public function reorderPhotos(array $orderedIds): void
+    {
+        $this->ensureFeatureEnabled();
+        $vehicle = $this->vehicle();
+        $allowed = $vehicle->photos()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $orderedIds = array_values(array_map('intval', $orderedIds));
+        abort_unless(count($orderedIds) === count($allowed) && ! array_diff($orderedIds, $allowed) && ! array_diff($allowed, $orderedIds), 422);
+        DB::transaction(function () use ($vehicle, $orderedIds): void {
+            foreach ($orderedIds as $position => $id) {
+                $vehicle->photos()->whereKey($id)->update(['sort_order' => $position]);
+            }
+        });
+    }
+
+    public function movePhoto(int $id, string $direction): void
+    {
+        $this->ensureFeatureEnabled();
+        $vehicle = $this->vehicle();
+        $photos = $vehicle->photos()->orderBy('sort_order')->orderBy('id')->get()->values();
+        $index = $photos->search(fn ($photo) => $photo->id === $id);
+        if ($index === false) {
+            abort(404);
+        }
+        $target = $direction === 'up' ? $index - 1 : $index + 1;
+        if ($target < 0 || $target >= $photos->count()) {
+            return;
+        }
+        $ids = $photos->pluck('id')->all();
+        [$ids[$index], $ids[$target]] = [$ids[$target], $ids[$index]];
+        $this->reorderPhotos($ids);
+    }
+
+    public function reuseLibraryPhotos(VehicleImages $images): void
+    {
+        $this->ensureFeatureEnabled();
+        $vehicle = $this->vehicle();
+        $ids = array_values(array_unique(array_map('intval', $this->reuse_photo_ids)));
+        if ($ids === []) {
+            $this->addError('reuse_photo_ids', 'Selecione pelo menos uma foto.');
+
+            return;
+        }
+        $limit = (int) config('motorclub.photo_max_files', 12);
+        if (count($ids) > $limit) {
+            $this->addError('reuse_photo_ids', "Escolha no máximo {$limit} fotos por vez.");
+
+            return;
+        }
+        if ($this->photo_context === 'vehicle') {
+            $this->addError('reuse_photo_ids', 'Escolha um projeto, modificação, peça ou manutenção para reutilizar a foto.');
+
+            return;
+        }
+        if (in_array($this->photo_context, ['new_modification', 'maintenance'], true) && trim($this->photo_context_title) === '') {
+            $this->addError('photo_context_title', $this->photo_context === 'maintenance' ? 'Dê um nome para a manutenção.' : 'Dê um nome para a modificação.');
+
+            return;
+        }
+        if ($this->photo_context === 'existing_modification' && ! $this->photo_modification_id) {
+            $this->addError('photo_modification_id', 'Escolha uma modificação.');
+
+            return;
+        }
+        if ($this->photo_context === 'existing_part' && ! $this->photo_part_id) {
+            $this->addError('photo_part_id', 'Escolha uma peça.');
+
+            return;
+        }
+
+        $photos = $vehicle->photos()->whereIn('id', $ids)->get();
+        abort_unless($photos->count() === count($ids), 404);
+        $target = null;
+        $storedPaths = [];
+        $copied = 0;
+        try {
+            DB::transaction(function () use ($vehicle, $photos, $images, $limit, &$target, &$storedPaths, &$copied): void {
+                foreach ($photos as $photo) {
+                    $target ??= $this->resolveMediaTarget($vehicle);
+                    if ($this->mediaRelation($target)->count() >= $limit) {
+                        throw ValidationException::withMessages(['reuse_photo_ids' => "O limite é de {$limit} fotos neste álbum."]);
+                    }
+                    $path = $images->copy($photo->path, 'media');
+                    $storedPaths[] = $path;
+                    $this->storeMediaPhoto($target, $path);
+                    $copied++;
+                }
+            });
+        } catch (\Throwable $exception) {
+            $this->deleteStoredPaths($storedPaths);
+            throw $exception;
+        }
+        $this->reset('reuse_photo_ids');
+        session()->flash('status', $copied === 1 ? 'Foto reutilizada.' : "{$copied} fotos reutilizadas.");
+    }
+
     public function setPrimaryPhoto(int $id): void
     {
         $this->ensureFeatureEnabled();
@@ -361,7 +583,21 @@ class Details extends Component
     {
         $this->ensureFeatureEnabled();
         $vehicle = $this->vehicle();
+        $project = $vehicle->projects()->latest('id')->first();
+        $modifications = $project?->modifications()->with('parts')->get() ?? collect();
 
-        return view('livewire.garage.details', ['vehicle' => $vehicle, 'project' => $vehicle->projects()->latest('id')->first(), 'vehiclePhotos' => $vehicle->photos()->get(), 'modifications' => $vehicle->projects()->latest('id')->first()?->modifications()->get() ?? collect(), 'entries' => $vehicle->entries()->with('photos')->orderByDesc('occurred_on')->orderByDesc('id')->paginate(10), 'shotRequests' => ShotPurchaseRequest::with('photo.gallery')->where('vehicle_id', $vehicle->id)->where('buyer_id', auth()->id())->where('status', 'approved')->get()])->layout('components.layouts.app');
+        return view('livewire.garage.details', [
+            'vehicle' => $vehicle,
+            'project' => $project,
+            'vehiclePhotos' => $vehicle->photos()->get(),
+            'modifications' => $modifications,
+            'parts' => $modifications->flatMap->parts->values(),
+            'entries' => $vehicle->entries()->with('photos')->orderByDesc('occurred_on')->orderByDesc('id')->paginate(10),
+            'shotRequests' => ShotPurchaseRequest::with('photo.gallery')
+                ->where('vehicle_id', $vehicle->id)
+                ->where('buyer_id', auth()->id())
+                ->where('status', 'approved')
+                ->get(),
+        ])->layout('components.layouts.app');
     }
 }

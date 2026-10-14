@@ -34,7 +34,7 @@
                 <div><h2 class="text-3xl font-bold">Fotos do projeto</h2><p class="mc-muted">Fotos editoriais, de evolução e para a revista. Fotos gerais do veículo ficam na garagem.</p></div>
                 <form method="POST" enctype="multipart/form-data" action="{{ route('projects.photo', $project) }}" class="mc-surface mc-form">
                     @csrf
-                    <x-photo-uploader name="photos[]" input-id="project-photos" label="Fotos do projeto" hint="JPEG, PNG ou WebP · até 5 MB por foto · máximo de 12 fotos" max-files="12" required />
+                    <x-photo-uploader name="photos[]" input-id="project-photos" label="Fotos do projeto" hint="JPEG, PNG ou WebP · até 5 MB por foto · máximo de {{ config('motorclub.photo_max_files', 12) }} fotos" max-files="{{ config('motorclub.photo_max_files', 12) }}" required />
                     <div class="grid gap-4 md:grid-cols-3"><x-select-field name="kind" label="Classificação" :options="$photoKinds" /><x-field name="caption" label="Legenda opcional" maxlength="255" /><p class="mc-muted">A primeira foto vira a capa se ainda não houver uma definida.</p></div>
                     <button class="mc-link-button">Enviar fotos do projeto</button>
                 </form>

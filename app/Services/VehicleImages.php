@@ -16,9 +16,10 @@ class VehicleImages
             throw ValidationException::withMessages(['photo' => 'Não foi possível processar esta imagem.']);
         }
         $image = $this->correctOrientation($image, $file);
+        $image = $this->resize($image, (int) config('motorclub.photo_max_dimension', 2400));
         // Re-encoding strips EXIF/GPS metadata and embedded payloads.
         ob_start();
-        imagewebp($image, null, 85);
+        imagewebp($image, null, (int) config('motorclub.photo_webp_quality', 82));
         $bytes = ob_get_clean();
         imagedestroy($image);
         $path = trim($directory, '/').'/'.Str::uuid().'.webp';
@@ -27,6 +28,44 @@ class VehicleImages
         }
 
         return $path;
+    }
+
+    /**
+     * Duplicate an already processed private image for a second album.
+     * A copy keeps each album independently deletable while reusing the library asset.
+     */
+    public function copy(string $sourcePath, string $directory = 'media'): string
+    {
+        $disk = Storage::disk(config('filesystems.private_disk'));
+        if (! $disk->exists($sourcePath)) {
+            throw ValidationException::withMessages(['photos' => 'Esta foto não está mais disponível.']);
+        }
+
+        $path = trim($directory, '/').'/'.Str::uuid().'.webp';
+        if (! $disk->put($path, $disk->get($sourcePath))) {
+            throw ValidationException::withMessages(['photos' => 'Não foi possível reutilizar esta foto. Tente novamente.']);
+        }
+
+        return $path;
+    }
+
+    private function resize(\GdImage $image, int $maxDimension): \GdImage
+    {
+        $maxDimension = max(320, $maxDimension);
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $scale = min(1, $maxDimension / max($width, $height));
+        if ($scale >= 1) {
+            return $image;
+        }
+
+        $resized = imagecreatetruecolor((int) round($width * $scale), (int) round($height * $scale));
+        imagealphablending($resized, false);
+        imagesavealpha($resized, true);
+        imagecopyresampled($resized, $image, 0, 0, 0, 0, imagesx($resized), imagesy($resized), $width, $height);
+        imagedestroy($image);
+
+        return $resized;
     }
 
     private function correctOrientation(\GdImage $image, UploadedFile $file): \GdImage

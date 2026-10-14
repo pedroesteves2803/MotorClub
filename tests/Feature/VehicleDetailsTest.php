@@ -176,3 +176,77 @@ it('enforces the photo limit', function () {
     Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])->set('photo', UploadedFile::fake()->image('car.jpg'))->call('uploadPhoto')->assertHasErrors('photo');
     expect($v->photos()->count())->toBe(12);
 });
+
+it('saves valid photos when one item in a batch fails', function () {
+    Storage::fake('local');
+    $v = Vehicle::factory()->create();
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('photos', [
+            UploadedFile::fake()->image('car-ok.jpg'),
+            UploadedFile::fake()->create('car-bad.pdf', 20, 'application/pdf'),
+        ])
+        ->call('uploadPhoto')
+        ->assertHasErrors('photos.1');
+
+    expect($v->photos()->count())->toBe(1);
+    Storage::disk('local')->assertCount('vehicles', 1);
+});
+
+it('sets a cover and persists the visual order of the vehicle library', function () {
+    Storage::fake('local');
+    $v = Vehicle::factory()->create();
+    $photos = collect(['one.webp', 'two.webp', 'three.webp'])->map(function ($name, $index) use ($v) {
+        Storage::disk('local')->put("vehicles/{$name}", 'image');
+
+        return $v->photos()->create([
+            'path' => "vehicles/{$name}",
+            'sort_order' => $index,
+            'is_primary' => $index === 0,
+        ]);
+    });
+
+    $component = Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v]);
+    $component->call('setPrimaryPhoto', $photos[2]->id)->assertHasNoErrors();
+    $component->call('reorderPhotos', [$photos[2]->id, $photos[0]->id, $photos[1]->id])->assertHasNoErrors();
+
+    expect($v->photos()->where('is_primary', true)->value('id'))->toBe($photos[2]->id)
+        ->and($v->photos()->orderBy('sort_order')->pluck('id')->all())->toBe([$photos[2]->id, $photos[0]->id, $photos[1]->id]);
+});
+
+it('reuses vehicle library photos in a project part without sharing a deletable path', function () {
+    Storage::fake('local');
+    $v = Vehicle::factory()->create();
+    Storage::disk('local')->put('vehicles/library.webp', 'image');
+    $source = $v->photos()->create(['path' => 'vehicles/library.webp', 'is_primary' => true]);
+    $project = $v->projects()->create(['title' => 'Projeto', 'category' => 'maintenance', 'status' => 'planning', 'description' => 'Registro']);
+    $modification = $project->modifications()->create(['title' => 'Freios', 'category' => 'outro', 'status' => 'planned']);
+    $part = $modification->parts()->create(['name' => 'Pastilha', 'status' => 'installed']);
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('photo_context', 'existing_part')
+        ->set('photo_part_id', $part->id)
+        ->set('reuse_photo_ids', [$source->id])
+        ->call('reuseLibraryPhotos')
+        ->assertHasNoErrors();
+
+    $media = $part->photos()->sole();
+    expect($media->path)->not->toBe($source->path);
+    Storage::disk('local')->assertExists($source->path);
+    Storage::disk('local')->assertExists($media->path);
+});
+
+it('can place a fresh upload in the main project media library', function () {
+    Storage::fake('local');
+    $v = Vehicle::factory()->create();
+    $project = $v->projects()->create(['title' => 'Projeto principal', 'category' => 'maintenance', 'status' => 'planning', 'description' => 'Registro']);
+
+    Livewire::actingAs($v->user)->test(Details::class, ['vehicle' => $v])
+        ->set('photo_context', 'project')
+        ->set('photos', [UploadedFile::fake()->image('project.jpg')])
+        ->call('uploadPhoto')
+        ->assertHasNoErrors();
+
+    expect($project->mediaPhotos()->count())->toBe(1);
+    Storage::disk('local')->assertExists($project->mediaPhotos()->sole()->path);
+});

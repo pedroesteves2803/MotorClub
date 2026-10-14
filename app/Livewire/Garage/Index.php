@@ -154,8 +154,8 @@ class Index extends Component
             'location' => ['nullable', 'string', 'max:100'],
             'instagram_url' => ['nullable', 'url', 'max:255'],
             'visibility' => ['required', Rule::in(['private', 'public'])],
-            'photos' => ['array', 'max:12'],
-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=4096,max_height=4096'],
+            'photos' => ['array', 'max:'.config('motorclub.photo_max_files', 12)],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.config('motorclub.photo_max_upload_kb', 5120), 'dimensions:max_width=4096,max_height=4096'],
             'project_enabled' => ['required', 'boolean'],
             'project_title' => ['nullable', 'string', 'max:150'],
             'project_category' => ['nullable', Rule::in(array_keys(config('motorclub.categories')))],
@@ -183,8 +183,8 @@ class Index extends Component
         } else {
             $this->project_enabled = false;
         }
-        if ($vehicle->exists && $vehicle->photos()->count() + count($this->photos) > 12) {
-            $this->addError('photos', 'O limite é de 12 fotos por veículo.');
+        if ($vehicle->exists && $vehicle->photos()->count() + count($this->photos) > (int) config('motorclub.photo_max_files', 12)) {
+            $this->addError('photos', 'O limite é de '.config('motorclub.photo_max_files', 12).' fotos por veículo.');
 
             return;
         }
