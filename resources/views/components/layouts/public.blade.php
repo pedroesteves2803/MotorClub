@@ -17,5 +17,6 @@
 <x-site.header />
 <main id="conteudo" class="mc-page-shell mx-auto max-w-7xl space-y-12 px-6 py-10 lg:px-10" data-mc-content>@if(session('status'))<div role="status" class="mc-notice rounded-xl p-5">{{ session('status') }}</div>@endif @if($errors->any())<div role="alert" class="mc-notice rounded-xl p-5"><p class="font-bold">Confira os campos:</p><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif {{ $slot }}</main>
 <x-site.footer />
+<x-cookie-consent />
 @fluxScripts
 </body></html>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\TermsAcceptanceService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,10 @@ class GoogleAuthController extends Controller
 
     public function redirect(Request $request): RedirectResponse
     {
+        if (app()->environment('production') && ! $request->session()->has('terms_consent')) {
+            return $this->redirectToLogin()->withErrors(['google' => 'Leia e aceite os Termos de Uso e as Diretrizes da Comunidade antes de continuar.']);
+        }
+
         if (! $this->configured()) {
             return $this->redirectToLogin()->withErrors(['google' => 'Não foi possível iniciar o acesso com Google. Tente novamente mais tarde.']);
         }
@@ -32,6 +37,18 @@ class GoogleAuthController extends Controller
         }
 
         return Socialite::driver('google')->with(['prompt' => 'select_account'])->redirect();
+    }
+
+    public function start(Request $request): RedirectResponse
+    {
+        $request->validate(['terms_accepted' => ['accepted']]);
+        $request->session()->put('terms_consent', [
+            'version' => config('legal.terms_version'),
+            'community_version' => config('legal.community_version'),
+            'accepted_at' => now()->toIso8601String(),
+        ]);
+
+        return $this->redirect($request);
     }
 
     public function callback(Request $request): RedirectResponse
@@ -57,6 +74,10 @@ class GoogleAuthController extends Controller
         $googleId = (string) $identity->getId();
         $user = User::where('google_id', $googleId)->first();
 
+        if (! $user && app()->environment('production') && ! $request->session()->has('terms_consent')) {
+            return $this->redirectToLogin()->withErrors(['google' => 'Aceite os Termos de Uso e as Diretrizes da Comunidade para criar sua conta.']);
+        }
+
         if (! $user) {
             // Matching email alone is not sufficient to link an existing local account.
             if (User::where('email', $email)->exists()) {
@@ -77,9 +98,16 @@ class GoogleAuthController extends Controller
             }
         }
 
+        if (app()->environment('production') && ! $request->session()->has('terms_consent') && ! app(TermsAcceptanceService::class)->hasCurrentAcceptance($user)) {
+            return $this->redirectToLogin()->withErrors(['google' => 'Leia e aceite a versão atual dos Termos de Uso e das Diretrizes da Comunidade.']);
+        }
+
         Auth::login($user);
         $request->session()->regenerate();
         $request->session()->put('google_authenticated_at', now()->timestamp);
+        if ($request->session()->pull('terms_consent')) {
+            app(TermsAcceptanceService::class)->record($user, $request);
+        }
 
         return redirect()->intended(route('dashboard'));
     }

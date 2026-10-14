@@ -8,6 +8,7 @@
     <x-site.header />
     <main id="conteudo" class="mc-page-shell mx-auto max-w-7xl px-6 py-10 md:py-16 lg:px-10" data-mc-content>{{ $slot }}</main>
     <x-site.footer />
+    <x-cookie-consent />
     @fluxScripts
 </body>
 </html>

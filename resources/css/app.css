@@ -324,6 +324,21 @@ html, body { max-width: 100%; overflow-x: clip; }
     .mc-light-showroom.is-active .mc-light-showroom__beam { opacity: .08; }
 }
 
+.mc-cookie-banner {
+    position: fixed;
+    z-index: 50;
+    inset-inline: 1rem;
+    bottom: 1rem;
+    max-width: 48rem;
+    margin-inline: auto;
+    padding: 1.25rem;
+    border: 1px solid var(--mc-line);
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--mc-surface) 96%, transparent);
+    box-shadow: 0 1rem 3rem rgb(0 0 0 / .25);
+    backdrop-filter: blur(1rem);
+}
+
 /* Responsive product surfaces. These rules give internal pages a shared rhythm
    without changing their server rendered content or route structure. */
 main.mc-page-shell {

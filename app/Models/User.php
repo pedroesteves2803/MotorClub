@@ -98,4 +98,24 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     {
         return $this->hasMany(ShotGallery::class);
     }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
+    public function termsAcceptances()
+    {
+        return $this->hasMany(TermsAcceptance::class);
+    }
+
+    public function cookieConsents()
+    {
+        return $this->hasMany(CookieConsent::class);
+    }
+
+    public function adminAuditLogs()
+    {
+        return $this->hasMany(AdminAuditLog::class, 'admin_id');
+    }
 }

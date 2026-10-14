@@ -47,6 +47,11 @@ class SeoController extends Controller
             ['loc' => route('explore')],
             ['loc' => route('projects.index')],
             ['loc' => route('shots.index')],
+            ['loc' => route('legal.terms')],
+            ['loc' => route('legal.privacy')],
+            ['loc' => route('legal.cookies')],
+            ['loc' => route('legal.community')],
+            ['loc' => route('legal.help')],
         ]);
 
         Vehicle::query()

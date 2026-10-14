@@ -11,6 +11,7 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::redirect('register', '/login')->name('register');
+    Route::post('auth/google/start', [GoogleAuthController::class, 'start'])->middleware('throttle:10,1')->name('auth.google.start');
     Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->middleware('throttle:10,1')->name('auth.google');
     Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:20,1')->name('auth.google.callback');
 
