@@ -85,16 +85,28 @@ class ProjectMagazinePresenter
         }
 
         if ($entries->isNotEmpty()) {
-            $chapters->push($this->chapter(
-                $chapterNumber++,
-                'evolucao',
-                'Evolução documentada',
-                'O que já foi registrado',
-                'timeline',
-                null,
-                $photos->take(1),
-                ['entries' => $entries->map(fn ($entry) => $this->entry($entry, $ownerCanEdit))->all()]
-            ));
+            $timelineEntries = $entries->map(fn ($entry) => $this->entry($entry, $ownerCanEdit));
+            $timelineChunks = $timelineEntries->chunk(3)->values();
+
+            foreach ($timelineChunks as $chunkIndex => $timelineChunk) {
+                $part = $chunkIndex + 1;
+                $chapters->push($this->chapter(
+                    $chapterNumber++,
+                    $part === 1 ? 'evolucao' : 'evolucao-'.$part,
+                    $part === 1 ? 'Evolução documentada' : 'Evolução documentada · continuação',
+                    'Linha do tempo · '.$part.'/'.$timelineChunks->count(),
+                    'timeline',
+                    null,
+                    $photos->take(1),
+                    [
+                        'entries' => $timelineChunk->all(),
+                        // Only the opening page belongs in the contents. The
+                        // following pages remain part of the same chapter.
+                        'toc' => $part === 1,
+                        'toc_id' => 'evolucao',
+                    ]
+                ));
+            }
         }
 
         if (filled($project->parts)) {
@@ -194,9 +206,11 @@ class ProjectMagazinePresenter
         $chapterOrder = collect($settings?->chapter_order ?? [])->values();
         if ($chapterOrder->isNotEmpty()) {
             $chapters = $chapters->sortBy(function (array $chapter) use ($chapterOrder) {
-                $position = $chapterOrder->search($chapter['id']);
+                $position = $chapterOrder->search($chapter['meta']['toc_id'] ?? $chapter['id']);
 
-                return $position === false ? $chapterOrder->count() + $chapter['number'] : $position;
+                return $position === false
+                    ? [$chapterOrder->count() + $chapter['number'], $chapter['number']]
+                    : [$position, $chapter['number']];
             })->values()->map(function (array $chapter, int $index) {
                 $chapter['number'] = $index + 1;
                 $chapter['chapter'] = sprintf('%02d', $index + 1);
@@ -237,6 +251,7 @@ class ProjectMagazinePresenter
                     'number' => $chapter['number'],
                     'title' => $chapter['title'],
                     'layout' => $chapter['layout'],
+                    'toc' => $chapter['meta']['toc'] ?? true,
                 ])->all(),
             ],
         ])->merge($chapters)->values();
@@ -249,8 +264,9 @@ class ProjectMagazinePresenter
                         'title' => $chapter['title'],
                         'layout' => $chapter['layout'],
                         'page' => $chapter['number'] + $index,
+                        'toc' => $chapter['meta']['toc'] ?? true,
                     ];
-                })->all();
+                })->filter(fn (array $chapter) => $chapter['toc'])->values()->all();
             }
 
             return $page;

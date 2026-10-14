@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleShotAsset;
 use App\Services\QrCodeService;
+use App\Presenters\ProjectMagazinePresenter;
 use App\Services\VehicleSlugService;
 use Illuminate\Support\Facades\Storage;
 
@@ -53,6 +54,31 @@ it('salva personalização da revista e abre a leitura pública', function () {
         ->assertSee('Projeto de evolução')
         ->assertSee('Explorar revista')
         ->assertSee('Modo leitura');
+});
+
+it('divide uma evolução longa em páginas consecutivas da revista', function () {
+    $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $project = phaseProject($vehicle);
+
+    foreach (range(1, 7) as $index) {
+        $vehicle->entries()->create([
+            'category' => 'maintenance',
+            'title' => 'Registro '.$index,
+            'description' => 'Descrição pública do registro '.$index.'.',
+            'occurred_on' => now()->subDays($index),
+            'is_public' => true,
+        ]);
+    }
+
+    $magazine = app(ProjectMagazinePresenter::class)->present($project->fresh(), false);
+    $timelinePages = collect($magazine['pages'])->where('layout', 'timeline')->values();
+    $contents = collect($magazine['pages'])->firstWhere('type', 'contents');
+
+    expect($timelinePages)->toHaveCount(3)
+        ->and($timelinePages->pluck('id')->all())->toBe(['evolucao', 'evolucao-2', 'evolucao-3'])
+        ->and(collect($contents['chapters'])->where('id', 'evolucao'))->toHaveCount(1)
+        ->and($timelinePages->pluck('meta')->flatMap(fn (array $meta) => $meta['entries'])->pluck('title')->all())
+        ->toHaveCount(7);
 });
 
 it('gera QR Code público e downloads autenticados sem expor o ID na URL', function () {
