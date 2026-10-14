@@ -78,3 +78,15 @@ Na segunda rodada, a verificação visual foi feita também em viewport móvel: 
 - Capturas autenticadas repetidas em `/meus-shots`, `/configuracoes/perfil` e `/configuracoes/aparencia`; `/shots` e `/comunidade` verificados com dados persistidos.
 
 Próxima validação recomendada: revisar a densidade do formulário longo em mobile e configurar credenciais OAuth quando o login Google entrar no ambiente de homologação.
+
+## Rodada complementar em produção
+
+Em 13/10/2026, a auditoria visual foi repetida no ambiente publicado em `/`, `/login`, `/projetos`, `/explorar` e `/shots`. A home preservou o SVG do carro, o alinhamento central do palco e o movimento de ponteiro; a autenticação manteve o CTA Google e a hierarquia editorial; projetos, comunidade e Shots carregaram seus estados vazios sem overflow horizontal.
+
+Foram aplicados três ajustes de interface após essa rodada:
+
+- páginas públicas de projetos agora sinalizam **Explorar** no cabeçalho; **Garagem** permanece reservado à área pessoal e a `?mine=1`;
+- estados vazios de projetos e Shots ganharam explicação curta e CTA de continuação;
+- o rótulo acessível do painel visual foi reduzido para “Ilustração do carro”, removendo a linguagem decorativa antiga sem retirar o SVG.
+
+As capturas desta rodada foram inspecionadas diretamente no navegador de produção. O conjunto local de antes/depois permanece em `docs/audit-2026-10-13/`; rotas autenticadas continuam limitadas pelo OAuth externo no ambiente publicado, embora tenham sido verificadas anteriormente com fixtures persistidas no MySQL local.

@@ -347,6 +347,7 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 
 .mc-gallery-grid, .mc-media-grid { align-items: start; }
 .mc-gallery-grid > *, .mc-media-grid > * { min-width: 0; }
+.mc-empty-state { grid-column: 1 / -1; }
 .mc-gallery-grid img, .mc-media-grid img { backface-visibility: hidden; }
 .mc-gallery-grid > .mc-surface, .mc-gallery-grid > a.mc-surface, .mc-gallery-grid > article.mc-surface {
     height: 100%;

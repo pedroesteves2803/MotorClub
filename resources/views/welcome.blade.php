@@ -24,7 +24,7 @@
             <div class="mt-8 flex flex-wrap gap-3"><a class="mc-link-button" href="{{ route('dashboard') }}">Criar minha garagem</a><a class="mc-text-link" href="{{ route('projects.index') }}">Explorar projetos</a></div>
         </div>
 
-        <aside class="mc-home-poster mc-home-showroom" aria-label="Assinatura luminosa automotiva" data-hero-animation>
+        <aside class="mc-home-poster mc-home-showroom" aria-label="Ilustração do carro" data-hero-animation>
             <div class="mc-showroom mc-light-showroom" data-light-showroom role="img" aria-label="Ilustração minimalista de um carro esportivo com faróis azuis">
                 <div class="mc-light-showroom__scene" aria-hidden="true">
                     <span class="mc-light-showroom__beam mc-light-showroom__beam--left"></span>
