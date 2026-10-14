@@ -47,7 +47,11 @@ it('salva personalização da revista e abre a leitura pública', function () {
 
     expect($vehicle->fresh()->magazineSetting->primary_color)->toBe('#123456');
     $slug = app(VehicleSlugService::class)->ensure($vehicle->fresh());
-    $this->get(route('vehicles.slug.magazine', ['slug' => $slug]))->assertOk()->assertSee('Projeto de evolução');
+    $this->get(route('vehicles.slug.magazine', ['slug' => $slug]))
+        ->assertOk()
+        ->assertSee('Projeto de evolução')
+        ->assertSee('Explorar revista')
+        ->assertSee('Modo leitura');
 });
 
 it('gera QR Code público e downloads autenticados sem expor o ID na URL', function () {
@@ -120,6 +124,43 @@ it('não aceita destaque de foto pertencente a outro veículo', function () {
     ])->assertStatus(422);
 
     expect($vehicle->fresh()->magazineSetting)->toBeNull();
+});
+
+it('destaca revistas publicadas em explorar e nos perfis públicos', function () {
+    $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $vehicle->user->forceFill(['profile_public' => true])->save();
+    phaseProject($vehicle);
+    $vehicle->magazineSetting()->create(['title' => 'Venom em foco', 'is_published' => true]);
+
+    $slug = app(VehicleSlugService::class)->ensure($vehicle);
+    $magazineUrl = route('vehicles.slug.magazine', ['slug' => $slug]);
+
+    $this->get(route('explore'))
+        ->assertOk()
+        ->assertSee('Histórias sobre quatro rodas')
+        ->assertSee('Venom em foco')
+        ->assertSee($magazineUrl, false);
+
+    $this->get(route('explore', ['magazine' => 1]))
+        ->assertOk()
+        ->assertSee('Venom em foco');
+
+    $this->get(route('profiles.show', $vehicle->user))
+        ->assertOk()
+        ->assertSee('Revista digital')
+        ->assertSee($magazineUrl, false);
+});
+
+it('não exibe revista pública quando a edição está despublicada', function () {
+    $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $vehicle->user->forceFill(['profile_public' => true])->save();
+    phaseProject($vehicle);
+    $vehicle->magazineSetting()->create(['title' => 'Rascunho', 'is_published' => false]);
+
+    $this->get(route('explore'))
+        ->assertOk()
+        ->assertDontSee('Rascunho')
+        ->assertDontSee('Histórias sobre quatro rodas');
 });
 
 it('não expõe localização privada na página pública do veículo', function () {

@@ -18,7 +18,7 @@
     ];
 @endphp
 <x-layouts.public :title="$project->title.' · '.$projectFacts.' | Autoverse'" :description="(string) $projectDescription" :noindex="!$project->publiclyVisible()" ogType="article" :canonical="route('projects.show', $project)" :jsonLd="[$projectStructuredData, $projectBreadcrumb]" :image="$project->previewPhoto ? route('projects.image', $project->previewPhoto) : ($projectVehicle->previewPhoto ? route('vehicle-photos.show', $projectVehicle->previewPhoto) : null)">
-    <div class="av-magazine av-magazine--palette-{{ $magazineSettings->palette ?: 'carbon' }} av-magazine--style-{{ $magazineSettings->editorial_style ?: 'editorial' }} @if($magazineSettings->theme === 'light') av-magazine--light @endif" style="--av-accent: {{ $magazineSettings->primary_color }}" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="magazine">
+    <div class="av-magazine av-magazine--palette-{{ $magazineSettings->palette ?: 'carbon' }} av-magazine--style-{{ $magazineSettings->editorial_style ?: 'editorial' }} @if($magazineSettings->theme === 'light') av-magazine--light @endif" style="--av-accent: {{ $magazineSettings->primary_color }}" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="reading">
         <header class="av-magazine__intro">
             <div>
                 <p class="av-magazine-kicker">{{ $magazine['category'] }} · {{ $magazine['status'] }}</p>
@@ -27,8 +27,8 @@
             </div>
             <div class="av-magazine__actions">
                 <div class="av-magazine__mode" role="group" aria-label="Modo de visualização">
-                    <button type="button" class="is-active" data-av-mode="magazine" aria-pressed="true">Revista</button>
-                    <button type="button" data-av-mode="reading" aria-pressed="false">Leitura</button>
+                    <button type="button" data-av-mode="reading" aria-pressed="true">Leitura</button>
+                    <button type="button" data-av-mode="magazine" aria-pressed="false">Revista</button>
                 </div>
                 @can('update', $project)
                     <a class="mc-text-link" href="{{ route('projects.edit', $project) }}">Editar projeto</a><a class="mc-text-link" href="{{ route('garage.magazine.edit', $project->vehicle) }}">Personalizar revista</a>
@@ -36,12 +36,14 @@
             </div>
         </header>
 
+        <x-magazine-hero :vehicle="$projectVehicle" :magazine="$magazine" :url="route('projects.show', $project)" :vehicle-url="$project->publiclyVisible() ? route('vehicles.slug.show', ['slug' => $projectVehicle->slug]) : null" :qr-url="$project->publiclyVisible() && $projectVehicle->slug ? route('vehicles.slug.qr', ['slug' => $projectVehicle->slug]) : null" :owner="$project->vehicle->user_id === auth()->id()" />
+
         @can('update', $project)
             @if(!$project->publiclyVisible())<p class="mc-notice rounded-xl p-4" role="status">Este projeto está privado. A edição continua disponível apenas para você.</p>@endif
         @endcan
         @if($project->vehicle->user->is_demo)<p class="mc-notice rounded-xl p-4">Projeto fictício de demonstração. Informações e custos simulados.</p>@endif
 
-        <section class="av-magazine__experience" data-av-magazine-view aria-labelledby="magazine-title">
+        <section id="revista" class="av-magazine__experience" data-av-magazine-view aria-labelledby="magazine-title">
             <div class="av-magazine__toolbar">
                 <div><p class="av-magazine-kicker">Revista do projeto · {{ $magazine['pageCount'] }} páginas</p><p class="av-magazine__hint">Use as setas, clique nas bordas ou pressione ← e →.</p></div>
                 <div class="av-magazine__progress" aria-live="polite"><span data-av-progress-label>Página 01 de {{ str_pad((string) $magazine['pageCount'], 2, '0', STR_PAD_LEFT) }}</span><span class="av-magazine__progress-line"><i data-av-progress-bar></i></span></div>

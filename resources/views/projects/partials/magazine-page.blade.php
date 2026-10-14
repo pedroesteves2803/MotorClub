@@ -18,9 +18,7 @@
             </div>
         @elseif($page['type'] === 'contents')
             <header class="av-magazine-page__header">
-                <p class="av-magazine-kicker">{{ $page['kicker'] }}</p>
-                <h2>{{ $page['title'] }}</h2>
-                <p>{{ $page['subtitle'] }}</p>
+                <div><p class="av-magazine-kicker">{{ $page['kicker'] }}</p><h2>{{ $page['title'] }}</h2><p>{{ $page['subtitle'] }}</p></div>
             </header>
             <ol class="av-magazine-toc" aria-label="Capítulos da edição">
                 @forelse($page['chapters'] as $chapter)

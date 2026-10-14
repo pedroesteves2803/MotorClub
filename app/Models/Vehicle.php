@@ -92,6 +92,16 @@ class Vehicle extends Model
         return $this->hasOne(MagazineSetting::class);
     }
 
+    /**
+     * A published edition that can be surfaced in public discovery surfaces.
+     * The project visibility is checked by the calling query because it lives
+     * on the related project record rather than on the magazine settings.
+     */
+    public function publishedMagazine(): HasOne
+    {
+        return $this->hasOne(MagazineSetting::class)->where('is_published', true);
+    }
+
     public function shotAssets(): HasMany
     {
         return $this->hasMany(VehicleShotAsset::class);

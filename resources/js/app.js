@@ -478,8 +478,10 @@ const initMagazine = () => {
 
         root.dataset.avMagazineReady = 'true';
         let index = 0;
-        let mode = window.localStorage.getItem('autoverse-magazine-mode') || root.dataset.avDefaultMode || 'magazine';
+        const modeStorageKey = 'autoverse-magazine-mode-v2';
+        let mode = window.localStorage.getItem(modeStorageKey) || root.dataset.avDefaultMode || 'magazine';
         let animationTimer;
+        let touchStartX = null;
 
         const isMobile = () => window.matchMedia('(max-width: 860px)').matches;
         const visibleIndexes = () => {
@@ -526,7 +528,7 @@ const initMagazine = () => {
                 button.classList.toggle('is-active', active);
                 button.setAttribute('aria-pressed', String(active));
             });
-            window.localStorage.setItem('autoverse-magazine-mode', mode);
+            window.localStorage.setItem(modeStorageKey, mode);
             if (mode === 'reading') reading.querySelector('h2')?.focus?.({preventScroll: true});
         };
 
@@ -573,6 +575,16 @@ const initMagazine = () => {
             const bounds = book.getBoundingClientRect();
             goTo(event.clientX < bounds.left + bounds.width / 2 ? index - 1 : index + 1);
         });
+        book.addEventListener('touchstart', (event) => {
+            if (event.touches.length === 1) touchStartX = event.touches[0].clientX;
+        }, { passive: true });
+        book.addEventListener('touchend', (event) => {
+            if (touchStartX === null || !event.changedTouches.length) return;
+            const distance = event.changedTouches[0].clientX - touchStartX;
+            touchStartX = null;
+            if (Math.abs(distance) < 44) return;
+            goTo(distance < 0 ? index + 1 : index - 1);
+        }, { passive: true });
         window.addEventListener('resize', () => sync(), {passive: true});
         setMode(mode);
         sync();

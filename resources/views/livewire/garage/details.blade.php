@@ -16,7 +16,7 @@
     <nav class="mc-section-tabs" aria-label="Seções da garagem" data-section-tabs>
         <a href="#fotos" data-section-tab>Fotos</a>
         @if($project)<a href="{{ route('projects.edit', $project) }}">Projeto</a>@endif
-        <a href="{{ route('garage.magazine.edit', $vehicle) }}">Revista</a>
+        <a href="{{ route('garage.magazine.edit', $vehicle) }}">{{ $vehicle->magazineSetting ? 'Personalizar revista' : 'Criar revista' }}</a>
         <a href="#historico" data-section-tab>Histórico</a>
     </nav>
 

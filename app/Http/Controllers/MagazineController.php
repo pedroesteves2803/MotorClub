@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleSlugHistory;
 use App\Presenters\ProjectMagazinePresenter;
 use App\Services\MagazineService;
+use App\Services\VehicleSlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -47,9 +48,10 @@ class MagazineController extends Controller
         return back()->with('status', 'Personalização da revista salva.');
     }
 
-    public function showPublicByKey(string $key, ProjectMagazinePresenter $presenter, MagazineService $magazines): Response
+    public function showPublicByKey(string $key, ProjectMagazinePresenter $presenter, MagazineService $magazines, VehicleSlugService $slugs): Response
     {
         $vehicle = Vehicle::query()->where('public_key', $key)->firstOrFail();
+        $slugs->ensure($vehicle);
 
         return $this->renderPublic($vehicle, $presenter, $magazines);
     }

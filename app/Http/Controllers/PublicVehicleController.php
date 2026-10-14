@@ -42,8 +42,14 @@ class PublicVehicleController extends Controller
     private function render(Vehicle $vehicle, VehicleSlugService $slugs): Response
     {
         abort_unless($vehicle->visibility === 'public', 404);
+        $slugs->ensure($vehicle);
         $slugs->ensurePublicKey($vehicle);
-        $vehicle->load(['photos', 'user', 'entries' => fn ($query) => $query->where('is_public', true)->orderByDesc('occurred_on')->orderByDesc('id')]);
+        $vehicle->load([
+            'photos',
+            'user',
+            'magazineSetting.coverPhoto',
+            'entries' => fn ($query) => $query->where('is_public', true)->orderByDesc('occurred_on')->orderByDesc('id'),
+        ]);
 
         return response()->view('vehicle', compact('vehicle'))->header('Cache-Control', 'private, no-store');
     }

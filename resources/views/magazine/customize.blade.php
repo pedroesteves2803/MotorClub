@@ -2,6 +2,7 @@
     $vehicleName = $vehicle->public_name ?: trim($vehicle->brand.' '.$vehicle->model);
     $highlightIds = collect(old('highlight_photo_ids', $settings->highlight_photo_ids ?? []))->map(fn ($id) => (int) $id);
     $chapterOrder = collect(old('chapter_order', $settings->chapter_order ?? []));
+    $coverPhoto = $vehicle->photos->firstWhere('id', $settings->cover_photo_id) ?: $vehicle->photos->first();
 @endphp
 <x-layouts.app>
     <div class="mx-auto w-full max-w-6xl space-y-8">
@@ -26,7 +27,7 @@
                 @csrf
                 @method('PUT')
 
-                <div class="space-y-6">
+                <div class="space-y-6 lg:sticky lg:top-6">
                     <section class="mc-surface rounded-2xl p-6">
                         <h2 class="text-xl font-semibold">Identidade</h2>
                         <div class="mt-5 space-y-5">
@@ -130,17 +131,9 @@
                     </section>
 
                     <section class="mc-surface rounded-2xl p-6">
-                        <p class="mc-edition">Prévia</p>
-                        <div class="mt-4 overflow-hidden rounded-2xl border border-[var(--mc-line)] bg-[var(--mc-graphite)] p-6 text-white" style="--magazine-accent: {{ $settings->primary_color }}">
-                            <p class="text-xs uppercase tracking-[.2em]" style="color: var(--magazine-accent)">Revista do projeto</p>
-                            <h2 class="mt-12 max-w-lg text-4xl font-bold tracking-tight">{{ old('title', $settings->title ?: $magazine['title']) }}</h2>
-                            <p class="mt-3 text-white/70">{{ old('subtitle', $settings->subtitle ?: $vehicleName) }}</p>
-                            <div class="mt-8 flex flex-wrap gap-3 text-xs text-white/65"><span>{{ count($magazine['chapters']) }} capítulos</span><span>{{ $vehicle->photos->count() }} fotos disponíveis</span></div>
-                        </div>
-                        <div class="mt-5 flex flex-wrap gap-4">
-                            <a class="mc-text-link" href="{{ route('projects.show', $project) }}">Abrir revista</a>
-                            <a class="mc-text-link" href="{{ route('garage.share.edit', $vehicle) }}">QR Code e compartilhamento</a>
-                        </div>
+                        <div class="flex items-start justify-between gap-4"><div><p class="mc-edition">Prévia</p><h2 class="mt-2 text-xl font-semibold">Assim a capa aparece</h2></div><span class="rounded-full border border-[var(--mc-line)] px-2.5 py-1 text-xs mc-muted">{{ $settings->is_published ? 'Publicada' : 'Rascunho' }}</span></div>
+                        <div class="av-magazine-editor-preview mt-4" style="--magazine-accent: {{ $settings->primary_color }}">@if($coverPhoto)<img src="{{ route('vehicle-photos.show', $coverPhoto) }}" alt="Prévia da capa" loading="lazy">@endif<div class="av-magazine-editor-preview__veil"></div><div class="av-magazine-editor-preview__copy"><p class="text-xs uppercase tracking-[.2em]" style="color: var(--magazine-accent)">Revista do projeto</p><h3>{{ old('title', $settings->title ?: $magazine['title']) }}</h3><p>{{ old('subtitle', $settings->subtitle ?: $vehicleName) }}</p><div><span>{{ count($magazine['chapters']) }} capítulos</span><span>{{ $vehicle->photos->count() }} fotos disponíveis</span></div></div></div>
+                        <div class="mt-5 flex flex-wrap gap-4"><a class="mc-text-link" href="{{ route('projects.show', $project) }}">Abrir revista</a><a class="mc-text-link" href="{{ route('garage.share.edit', $vehicle) }}">QR Code e compartilhamento</a></div>
                     </section>
 
                     <button class="w-full rounded-lg bg-[var(--mc-action)] px-5 py-3 font-semibold text-white" type="submit">Salvar edição</button>

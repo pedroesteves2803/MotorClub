@@ -15,6 +15,7 @@ use App\Presenters\ProjectMagazinePresenter;
 use App\Services\AI\AIReportGeneratorInterface;
 use App\Services\MagazineService;
 use App\Services\VehicleImages;
+use App\Services\VehicleSlugService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -76,11 +77,12 @@ class ProjectController extends Controller
         return back()->with('status', 'Projeto atualizado.');
     }
 
-    public function show(Project $project, ProjectMagazinePresenter $magazinePresenter, MagazineService $magazines)
+    public function show(Project $project, ProjectMagazinePresenter $magazinePresenter, MagazineService $magazines, VehicleSlugService $slugs)
     {
         abort_unless(Gate::allows('view', $project), 404);
         $ownerCanEdit = Gate::allows('update', $project);
         $project->load('photos', 'mediaPhotos', 'modifications.parts.photos', 'modifications.photos', 'vehicle.user', 'vehicle.photos', 'vehicle.entries', 'workshop');
+        $slugs->ensure($project->vehicle);
         if (! $ownerCanEdit) {
             $project->vehicle->setRelation('entries', $project->vehicle->entries->where('is_public', true)->values());
         }

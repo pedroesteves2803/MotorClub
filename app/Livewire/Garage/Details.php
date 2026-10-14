@@ -583,6 +583,7 @@ class Details extends Component
     {
         $this->ensureFeatureEnabled();
         $vehicle = $this->vehicle();
+        $vehicle->loadMissing('magazineSetting');
         $project = $vehicle->projects()->latest('id')->first();
         $modifications = $project?->modifications()->with('parts')->get() ?? collect();
 

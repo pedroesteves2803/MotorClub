@@ -287,7 +287,10 @@ class Index extends Component
         $this->ensureFeatureEnabled();
 
         return view('livewire.garage.index', [
-            'vehicles' => Vehicle::with('photos')->where('user_id', Auth::id())->latest('id')->paginate(12),
+            'vehicles' => Vehicle::with(['photos', 'magazineSetting.coverPhoto'])
+                ->where('user_id', Auth::id())
+                ->latest('id')
+                ->paginate(12),
         ])->layout('components.layouts.app');
     }
 }

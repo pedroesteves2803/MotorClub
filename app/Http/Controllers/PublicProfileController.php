@@ -31,7 +31,11 @@ class PublicProfileController extends Controller
         $person->unsetRelation('photographerProfile');
         $person->load(['photographerProfile' => fn ($query) => $query->where('is_public', true)]);
 
-        $vehicles = Vehicle::with('previewPhoto')->where('user_id', $person->id)->where('visibility', 'public')->get();
+        $vehicles = Vehicle::with([
+            'previewPhoto',
+            'magazineSetting.coverPhoto',
+            'projects' => fn ($query) => $query->where('is_public', true)->latest('id'),
+        ])->where('user_id', $person->id)->where('visibility', 'public')->get();
         $slugs = app(VehicleSlugService::class);
         $vehicles->each(fn (Vehicle $vehicle) => $slugs->ensure($vehicle));
 

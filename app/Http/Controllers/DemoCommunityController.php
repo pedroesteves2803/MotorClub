@@ -24,6 +24,7 @@ class DemoCommunityController extends Controller
                     'post' => $car['post'],
                     'url' => route('community.garage', $slug),
                     'note' => $car['image'] ? 'Foto real · Referências com fontes' : 'Foto do carro pendente de confirmação',
+                    'magazine' => null,
                 ]),
             ];
         })->values();
@@ -34,13 +35,34 @@ class DemoCommunityController extends Controller
                 'label' => $person->is_demo ? 'Perfil fictício · Entusiasta' : ($person->account_type === 'workshop' ? 'Profissional de oficina' : 'Entusiasta'),
                 'url' => route('profiles.show', $person),
                 'avatar' => null,
-                'vehicles' => Vehicle::with('photos')->where('user_id', $person->id)->where('visibility', 'public')->get()->map(fn ($vehicle) => [
-                    'name' => $vehicle->brand.' '.$vehicle->model.' '.$vehicle->trim.' · '.$vehicle->model_year,
-                    'details' => $person->is_demo ? config('demo_vehicle_details.'.strtolower($vehicle->model).($vehicle->trim === 'GTI' ? '-gti' : '')) : null,
-                    'image' => $vehicle->photos->isNotEmpty() ? route('vehicle-photos.show', $vehicle->photos->first()) : null,
-                    'url' => route('vehicles.slug.show', ['slug' => app(VehicleSlugService::class)->ensure($vehicle)]),
-                    'note' => $person->is_demo ? 'Veículo de demonstração · '.($vehicle->photos->isNotEmpty() ? 'Imagem gerada por IA' : 'Sem foto real') : 'Veículo público da comunidade',
-                ]),
+                'vehicles' => Vehicle::with([
+                    'photos',
+                    'publishedMagazine.coverPhoto',
+                    'projects' => fn ($query) => $query->where('is_public', true)->latest('id'),
+                ])->where('user_id', $person->id)->where('visibility', 'public')->get()->map(function ($vehicle) use ($person) {
+                    $slug = app(VehicleSlugService::class)->ensure($vehicle);
+                    $magazine = null;
+                    if ($vehicle->publishedMagazine && $vehicle->projects->isNotEmpty()) {
+                        $magazine = [
+                            'title' => $vehicle->publishedMagazine->title ?: $vehicle->projects->first()->title,
+                            'subtitle' => $vehicle->publishedMagazine->subtitle ?: ($vehicle->public_name ?: $vehicle->brand.' '.$vehicle->model),
+                            'vehicle' => $vehicle->brand.' '.$vehicle->model,
+                            'cover' => $vehicle->publishedMagazine->coverPhoto
+                                ? route('vehicle-photos.show', $vehicle->publishedMagazine->coverPhoto)
+                                : ($vehicle->photos->first() ? route('vehicle-photos.show', $vehicle->photos->first()) : null),
+                            'url' => route('vehicles.slug.magazine', ['slug' => $slug]),
+                        ];
+                    }
+
+                    return [
+                        'name' => $vehicle->brand.' '.$vehicle->model.' '.$vehicle->trim.' · '.$vehicle->model_year,
+                        'details' => $person->is_demo ? config('demo_vehicle_details.'.strtolower($vehicle->model).($vehicle->trim === 'GTI' ? '-gti' : '')) : null,
+                        'image' => $vehicle->photos->isNotEmpty() ? route('vehicle-photos.show', $vehicle->photos->first()) : null,
+                        'url' => route('vehicles.slug.show', ['slug' => $slug]),
+                        'note' => $person->is_demo ? 'Veículo de demonstração · '.($vehicle->photos->isNotEmpty() ? 'Imagem gerada por IA' : 'Sem foto real') : 'Veículo público da comunidade',
+                        'magazine' => $magazine,
+                    ];
+                }),
             ];
         });
 
@@ -50,7 +72,21 @@ class DemoCommunityController extends Controller
             $people = $people->filter(fn ($person) => str_contains(mb_strtolower($person['name'].' '.$person['vehicles']->pluck('name')->implode(' ')), $term));
         }
 
-        return view('community', ['people' => $people]);
+        if ($request->boolean('magazine')) {
+            $people = $people->map(function ($person) {
+                $person['vehicles'] = $person['vehicles']->filter(fn ($vehicle) => $vehicle['magazine'] !== null)->values();
+
+                return $person;
+            })->filter(fn ($person) => $person['vehicles']->isNotEmpty())->values();
+        }
+
+        $magazineVehicles = $people->flatMap(fn ($person) => $person['vehicles']->filter(fn ($vehicle) => $vehicle['magazine'] !== null))->values();
+
+        return view('community', [
+            'people' => $people,
+            'magazineVehicles' => $magazineVehicles,
+            'magazineFilter' => $request->boolean('magazine'),
+        ]);
     }
 
     public function garage(string $slug)
