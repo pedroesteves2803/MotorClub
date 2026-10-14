@@ -37,22 +37,8 @@ class DemoCommunityController extends Controller
                 'avatar' => null,
                 'vehicles' => Vehicle::with([
                     'photos',
-                    'publishedMagazine.coverPhoto',
-                    'projects' => fn ($query) => $query->where('is_public', true)->latest('id'),
                 ])->where('user_id', $person->id)->where('visibility', 'public')->get()->map(function ($vehicle) use ($person) {
                     $slug = app(VehicleSlugService::class)->ensure($vehicle);
-                    $magazine = null;
-                    if ($vehicle->publishedMagazine && $vehicle->projects->isNotEmpty()) {
-                        $magazine = [
-                            'title' => $vehicle->publishedMagazine->title ?: $vehicle->projects->first()->title,
-                            'subtitle' => $vehicle->publishedMagazine->subtitle ?: ($vehicle->public_name ?: $vehicle->brand.' '.$vehicle->model),
-                            'vehicle' => $vehicle->brand.' '.$vehicle->model,
-                            'cover' => $vehicle->publishedMagazine->coverPhoto
-                                ? route('vehicle-photos.show', $vehicle->publishedMagazine->coverPhoto)
-                                : ($vehicle->photos->first() ? route('vehicle-photos.show', $vehicle->photos->first()) : null),
-                            'url' => route('vehicles.slug.magazine', ['slug' => $slug]),
-                        ];
-                    }
 
                     return [
                         'name' => $vehicle->brand.' '.$vehicle->model.' '.$vehicle->trim.' · '.$vehicle->model_year,
@@ -60,7 +46,6 @@ class DemoCommunityController extends Controller
                         'image' => $vehicle->photos->isNotEmpty() ? route('vehicle-photos.show', $vehicle->photos->first()) : null,
                         'url' => route('vehicles.slug.show', ['slug' => $slug]),
                         'note' => $person->is_demo ? 'Veículo de demonstração · '.($vehicle->photos->isNotEmpty() ? 'Imagem gerada por IA' : 'Sem foto real') : 'Veículo público da comunidade',
-                        'magazine' => $magazine,
                     ];
                 }),
             ];
@@ -72,20 +57,8 @@ class DemoCommunityController extends Controller
             $people = $people->filter(fn ($person) => str_contains(mb_strtolower($person['name'].' '.$person['vehicles']->pluck('name')->implode(' ')), $term));
         }
 
-        if ($request->boolean('magazine')) {
-            $people = $people->map(function ($person) {
-                $person['vehicles'] = $person['vehicles']->filter(fn ($vehicle) => $vehicle['magazine'] !== null)->values();
-
-                return $person;
-            })->filter(fn ($person) => $person['vehicles']->isNotEmpty())->values();
-        }
-
-        $magazineVehicles = $people->flatMap(fn ($person) => $person['vehicles']->filter(fn ($vehicle) => $vehicle['magazine'] !== null))->values();
-
         return view('community', [
             'people' => $people,
-            'magazineVehicles' => $magazineVehicles,
-            'magazineFilter' => $request->boolean('magazine'),
         ]);
     }
 

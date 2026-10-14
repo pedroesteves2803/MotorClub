@@ -126,7 +126,7 @@ it('não aceita destaque de foto pertencente a outro veículo', function () {
     expect($vehicle->fresh()->magazineSetting)->toBeNull();
 });
 
-it('destaca revistas publicadas em explorar e nos perfis públicos', function () {
+it('exige entrar no veículo antes de acessar a revista pública', function () {
     $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
     $vehicle->user->forceFill(['profile_public' => true])->save();
     phaseProject($vehicle);
@@ -137,13 +137,15 @@ it('destaca revistas publicadas em explorar e nos perfis públicos', function ()
 
     $this->get(route('explore'))
         ->assertOk()
-        ->assertSee('Histórias sobre quatro rodas')
-        ->assertSee('Venom em foco')
-        ->assertSee($magazineUrl, false);
+        ->assertSee('Conhecer o carro')
+        ->assertDontSee('Histórias sobre quatro rodas')
+        ->assertDontSee('Venom em foco')
+        ->assertDontSee($magazineUrl, false);
 
-    $this->get(route('explore', ['magazine' => 1]))
+    $this->get(route('vehicles.slug.show', ['slug' => $slug]))
         ->assertOk()
-        ->assertSee('Venom em foco');
+        ->assertSee('Explorar revista')
+        ->assertSee($magazineUrl, false);
 
     $this->get(route('profiles.show', $vehicle->user))
         ->assertOk()
