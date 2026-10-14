@@ -32,7 +32,6 @@
                 </div>
                 @can('update', $project)
                     <a class="mc-text-link" href="{{ route('projects.edit', $project) }}">Editar projeto</a><a class="mc-text-link" href="{{ route('garage.magazine.edit', $project->vehicle) }}">Personalizar revista</a>
-                    @if(Route::has('projects.reports.generate'))<form method="POST" action="{{ route('projects.reports.generate', $project) }}">@csrf<button class="mc-link-button" type="submit">Gerar relatório</button></form>@endif
                 @endcan
             </div>
         </header>

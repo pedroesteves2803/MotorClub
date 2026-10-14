@@ -89,7 +89,8 @@ it('monta a revista com capítulos relevantes e oculta histórico privado', func
 
     $this->actingAs($project->vehicle->user)->get(route('projects.show', $project))
         ->assertSee('Anotação privada')
-        ->assertSee('Privado');
+        ->assertSee('Privado')
+        ->assertDontSee('Gerar relatório');
 });
 it('valida campos de projetos e impede injeção de autorização', function () {
     $vehicle = Vehicle::factory()->create();
