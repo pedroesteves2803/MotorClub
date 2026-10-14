@@ -8,6 +8,18 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'anon_key' => env('SUPABASE_ANON_KEY'),
+        'key' => env('SUPABASE_KEY'),
+        'service_key' => env('SUPABASE_SERVICE_ROLE_KEY'),
+    ],
+
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
