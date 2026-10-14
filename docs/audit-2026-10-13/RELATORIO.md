@@ -90,3 +90,5 @@ Foram aplicados três ajustes de interface após essa rodada:
 - o rótulo acessível do painel visual foi reduzido para “Ilustração do carro”, removendo a linguagem decorativa antiga sem retirar o SVG.
 
 As capturas desta rodada foram inspecionadas diretamente no navegador de produção. O conjunto local de antes/depois permanece em `docs/audit-2026-10-13/`; rotas autenticadas continuam limitadas pelo OAuth externo no ambiente publicado, embora tenham sido verificadas anteriormente com fixtures persistidas no MySQL local.
+
+O commit `e6c4dd3` foi publicado no Render e ficou **Deploy succeeded | Live**. Depois da publicação, `/`, `/projetos`, `/shots` e `/up` responderam com HTTP 200.
