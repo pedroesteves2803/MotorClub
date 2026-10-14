@@ -18,12 +18,12 @@
     ];
 @endphp
 <x-layouts.public :title="$project->title.' · '.$projectFacts.' | Autoverse'" :description="(string) $projectDescription" :noindex="!$project->publiclyVisible()" ogType="article" :canonical="route('projects.show', $project)" :jsonLd="[$projectStructuredData, $projectBreadcrumb]" :image="$project->previewPhoto ? route('projects.image', $project->previewPhoto) : ($projectVehicle->previewPhoto ? route('vehicle-photos.show', $projectVehicle->previewPhoto) : null)">
-    <div class="av-magazine" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="magazine">
+    <div class="av-magazine @if($magazineSettings->theme === 'light') av-magazine--light @endif" style="--av-accent: {{ $magazineSettings->primary_color }}" data-av-magazine data-av-page-count="{{ $magazine['pageCount'] }}" data-av-default-mode="magazine">
         <header class="av-magazine__intro">
             <div>
                 <p class="av-magazine-kicker">{{ $magazine['category'] }} · {{ $magazine['status'] }}</p>
                 <h1>{{ $magazine['title'] }}</h1>
-                <p>{{ $magazine['vehicleName'] }} · Edição editorial do Autoverse</p>
+                <p>{{ $magazine['vehicleName'] }} · Projeto documentado</p>
             </div>
             <div class="av-magazine__actions">
                 <div class="av-magazine__mode" role="group" aria-label="Modo de visualização">
@@ -31,7 +31,7 @@
                     <button type="button" data-av-mode="reading" aria-pressed="false">Leitura</button>
                 </div>
                 @can('update', $project)
-                    <a class="mc-text-link" href="{{ route('projects.edit', $project) }}">Editar projeto</a>
+                    <a class="mc-text-link" href="{{ route('projects.edit', $project) }}">Editar projeto</a><a class="mc-text-link" href="{{ route('garage.magazine.edit', $project->vehicle) }}">Personalizar revista</a>
                     @if(Route::has('projects.reports.generate'))<form method="POST" action="{{ route('projects.reports.generate', $project) }}">@csrf<button class="mc-link-button" type="submit">Gerar relatório</button></form>@endif
                 @endcan
             </div>
@@ -44,7 +44,7 @@
 
         <section class="av-magazine__experience" data-av-magazine-view aria-labelledby="magazine-title">
             <div class="av-magazine__toolbar">
-                <div><p class="av-magazine-kicker">Autoverse Magazine · {{ $magazine['pageCount'] }} páginas</p><p class="av-magazine__hint">Use as setas, clique nas bordas ou pressione ← e →.</p></div>
+                <div><p class="av-magazine-kicker">Revista do projeto · {{ $magazine['pageCount'] }} páginas</p><p class="av-magazine__hint">Use as setas, clique nas bordas ou pressione ← e →.</p></div>
                 <div class="av-magazine__progress" aria-live="polite"><span data-av-progress-label>Página 01 de {{ str_pad((string) $magazine['pageCount'], 2, '0', STR_PAD_LEFT) }}</span><span class="av-magazine__progress-line"><i data-av-progress-bar></i></span></div>
             </div>
             <div class="av-magazine__book" data-av-book tabindex="0" aria-label="Revista digital do projeto">

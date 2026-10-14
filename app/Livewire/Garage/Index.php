@@ -5,6 +5,7 @@ namespace App\Livewire\Garage;
 use App\Models\FeatureSetting;
 use App\Models\Vehicle;
 use App\Services\VehicleImages;
+use App\Services\VehicleSlugService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -23,6 +24,8 @@ class Index extends Component
     public ?int $editingId = null;
 
     public bool $formOpen = false;
+
+    public string $vehicle_type = 'car';
 
     public string $brand = '';
 
@@ -103,7 +106,7 @@ class Index extends Component
         Gate::authorize('update', $vehicle);
         $this->resetValidation();
         $this->editingId = $id;
-        foreach (['brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility'] as $field) {
+        foreach (['vehicle_type', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility'] as $field) {
             $this->$field = (string) $vehicle->$field;
         }
         $this->mileage_approximate = (bool) $vehicle->mileage_approximate;
@@ -131,6 +134,7 @@ class Index extends Component
             $this->$field = trim($this->$field);
         }
         $data = $this->validate([
+            'vehicle_type' => ['required', Rule::in(array_keys(config('motorclub.vehicle_types')))],
             'brand' => ['required', 'string', 'max:80'],
             'model' => ['required', 'string', 'max:80'],
             'public_name' => ['nullable', 'string', 'max:120'],
@@ -163,7 +167,7 @@ class Index extends Component
             'min' => 'O ano deve ser igual ou posterior a :min.',
             'integer' => 'Informe um ano válido.',
             'in' => 'Selecione uma opção válida.',
-        ], ['brand' => 'marca', 'model' => 'modelo', 'public_name' => 'nome público', 'trim' => 'versão', 'generation' => 'geração', 'color' => 'cor', 'model_year' => 'ano', 'engine' => 'motorização', 'mileage' => 'quilometragem', 'mileage_approximate' => 'quilometragem aproximada', 'acquired_on' => 'data de aquisição', 'location' => 'localização', 'instagram_url' => 'Instagram', 'visibility' => 'visibilidade', 'photos.*' => 'fotos', 'project_title' => 'título do projeto', 'project_description' => 'descrição do projeto', 'project_cost' => 'custo do projeto']);
+        ], ['vehicle_type' => 'tipo de veículo', 'brand' => 'marca', 'model' => 'modelo', 'public_name' => 'nome público', 'trim' => 'versão', 'generation' => 'geração', 'color' => 'cor', 'model_year' => 'ano', 'engine' => 'motorização', 'mileage' => 'quilometragem', 'mileage_approximate' => 'quilometragem aproximada', 'acquired_on' => 'data de aquisição', 'location' => 'localização', 'instagram_url' => 'Instagram', 'visibility' => 'visibilidade', 'photos.*' => 'fotos', 'project_title' => 'título do projeto', 'project_description' => 'descrição do projeto', 'project_cost' => 'custo do projeto']);
         if ($this->project_enabled && (trim($this->project_title) !== '' || trim($this->project_description) !== '')) {
             $this->validate([
                 'project_title' => ['required', 'string', 'max:150'],
@@ -179,12 +183,13 @@ class Index extends Component
 
             return;
         }
-        $vehicleData = collect($data)->only(['brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility'])->all();
+        $vehicleData = collect($data)->only(['vehicle_type', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility'])->all();
         $vehicle->fill($vehicleData);
         if (! $vehicle->exists) {
             $vehicle->user_id = Auth::id();
         }
         $vehicle->save();
+        app(VehicleSlugService::class)->ensure($vehicle);
         $storedPaths = [];
         try {
             foreach ($this->photos as $index => $photo) {
@@ -238,7 +243,8 @@ class Index extends Component
 
     public function resetForm(): void
     {
-        $this->reset('editingId', 'formOpen', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility', 'projectId', 'project_enabled', 'project_title', 'project_category', 'project_status', 'project_description', 'project_parts', 'project_services', 'project_cost', 'project_show_cost', 'project_is_public', 'photos');
+        $this->reset('editingId', 'formOpen', 'vehicle_type', 'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine', 'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility', 'projectId', 'project_enabled', 'project_title', 'project_category', 'project_status', 'project_description', 'project_parts', 'project_services', 'project_cost', 'project_show_cost', 'project_is_public', 'photos');
+        $this->vehicle_type = 'car';
         $this->visibility = 'private';
         $this->project_enabled = true;
         $this->project_category = 'maintenance';

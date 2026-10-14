@@ -49,6 +49,14 @@
                                 @endif
                                 <button class="mc-link-button">Tenho interesse</button>
                             </form>
+                            @if($photo->price === null && $vehicles->isNotEmpty())
+                                <form class="mt-3 space-y-3 rounded-lg border border-[var(--mc-line)] p-3" method="POST" action="{{ route('shots.photos.attach', $photo) }}">
+                                    @csrf
+                                    <input type="hidden" name="vehicle_id" value="{{ $vehicles->first()->id }}">
+                                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_public" value="1"> Usar na página pública</label>
+                                    <button class="mc-text-link">Adicionar foto licenciada à garagem →</button>
+                                </form>
+                            @endif
                             <form class="mt-3 flex gap-2" method="POST" action="{{ route('shots.reports.store', $photo) }}">
                                 @csrf
                                 <input class="mc-input min-w-0" name="reason" maxlength="120" placeholder="Denunciar ou pedir remoção" required>

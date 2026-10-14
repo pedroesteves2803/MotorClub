@@ -9,6 +9,7 @@ use App\Models\ShotGallery;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\Workshop;
+use App\Services\VehicleSlugService;
 use Illuminate\Http\Response;
 
 class SeoController extends Controller
@@ -53,7 +54,7 @@ class SeoController extends Controller
             ->whereHas('user', fn ($query) => $query->where('is_demo', false))
             ->get(['id', 'updated_at', 'user_id'])
             ->each(function (Vehicle $vehicle) use ($urls) {
-                $urls->push(['loc' => route('vehicles.show', $vehicle), 'lastmod' => $vehicle->updated_at]);
+                $urls->push(['loc' => route('vehicles.slug.show', ['slug' => app(VehicleSlugService::class)->ensure($vehicle)]), 'lastmod' => $vehicle->updated_at]);
             });
 
         Project::query()

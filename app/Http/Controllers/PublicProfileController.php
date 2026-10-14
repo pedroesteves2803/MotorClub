@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\ShotGallery;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\VehicleSlugService;
 use Illuminate\Http\Request;
 
 class PublicProfileController extends Controller
@@ -30,9 +31,13 @@ class PublicProfileController extends Controller
         $person->unsetRelation('photographerProfile');
         $person->load(['photographerProfile' => fn ($query) => $query->where('is_public', true)]);
 
+        $vehicles = Vehicle::with('previewPhoto')->where('user_id', $person->id)->where('visibility', 'public')->get();
+        $slugs = app(VehicleSlugService::class);
+        $vehicles->each(fn (Vehicle $vehicle) => $slugs->ensure($vehicle));
+
         return view('profiles.show', [
             'person' => $person,
-            'vehicles' => Vehicle::with('previewPhoto')->where('user_id', $person->id)->where('visibility', 'public')->get(),
+            'vehicles' => $vehicles,
             'projects' => Project::with(['vehicle.previewPhoto', 'previewPhoto'])->published()->whereHas('vehicle', fn ($q) => $q->where('user_id', $person->id))->get(),
             'shotGalleries' => ShotGallery::with('previewPhoto')->where('user_id', $person->id)->where('is_public', true)->whereHas('user.photographerProfile', fn ($profile) => $profile->where('is_public', true))->get(),
         ]);

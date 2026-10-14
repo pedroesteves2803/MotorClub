@@ -30,90 +30,12 @@ const showToast = (message) => {
     toast.dataset.timeout = String(window.setTimeout(() => toast.classList.remove('is-visible'), 3600));
 };
 
-const initReveal = () => {
-    const candidates = document.querySelectorAll('[data-reveal], main > section:not(.mc-home-hero), main > article, main > form, .mc-home-copy > *, .mc-home-poster, .mc-home-features article, .mc-car, .mc-surface');
-
-    candidates.forEach((element, index) => {
-        if (element.closest('[data-no-motion]')) return;
-        if (element.dataset.mcRevealReady) return;
-        element.classList.add('mc-reveal');
-        element.style.setProperty('--mc-reveal-delay', `${Math.min(index * 45, 260)}ms`);
-        element.dataset.mcRevealReady = 'true';
-    });
-
-    if (reduceMotion.matches || !('IntersectionObserver' in window)) {
-        candidates.forEach((element) => element.classList.add('is-visible'));
-        return;
-    }
-
-    const observer = new IntersectionObserver((entries, currentObserver) => {
-        entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('is-visible');
-            currentObserver.unobserve(entry.target);
-        });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
-
-    candidates.forEach((element) => observer.observe(element));
-};
-
+// Content and photographs remain visible without scroll-triggered reveals.
 const initImageMotion = () => {
-    const images = document.querySelectorAll('main img:not([data-no-motion])');
-    if (!images.length) return;
-
-    images.forEach((image) => {
-        image.classList.add('mc-image-reveal');
+    document.querySelectorAll('main img').forEach((image) => {
         if (!image.hasAttribute('loading')) image.loading = 'lazy';
         image.decoding = 'async';
-        if (image.closest('.mc-surface, .mc-car, figure')) image.classList.add('mc-scroll-zoom');
     });
-
-    if (reduceMotion.matches || !('IntersectionObserver' in window)) {
-        images.forEach((image) => image.classList.add('is-visible'));
-        return;
-    }
-
-    const observer = new IntersectionObserver((entries, currentObserver) => {
-        entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('is-visible');
-            currentObserver.unobserve(entry.target);
-        });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.04 });
-
-    images.forEach((image) => observer.observe(image));
-};
-
-const initScrollZoom = () => {
-    if (!document.querySelector('.mc-scroll-zoom') || reduceMotion.matches) return;
-
-    const update = () => {
-        document.querySelectorAll('.mc-scroll-zoom').forEach((item) => {
-            const bounds = item.getBoundingClientRect();
-            if (bounds.bottom < 0 || bounds.top > window.innerHeight) return;
-            const distance = clamp((window.innerHeight - bounds.top) / (window.innerHeight + bounds.height), 0, 1);
-            item.style.setProperty('--mc-scroll-scale', (1 + distance * 0.025).toFixed(4));
-        });
-    };
-
-    if (document.body.dataset.mcScrollZoomBound) {
-        update();
-        return;
-    }
-
-    let frame = 0;
-    const requestUpdate = () => {
-        if (frame) return;
-        frame = window.requestAnimationFrame(() => {
-            frame = 0;
-            update();
-        });
-    };
-
-    document.body.dataset.mcScrollZoomBound = 'true';
-    update();
-    window.addEventListener('scroll', requestUpdate, { passive: true });
-    window.addEventListener('resize', requestUpdate, { passive: true });
 };
 
 const initFeedback = () => {
@@ -270,8 +192,8 @@ const initThemeHeadlights = () => {
 
         document.querySelectorAll('[data-theme-toggle-button]').forEach((control) => {
             const state = dark
-                ? 'Tema escuro, farol apagado. Ativar tema claro.'
-                : 'Tema claro, farol aceso. Ativar tema escuro.';
+                ? 'Ativar tema claro'
+                : 'Ativar tema escuro';
 
             control.classList.toggle('is-dark', dark);
             control.classList.toggle('is-lit', !dark);
@@ -539,6 +461,37 @@ const initMagazine = () => {
     });
 };
 
+const initShareLinks = () => {
+    document.querySelectorAll('[data-copy-link]').forEach((button) => {
+        if (button.dataset.mcCopyReady) return;
+        button.dataset.mcCopyReady = 'true';
+        button.addEventListener('click', async () => {
+            const value = button.dataset.copyLink;
+            try {
+                await navigator.clipboard.writeText(value);
+                showToast('Link copiado.');
+            } catch {
+                window.prompt('Copie o link público:', value);
+            }
+        });
+    });
+    document.querySelectorAll('[data-native-share]').forEach((button) => {
+        if (button.dataset.mcNativeShareReady) return;
+        button.dataset.mcNativeShareReady = 'true';
+        button.addEventListener('click', async () => {
+            if (!navigator.share) {
+                showToast('O compartilhamento nativo não está disponível neste navegador.');
+                return;
+            }
+            try {
+                await navigator.share({title: button.dataset.nativeShareTitle || 'Autoverse', url: button.dataset.nativeShare});
+            } catch (error) {
+                if (error?.name !== 'AbortError') showToast('Não foi possível abrir o compartilhamento.');
+            }
+        });
+    });
+};
+
 const initEasterEggs = () => {
     if (document.body.dataset.mcEasterEggsBound) return;
 
@@ -575,9 +528,7 @@ const initEasterEggs = () => {
 };
 
 const initMotion = () => {
-    initReveal();
     initImageMotion();
-    initScrollZoom();
     initFeedback();
     initPhotoUploaders();
     initSectionTabs();
@@ -588,6 +539,7 @@ const initMotion = () => {
     initCardTilt();
     initLightShowroom();
     initMagazine();
+    initShareLinks();
     initEasterEggs();
 };
 

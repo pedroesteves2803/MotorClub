@@ -11,6 +11,7 @@ use App\Models\ShotPurchaseRequest;
 use App\Models\ShotReport;
 use App\Models\Vehicle;
 use App\Services\ShotImages;
+use App\Services\ShotIntegrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -202,6 +203,17 @@ class ShotsController extends Controller
         ShotPurchaseRequest::firstOrCreate(['shot_photo_id' => $photo->id, 'buyer_id' => $request->user()->id], $data + ['status' => 'pending']);
 
         return back()->with('status', 'Interesse registrado. O fotógrafo poderá responder pelo Autoverse.');
+    }
+
+    public function attachToVehicle(Request $request, ShotPhoto $photo, ShotIntegrationService $integration)
+    {
+        $data = $request->validate([
+            'vehicle_id' => ['required', Rule::exists('vehicles', 'id')->where('user_id', $request->user()->id)],
+            'is_public' => ['sometimes', 'boolean'],
+        ]);
+        $integration->attach(Vehicle::where('user_id', $request->user()->id)->findOrFail($data['vehicle_id']), $photo, $request->boolean('is_public'));
+
+        return back()->with('status', 'Foto licenciada associada ao veículo.');
     }
 
     public function report(Request $request, ShotPhoto $photo)

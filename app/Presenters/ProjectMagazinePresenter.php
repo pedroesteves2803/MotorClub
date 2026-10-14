@@ -11,14 +11,15 @@ use Illuminate\Support\Str;
 
 /**
  * Converts the existing project, vehicle and history records into a small
- * editorial data structure. It deliberately does not persist magazine data:
- * edits to the garage are reflected on the next request.
+ * editorial data structure. Magazine settings persist separately, while all
+ * editorial content remains a projection of the garage.
  */
 class ProjectMagazinePresenter
 {
     public function present(Project $project, bool $ownerCanEdit = false): array
     {
         $vehicle = $project->vehicle;
+        $vehicle->loadMissing(['magazineSetting.coverPhoto', 'shotAssets.shotPhoto.gallery.user.photographerProfile']);
         $disk = Storage::disk(config('filesystems.private_disk'));
         $projectPhotos = $project->photos->filter(fn ($photo) => $disk->exists($photo->path))->map(fn ($photo) => [
             'url' => route('projects.image', $photo),
@@ -34,7 +35,22 @@ class ProjectMagazinePresenter
             'source' => 'carro',
             'kind' => $photo->kind ?? 'galeria',
         ]);
-        $photos = $projectPhotos->isNotEmpty() ? $projectPhotos : $vehiclePhotos;
+        $shotPhotos = $vehicle->shotAssets
+            ->filter(fn ($asset) => ($ownerCanEdit || $asset->publiclyVisible()) && $asset->shotPhoto->publiclyVisible())
+            ->map(fn ($asset) => [
+                'url' => route('shots.photos.preview', $asset->shotPhoto),
+                'alt' => 'Foto licenciada do Shots',
+                'source' => 'shots',
+                'kind' => 'licenciada · '.($asset->credit ?: 'crédito preservado'),
+            ]);
+        $photos = $projectPhotos->concat($shotPhotos)->isNotEmpty() ? $projectPhotos->concat($shotPhotos) : $vehiclePhotos;
+        $coverPhoto = $vehicle->magazineSetting?->coverPhoto;
+        $coverUrl = $coverPhoto && $disk->exists($coverPhoto->path) ? [
+            'url' => route('vehicle-photos.show', $coverPhoto),
+            'alt' => $coverPhoto->caption ?: 'Capa de '.$this->vehicleName($vehicle),
+            'source' => 'carro',
+            'kind' => 'capa',
+        ] : $photos->first();
 
         $entries = $vehicle->entries
             ->filter(fn ($entry) => $ownerCanEdit || $entry->is_public)
@@ -168,11 +184,11 @@ class ProjectMagazinePresenter
                 'id' => 'capa',
                 'number' => null,
                 'chapter' => null,
-                'kicker' => 'Autoverse Magazine · Project Edition',
+                'kicker' => 'Revista do projeto',
                 'title' => $project->title,
                 'subtitle' => $this->vehicleName($vehicle),
                 'description' => $this->coverDescription($project),
-                'photos' => $photos->take(1)->values()->all(),
+                'photos' => $coverUrl ? [$coverUrl] : [],
                 'meta' => $this->coverMeta($project, $vehicle),
             ],
             [

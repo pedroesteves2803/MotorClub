@@ -44,7 +44,7 @@ it('cria edita pesquisa e exclui projetos próprios', function () {
     $this->actingAs($vehicle->user)->get(route('projects.create'))->assertOk();
     $this->post(route('projects.store'), mvpProjectData($vehicle))->assertSessionHasNoErrors();
     $project = Project::sole();
-    $this->get(route('projects.edit', $project))->assertOk()->assertSee('Seu projeto');
+    $this->get(route('projects.edit', $project))->assertOk()->assertSee('Editar projeto');
     $this->put(route('projects.update', $project), array_replace(mvpProjectData($vehicle), ['title' => 'Revisão atualizada']))->assertSessionHasNoErrors();
     $this->get(route('projects.index', ['q' => 'Volkswagen']))->assertSee('Revisão atualizada');
     $this->get(route('projects.index', ['q' => 'Inexistente']))->assertDontSee('Revisão atualizada');
@@ -82,7 +82,7 @@ it('monta a revista com capítulos relevantes e oculta histórico privado', func
 
     $this->get(route('projects.show', $project))
         ->assertOk()
-        ->assertSee('Autoverse Magazine')
+        ->assertSee('Revista do projeto')
         ->assertSee('Evolução documentada')
         ->assertSee('Revisão pública')
         ->assertDontSee('Anotação privada');

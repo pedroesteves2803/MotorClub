@@ -10,5 +10,5 @@
     aria-pressed="false"
 >
     <x-theme-headlight />
-    <span class="sr-only" data-theme-toggle-status>Tema escuro, farol apagado</span>
+    <span class="sr-only" data-theme-toggle-status>Alternar tema</span>
 </button>

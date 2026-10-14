@@ -8,7 +8,7 @@
             <div><p class="mc-edition">Para quem vive a cultura automotiva</p><h1>Todo carro tem uma história.<br><em>Mostre a sua.</em></h1><p class="max-w-sm text-base leading-relaxed">Da primeira volta ao próximo projeto, registre cada detalhe que torna seu carro único.</p></div>
             <p class="mc-edition mt-10">Garagem · Projetos · Fotografias</p>
         </section>
-        <section class="mc-auth-form"><div class="w-full max-w-sm"><p class="mc-edition mb-10">Seu próximo capítulo começa aqui</p>{{ $slot }}</div></section>
+        <section class="mc-auth-form"><div class="w-full max-w-sm">{{ $slot }}</div></section>
     </main>
     @fluxScripts
 </body>

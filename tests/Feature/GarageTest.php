@@ -125,7 +125,7 @@ it('shows the editorial garage with a photo cover and navigation', function () {
     $vehicle = Vehicle::factory()->create();
     $photo = $vehicle->photos()->create(['path' => 'vehicles/cover.webp']);
     $this->actingAs($vehicle->user)->get('/garagem')->assertOk()
-        ->assertSee('Mais que um carro.')->assertSee('Minha garagem')
+        ->assertSee('Adicionar carro')->assertSee('Minha garagem')
         ->assertSee(route('vehicle-photos.show', $photo), false)
         ->assertDontSee('data-flux-sidebar', false);
 });

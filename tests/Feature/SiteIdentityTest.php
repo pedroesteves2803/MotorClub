@@ -18,7 +18,6 @@ it('oferece menu responsivo acessível nas páginas públicas', function () {
 it('usa o próprio farol como controle acessível de tema', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('data-hero-animation', false)
         ->assertSee('data-theme-toggle-button', false)
         ->assertSee('data-theme-toggle-status', false)
         ->assertSee('mc-theme-toggle--floating', false)
@@ -30,15 +29,14 @@ it('usa o próprio farol como controle acessível de tema', function () {
         ->assertDontSee('<select aria-label="Tema" data-theme-toggle', false);
 });
 
-it('oferece uma animação SVG leve e acessível na home', function () {
+it('mantém a home focada na comunidade automotiva', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('data-light-showroom', false)
-        ->assertSee('mc-light-showroom__art', false)
-        ->assertSee('mc-light-showroom__lamp', false)
-        ->assertSee('Animação SVG · consumo mínimo')
-        ->assertDontSee('data-autoverse-showroom', false)
-        ->assertDontSee('spectral_gt_rs_game_ready.glb', false)
-        ->assertDontSee('data-showroom-canvas', false)
-        ->assertDontSee('Spectral GT RS 3D interativo', false);
+        ->assertSee('Criar minha garagem')
+        ->assertSee('Explorar projetos')
+        ->assertDontSee('Autoverse / assinatura')
+        ->assertDontSee('Design em movimento.')
+        ->assertDontSee('Sem excesso.')
+        ->assertDontSee('Animação SVG')
+        ->assertDontSee('Farol: tema claro / escuro');
 });

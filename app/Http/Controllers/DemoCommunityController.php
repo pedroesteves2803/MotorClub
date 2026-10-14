@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\VehicleSlugService;
 use Illuminate\Http\Request;
 
 class DemoCommunityController extends Controller
@@ -37,7 +38,7 @@ class DemoCommunityController extends Controller
                     'name' => $vehicle->brand.' '.$vehicle->model.' '.$vehicle->trim.' · '.$vehicle->model_year,
                     'details' => $person->is_demo ? config('demo_vehicle_details.'.strtolower($vehicle->model).($vehicle->trim === 'GTI' ? '-gti' : '')) : null,
                     'image' => $vehicle->photos->isNotEmpty() ? route('vehicle-photos.show', $vehicle->photos->first()) : null,
-                    'url' => route('vehicles.show', $vehicle),
+                    'url' => route('vehicles.slug.show', ['slug' => app(VehicleSlugService::class)->ensure($vehicle)]),
                     'note' => $person->is_demo ? 'Veículo de demonstração · '.($vehicle->photos->isNotEmpty() ? 'Imagem gerada por IA' : 'Sem foto real') : 'Veículo público da comunidade',
                 ]),
             ];

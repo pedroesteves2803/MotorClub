@@ -13,6 +13,7 @@ use App\Models\Vehicle;
 use App\Models\Workshop;
 use App\Presenters\ProjectMagazinePresenter;
 use App\Services\AI\AIReportGeneratorInterface;
+use App\Services\MagazineService;
 use App\Services\VehicleImages;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -75,7 +76,7 @@ class ProjectController extends Controller
         return back()->with('status', 'Projeto atualizado.');
     }
 
-    public function show(Project $project, ProjectMagazinePresenter $magazinePresenter)
+    public function show(Project $project, ProjectMagazinePresenter $magazinePresenter, MagazineService $magazines)
     {
         abort_unless(Gate::allows('view', $project), 404);
         $ownerCanEdit = Gate::allows('update', $project);
@@ -87,8 +88,9 @@ class ProjectController extends Controller
             ? $project->reports()->latest('version')->get()
             : $project->reports()->where('status', 'approved')->where('is_public', true)->latest('version')->get();
         $magazine = $magazinePresenter->present($project, $ownerCanEdit);
+        $magazineSettings = $magazines->settingsFor($project->vehicle);
 
-        return response()->view('projects.show', compact('project', 'reports', 'magazine'))->header('Cache-Control', 'private, no-store');
+        return response()->view('projects.show', compact('project', 'reports', 'magazine', 'magazineSettings'))->header('Cache-Control', 'private, no-store');
     }
 
     public function showModification(Project $project, ProjectModification $modification)

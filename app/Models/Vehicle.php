@@ -15,7 +15,7 @@ class Vehicle extends Model
     use HasFactory;
 
     protected $fillable = [
-        'brand', 'model', 'public_name', 'trim', 'generation', 'color', 'model_year', 'engine',
+        'vehicle_type', 'brand', 'model', 'public_name', 'slug', 'slug_updated_at', 'trim', 'generation', 'color', 'model_year', 'engine',
         'mileage', 'mileage_approximate', 'acquired_on', 'location', 'instagram_url', 'visibility',
     ];
 
@@ -79,5 +79,20 @@ class Vehicle extends Model
     public function shotRequests(): HasMany
     {
         return $this->hasMany(ShotPurchaseRequest::class);
+    }
+
+    public function slugHistories(): HasMany
+    {
+        return $this->hasMany(VehicleSlugHistory::class);
+    }
+
+    public function magazineSetting(): HasOne
+    {
+        return $this->hasOne(MagazineSetting::class);
+    }
+
+    public function shotAssets(): HasMany
+    {
+        return $this->hasMany(VehicleShotAsset::class);
     }
 }

@@ -11,7 +11,7 @@
                 <a href="{{ route('dashboard') }}" @if(request()->routeIs('dashboard','garage.*','projects.*')) aria-current="page" @endif>Garagem</a>
             @endif
             @if(config('features.shots'))<a href="{{ route('shots.index') }}">Shots</a>@endif
-            @if(config('features.explore'))<a href="{{ route('explore') }}" @if(request()->routeIs('explore','community','profiles.show','vehicles.show')) aria-current="page" @endif>Explorar</a>@endif
+            @if(config('features.explore'))<a href="{{ route('explore') }}" @if(request()->routeIs('explore','community','profiles.show','vehicles.show','vehicles.slug.show')) aria-current="page" @endif>Explorar</a>@endif
             @auth
                 <a href="{{ route('profiles.edit') }}" @if(request()->routeIs('profiles.*','dashboard','garage.*','quotes.*','workshops.edit','shots.manage','shots.profile','settings.*')) aria-current="page" @endif>Perfil</a>
             @else
