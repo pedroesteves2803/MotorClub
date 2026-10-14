@@ -3,7 +3,7 @@
         <header class="mc-intro">
             <p class="mc-edition">Identidade pública</p>
             <h1 class="text-5xl font-bold tracking-tight">Compartilhar {{ $vehicle->public_name ?: $vehicle->model }}</h1>
-            <p class="mt-4 max-w-2xl text-lg mc-muted">Um endereço permanente para a página do veículo, com QR Code pronto para tela ou impressão.</p>
+            <p class="mt-4 max-w-2xl text-lg mc-muted">Um endereço permanente para o projeto completo, com QR Code pronto para tela ou impressão.</p>
         </header>
 
         @if (session('status'))
@@ -13,8 +13,8 @@
         <div class="grid gap-8 lg:grid-cols-[1.1fr_.9fr]">
             <section class="mc-surface space-y-6 rounded-2xl p-6">
                 <div>
-                    <h2 class="text-xl font-semibold">Link público</h2>
-                    <p class="mt-1 text-sm mc-muted">Este endereço não muda quando você troca o slug ou a capa.</p>
+                    <h2 class="text-xl font-semibold">Link do projeto</h2>
+                    <p class="mt-1 text-sm mc-muted">Este endereço abre o projeto completo do carro.</p>
                 </div>
                 <p class="break-all rounded-lg border border-[var(--mc-line)] p-4 text-sm"><a class="mc-text-link" href="{{ $publicUrl }}">{{ $publicUrl }}</a></p>
                 <div class="flex flex-wrap gap-4">
@@ -36,7 +36,7 @@
             <section class="mc-surface rounded-2xl p-6 text-center">
                 <h2 class="text-xl font-semibold">QR Code</h2>
                 <div class="mx-auto mt-5 max-w-xs rounded-2xl p-4" style="background: {{ $settings->qr_background }}">
-                    <img class="mx-auto aspect-square w-full" src="{{ route('garage.share.qr', $vehicle) }}" alt="QR Code para {{ $vehicle->public_name ?: $vehicle->model }}">
+                    <img class="mx-auto aspect-square w-full" src="{{ route('garage.share.qr', $vehicle) }}" alt="QR Code do projeto de {{ $vehicle->public_name ?: $vehicle->model }}">
                 </div>
                 <div class="mt-5 flex flex-wrap justify-center gap-4">
                     <a class="mc-text-link" href="{{ route('garage.share.qr.download', [$vehicle, 'format' => 'png']) }}">PNG</a>

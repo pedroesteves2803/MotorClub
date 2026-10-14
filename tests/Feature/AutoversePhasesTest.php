@@ -6,6 +6,7 @@ use App\Models\ShotGallery;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleShotAsset;
+use App\Services\QrCodeService;
 use App\Services\VehicleSlugService;
 use Illuminate\Support\Facades\Storage;
 
@@ -56,10 +57,32 @@ it('salva personalização da revista e abre a leitura pública', function () {
 
 it('gera QR Code público e downloads autenticados sem expor o ID na URL', function () {
     $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $project = phaseProject($vehicle);
     $slug = app(VehicleSlugService::class)->ensure($vehicle);
 
+    $this->actingAs($vehicle->user)->get(route('garage.share.edit', $vehicle))
+        ->assertOk()
+        ->assertSee(route('projects.show', $project), false)
+        ->assertSee('Link do projeto');
     $this->get(route('vehicles.slug.qr', ['slug' => $slug]))->assertOk()->assertHeader('Content-Type', 'image/svg+xml; charset=UTF-8')->assertSee('<svg', false);
     $this->actingAs($vehicle->user)->get(route('garage.share.qr.download', [$vehicle, 'format' => 'png']))->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('Content-Disposition');
+});
+
+it('aponta o QR público para o projeto completo', function () {
+    $vehicle = Vehicle::factory()->create(['visibility' => 'public']);
+    $project = phaseProject($vehicle);
+    $slug = app(VehicleSlugService::class)->ensure($vehicle);
+
+    $this->mock(QrCodeService::class, function ($mock) use ($project) {
+        $mock->shouldReceive('svg')
+            ->once()
+            ->withArgs(fn (string $url) => $url === route('projects.show', $project))
+            ->andReturn('<svg></svg>');
+    });
+
+    $this->get(route('vehicles.slug.qr', ['slug' => $slug]))
+        ->assertOk()
+        ->assertSee('<svg></svg>', false);
 });
 
 it('mantém a identidade pública do QR mesmo quando o slug legível muda', function () {

@@ -19,11 +19,10 @@ class VehicleShareController extends Controller
         Gate::authorize('update', $vehicle);
 
         $slugs->ensure($vehicle);
-        $publicKey = $slugs->ensurePublicKey($vehicle);
 
         return response()->view('vehicles.share', [
             'vehicle' => $vehicle,
-            'publicUrl' => route('vehicles.public.show', ['key' => $publicKey]),
+            'publicUrl' => $this->publicProjectUrl($vehicle, $slugs),
             'settings' => $magazines->settingsFor($vehicle),
         ]);
     }
@@ -48,7 +47,7 @@ class VehicleShareController extends Controller
     public function qrCode(Vehicle $vehicle, QrCodeService $qr, ShareEventLogger $events, MagazineService $magazines, VehicleSlugService $slugs): Response
     {
         Gate::authorize('update', $vehicle);
-        $url = route('vehicles.public.show', ['key' => $slugs->ensurePublicKey($vehicle)]);
+        $url = $this->publicProjectUrl($vehicle, $slugs);
         $settings = $magazines->settingsFor($vehicle);
         $events->log(request(), $vehicle, 'qr_view', 'owner');
 
@@ -58,7 +57,7 @@ class VehicleShareController extends Controller
     public function download(Vehicle $vehicle, QrCodeService $qr, ShareEventLogger $events, MagazineService $magazines, VehicleSlugService $slugs): Response
     {
         Gate::authorize('update', $vehicle);
-        $url = route('vehicles.public.show', ['key' => $slugs->ensurePublicKey($vehicle)]);
+        $url = $this->publicProjectUrl($vehicle, $slugs);
         $format = request()->string('format', 'png')->lower()->toString();
         abort_unless(in_array($format, ['png', 'svg', 'sticker'], true), 422);
         $settings = $magazines->settingsFor($vehicle);
@@ -85,9 +84,21 @@ class VehicleShareController extends Controller
         }
         abort_unless($vehicle->visibility === 'public', 404);
         $events->log(request(), $vehicle, 'qr_view', 'public');
-        $url = route('vehicles.public.show', ['key' => $slugs->ensurePublicKey($vehicle)]);
+        $url = $this->publicProjectUrl($vehicle, $slugs);
         $settings = $magazines->settingsFor($vehicle);
 
         return response($qr->svg($url, $settings->qr_foreground, $settings->qr_background), 200, ['Content-Type' => 'image/svg+xml; charset=UTF-8', 'Cache-Control' => 'public, max-age=3600']);
+    }
+
+    private function publicProjectUrl(Vehicle $vehicle, VehicleSlugService $slugs): string
+    {
+        $project = $vehicle->projects()
+            ->where('is_public', true)
+            ->latest('id')
+            ->first();
+
+        return $project && $vehicle->magazineSetting?->is_published !== false
+            ? route('projects.show', $project)
+            : route('vehicles.public.show', ['key' => $slugs->ensurePublicKey($vehicle)]);
     }
 }

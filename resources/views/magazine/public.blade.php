@@ -1,6 +1,7 @@
 @php
     $vehicleName = $vehicle->public_name ?: trim($vehicle->brand.' '.$vehicle->model);
     $url = route('vehicles.public.magazine', ['key' => $vehicle->public_key ?: $vehicle->slug]);
+    $projectUrl = route('projects.show', $project);
     $vehicleUrl = $vehicle->public_key
         ? route('vehicles.public.show', ['key' => $vehicle->public_key])
         : route('vehicles.slug.show', ['slug' => $vehicle->slug]);
@@ -23,7 +24,7 @@
             </div>
         </header>
 
-        <x-magazine-hero :vehicle="$vehicle" :magazine="$magazine" :url="$url" :vehicle-url="$vehicleUrl" :qr-url="$qrUrl" />
+        <x-magazine-hero :vehicle="$vehicle" :magazine="$magazine" :url="$projectUrl" :vehicle-url="$vehicleUrl" :qr-url="$qrUrl" />
 
         <section id="revista" class="av-magazine__experience" data-av-magazine-view aria-label="Revista digital">
             <div class="av-magazine__toolbar">
