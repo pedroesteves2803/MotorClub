@@ -35,11 +35,11 @@ it('nega ações administrativas de usuários e flags ao moderador', function ()
             ->and($resource::canDelete($record))->toBeFalse()
             ->and($resource::canDeleteAny())->toBeFalse();
     }
-    $this->get('/central-mc-gestao/usuarios/'.$user->id.'/edit')->assertForbidden();
-    $this->get('/central-mc-gestao/funcionalidades/create')->assertForbidden();
-    $this->get('/central-mc-gestao/garagens')->assertForbidden();
-    $this->get('/central-mc-gestao/galerias')->assertForbidden();
-    $this->get('/central-mc-gestao/pagamentos')->assertForbidden();
+    $this->get('/admin/usuarios/'.$user->id.'/edit')->assertForbidden();
+    $this->get('/admin/funcionalidades/create')->assertForbidden();
+    $this->get('/admin/garagens')->assertForbidden();
+    $this->get('/admin/galerias')->assertForbidden();
+    $this->get('/admin/pagamentos')->assertForbidden();
 });
 
 it('preserva a gestão de usuários e flags pelo super admin', function () {

@@ -35,7 +35,7 @@ it('permite reativar um módulo pelo banco sem alterar código', function () {
 
 it('bloqueia o painel administrativo para usuários comuns', function () {
     $this->actingAs(User::factory()->create())
-        ->get('/central-mc-gestao')
+        ->get('/admin')
         ->assertForbidden();
 });
 

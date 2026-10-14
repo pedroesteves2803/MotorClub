@@ -1,7 +1,6 @@
 <?php
 
 return ['ai_provider' => env('MOTORCLUB_AI_PROVIDER', 'fake'),
-    'admin_emails' => array_values(array_filter(array_map('strtolower', array_map('trim', explode(',', (string) env('ADMIN_EMAILS', '')))))),
     'shots_platform_commission' => (float) env('SHOTS_PLATFORM_COMMISSION', 10),
     'shots_preview_max_dimension' => (int) env('SHOTS_PREVIEW_MAX_DIMENSION', 1200),
     'shots_preview_webp_quality' => (int) env('SHOTS_PREVIEW_WEBP_QUALITY', 80),

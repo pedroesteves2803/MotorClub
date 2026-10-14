@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Volt;
 
 Route::get('/', fn () => view('welcome'))->name('home');
+Route::redirect('central-mc-gestao', '/admin', 301)->name('admin.legacy');
 Route::get('robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 Route::get('sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
 Route::get('garagem', Index::class)->middleware(['auth', 'verified', 'feature:garage'])->name('dashboard');

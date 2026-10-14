@@ -1,71 +1,70 @@
 <?php
 
 use App\Models\User;
-use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\User as GoogleUser;
 
-it('expõe o painel somente pela rota administrativa em português', function () {
+it('usa o painel em admin e compartilha o guard da aplicação', function () {
     $admin = User::factory()->create(['admin_role' => 'super_admin']);
 
-    $this->actingAs($admin)->get('/central-mc-gestao')->assertOk();
-    $this->get('/admin')->assertNotFound();
-    $this->get('/administracao')->assertNotFound();
+    $this->actingAs($admin)
+        ->get('/admin')
+        ->assertOk();
+
+    expect(auth('web')->id())->toBe($admin->id);
 });
 
-it('redireciona configurações legadas para a rota em português', function () {
-    $this->actingAs(User::factory()->create())
-        ->get('/settings')
-        ->assertStatus(301)
-        ->assertRedirect('/configuracoes/perfil');
+it('redireciona visitantes ao login principal e preserva o destino', function () {
+    $this->get('/admin')
+        ->assertRedirect(route('login'))
+        ->assertSessionHas('url.intended', url('/admin'));
+
+    $this->get('/admin/login')->assertNotFound();
 });
 
-it('permite acesso do administrador configurado por e-mail', function () {
-    config(['motorclub.admin_emails' => ['admin@example.com']]);
-    $admin = User::factory()->create(['email' => 'admin@example.com']);
+it('nega o painel e seus recursos a usuários comuns', function () {
+    $user = User::factory()->create();
 
-    $this->actingAs($admin)->get('/central-mc-gestao')->assertOk();
+    $this->actingAs($user)->get('/admin')->assertForbidden();
+    $this->actingAs($user)->get('/admin/usuarios')->assertForbidden();
+    $this->actingAs($user)->get('/admin/funcionalidades/create')->assertForbidden();
 });
 
-it('renderiza o login do CMS em português com entrada Google', function () {
-    $this->get('/central-mc-gestao/login')
-        ->assertOk()
-        ->assertSee('Entrar como administrador com Google')
-        ->assertSee(route('auth.google.admin'), false)
-        ->assertSee('E-mail');
+it('mantém a rota administrativa antiga como redirecionamento', function () {
+    $this->actingAs(User::factory()->create(['admin_role' => 'super_admin']))
+        ->get('/central-mc-gestao')
+        ->assertRedirect('/admin');
 });
 
-it('recusa uma conta Google comum no login administrativo', function () {
-    config(['services.google.client_id' => 'test-id', 'services.google.client_secret' => 'test-secret', 'services.google.redirect' => 'http://localhost/auth/google/callback']);
-    Socialite::shouldReceive('driver->user')->once()->andReturn(
-        (new GoogleUser)->setRaw(['email_verified' => true])->map(['id' => 'google-common', 'name' => 'Pessoa Teste', 'email' => 'pessoa@example.com'])
-    );
-
-    $this->withSession(['google_login_context' => 'admin'])
-        ->get('/auth/google/callback')
-        ->assertRedirect(route('filament.admin.auth.login'))
-        ->assertSessionHasErrors('google');
+it('encerra a sessão compartilhada pelo logout do painel', function () {
+    $this->actingAs(User::factory()->create(['admin_role' => 'super_admin']))
+        ->post('/admin/logout')
+        ->assertRedirect('/admin');
 
     $this->assertGuest();
-    expect(User::count())->toBe(0);
+    $this->get('/admin')->assertRedirect(route('login'));
 });
 
-it('cria e autentica o administrador autorizado pelo e-mail', function () {
-    config([
-        'motorclub.admin_emails' => ['admin@example.com'],
-        'services.google.client_id' => 'test-id',
-        'services.google.client_secret' => 'test-secret',
-        'services.google.redirect' => 'http://localhost/auth/google/callback',
-    ]);
-    Socialite::shouldReceive('driver->user')->once()->andReturn(
-        (new GoogleUser)->setRaw(['email_verified' => true])->map(['id' => 'google-admin', 'name' => 'Admin Teste', 'email' => 'admin@example.com'])
-    );
+it('não permite que o perfil altere a própria função administrativa', function () {
+    $user = User::factory()->create();
 
-    $this->withSession(['google_login_context' => 'admin'])
-        ->get('/auth/google/callback')
-        ->assertRedirect(route('filament.admin.pages.dashboard'));
+    $this->actingAs($user)
+        ->put(route('profiles.update'), [
+            'bio' => 'Perfil atualizado',
+            'city' => 'Curitiba',
+            'profile_public' => true,
+            'admin_role' => 'super_admin',
+        ])
+        ->assertSessionHasNoErrors();
 
-    $admin = User::sole();
-    expect($admin->google_id)->toBe('google-admin')
-        ->and($admin->admin_role)->toBe('super_admin');
-    $this->assertAuthenticatedAs($admin);
+    expect($user->fresh()->admin_role)->toBe('user');
+});
+
+it('exibe o link de administração apenas para usuários autorizados', function () {
+    $this->actingAs(User::factory()->create(['admin_role' => 'super_admin']))
+        ->get('/')
+        ->assertSee('Administração')
+        ->assertSee(route('filament.admin.pages.dashboard'), false);
+
+    $this->actingAs(User::factory()->create())
+        ->get('/')
+        ->assertDontSee('Administração');
 });

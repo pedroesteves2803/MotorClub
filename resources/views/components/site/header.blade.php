@@ -14,6 +14,9 @@
             @if(config('features.explore'))<a href="{{ route('explore') }}" @if(request()->routeIs('explore','community','profiles.show','vehicles.show','vehicles.slug.show') || (request()->routeIs('projects.*') && !request()->boolean('mine'))) aria-current="page" @endif>Explorar</a>@endif
             @auth
                 <a href="{{ route('profiles.edit') }}" @if(request()->routeIs('profiles.*','dashboard','garage.*','quotes.*','workshops.edit','shots.manage','shots.profile','settings.*')) aria-current="page" @endif>Perfil</a>
+                @if(auth()->user()->isAdmin())
+                    <a href="{{ route('filament.admin.pages.dashboard') }}" @if(request()->is('admin*')) aria-current="page" @endif>Administração</a>
+                @endif
             @else
                 <a href="{{ route('login') }}" class="mc-link-button">Entrar</a>
             @endauth

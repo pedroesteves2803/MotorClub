@@ -10,7 +10,7 @@ class VehicleSlugService
 {
     /** @var list<string> */
     private const RESERVED = [
-        'api', 'auth', 'central-mc-gestao', 'comunidade', 'configuracoes', 'explorar',
+        'admin', 'api', 'auth', 'central-mc-gestao', 'comunidade', 'configuracoes', 'explorar',
         'fotos', 'garagem', 'login', 'novo', 'projetos', 'shots', 'veiculos',
     ];
 
