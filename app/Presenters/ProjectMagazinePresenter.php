@@ -27,6 +27,7 @@ class ProjectMagazinePresenter
             'alt' => $photo->caption ?: 'Foto do projeto '.$project->title,
             'source' => 'projeto',
             'kind' => $photo->kind ?? 'editorial',
+            'fingerprint' => 'storage:'.$photo->path,
         ]);
         $projectMediaPhotos = $project->mediaPhotos->filter(fn ($photo) => $disk->exists($photo->path) && ($ownerCanEdit || $photo->is_public))->map(fn ($photo) => $this->mediaPhoto($photo, 'projeto'));
         $projectPhotos = $projectPhotos->concat($projectMediaPhotos);
@@ -36,6 +37,7 @@ class ProjectMagazinePresenter
             'alt' => $photo->caption ?: 'Foto de '.$this->vehicleName($vehicle),
             'source' => 'carro',
             'kind' => $photo->kind ?? 'galeria',
+            'fingerprint' => 'storage:'.$photo->path,
         ]);
         $shotPhotos = $vehicle->shotAssets
             ->filter(fn ($asset) => ($ownerCanEdit || $asset->publiclyVisible()) && $asset->shotPhoto->publiclyVisible())
@@ -44,11 +46,14 @@ class ProjectMagazinePresenter
                 'alt' => 'Foto licenciada do Shots',
                 'source' => 'shots',
                 'kind' => 'licenciada · '.($asset->credit ?: 'crédito preservado'),
+                'fingerprint' => 'storage:'.$asset->shotPhoto->preview_path,
             ]);
-        $allPhotos = $projectPhotos->concat($shotPhotos)->concat($vehiclePhotos)->values();
+        // A mesma imagem pode estar vinculada ao projeto e ao veículo. Deduplicar pelo
+        // caminho persistido evita que uma edição mostre a mesma foto duas vezes.
+        $allPhotos = $projectPhotos->concat($shotPhotos)->concat($vehiclePhotos)->unique('fingerprint')->values();
         $highlightIds = collect($settings?->highlight_photo_ids ?? [])->map(fn ($id) => (int) $id);
         $highlightPhotos = $vehiclePhotos->filter(fn (array $photo) => $highlightIds->contains((int) ($photo['id'] ?? 0)));
-        $photos = $highlightPhotos->concat($allPhotos)->unique('url')->values();
+        $photos = $highlightPhotos->concat($allPhotos)->unique('fingerprint')->values();
         $coverPhoto = $vehicle->magazineSetting?->coverPhoto;
         $coverUrl = $coverPhoto && $disk->exists($coverPhoto->path) ? [
             'id' => $coverPhoto->id,
@@ -74,7 +79,7 @@ class ProjectMagazinePresenter
                 'O ponto de partida',
                 'photo-text',
                 $project->description,
-                $photos->take(2),
+                $photos->take(1),
                 ['status' => $this->statusLabel($project->status)]
             ));
         }
@@ -141,7 +146,7 @@ class ProjectMagazinePresenter
                 $project->status === 'completed' ? 'O trabalho documentado' : 'O que vem a seguir',
                 'photo-text',
                 $project->services,
-                $photos->slice(2, 2),
+                $photos->slice(1, 1),
                 ['status' => $this->statusLabel($project->status)]
             ));
         }
@@ -259,7 +264,7 @@ class ProjectMagazinePresenter
             'status' => $this->statusLabel($project->status),
             'category' => config('motorclub.categories.'.$project->category, Str::headline((string) $project->category)),
             'isOwner' => $ownerCanEdit,
-            'photos' => $photos->values()->all(),
+            'photos' => $photos->map(fn (array $photo) => collect($photo)->except('fingerprint')->all())->values()->all(),
             'chapters' => $chapters->values()->all(),
             'pages' => $pages->all(),
             'pageCount' => $pages->count(),
@@ -276,6 +281,7 @@ class ProjectMagazinePresenter
             'alt' => $photo->caption ?: 'Foto de '.$source,
             'source' => $source,
             'kind' => $photo->kind,
+            'fingerprint' => 'storage:'.$photo->path,
         ];
     }
 

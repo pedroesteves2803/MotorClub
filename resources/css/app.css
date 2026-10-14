@@ -735,6 +735,14 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 .av-magazine-gallery { display: grid; gap: .7rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: .75rem; overflow: auto; }
 .av-magazine-gallery figure:first-child { grid-column: 1 / -1; }
 .av-magazine-gallery figure:first-child img { aspect-ratio: 16 / 8; }
+.av-magazine__sheet .av-magazine-split { grid-template-columns: minmax(0, 1fr); gap: clamp(1.35rem, 2.8vw, 2.25rem); }
+.av-magazine__sheet .av-magazine-split__copy { gap: 1.15rem; max-width: 46ch; }
+.av-magazine__sheet .av-magazine-lede { font-size: clamp(1rem, 1.15vw, 1.15rem); line-height: 1.72; max-width: 46ch; }
+.av-magazine__sheet .av-magazine-split__photos { grid-template-columns: minmax(0, 1fr); max-width: 32rem; }
+.av-magazine__sheet .av-magazine-split__photos img { aspect-ratio: 16 / 9; }
+.av-magazine__sheet .av-magazine-page__header { padding-bottom: clamp(1.35rem, 2.5vw, 2rem); }
+.av-magazine__sheet .av-magazine-page__header h2 { font-size: clamp(2rem, 3.3vw, 3.5rem); }
+.av-magazine__sheet .av-magazine-split__copy blockquote { line-height: 1.65; }
 .av-magazine__reading { display: grid; gap: 2.5rem; }
 .av-magazine-reading__header { border-bottom: 1px solid var(--mc-line); padding-bottom: 2rem; }
 .av-magazine-reading__header h2, .av-magazine-reading__reports h2 { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 5.5rem); font-weight: 520; letter-spacing: -.08em; line-height: .9; margin-top: .7rem; }
