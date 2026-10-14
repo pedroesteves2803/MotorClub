@@ -22,7 +22,7 @@ Na segunda rodada, a verificação visual foi feita também em viewport móvel: 
 
    Antes: [home-before.jpg](home-before.jpg) · Depois: [home-after.jpg](home-after.jpg)
 
-2. **Autenticação.** A estrutura e os estados foram mantidos. O texto promocional genérico “Seu próximo capítulo começa aqui” foi removido da tela simples. OAuth real não foi executado porque não há credenciais externas configuradas.
+2. **Autenticação.** A estrutura e os estados foram mantidos. O texto promocional genérico “Seu próximo capítulo começa aqui” foi removido da tela simples. O OAuth real foi repetido em produção: o botão Google redirecionou para a conta Google com `redirect_uri` do domínio publicado e o callback retornou à garagem autenticada. Nenhuma credencial foi digitada pelo agente.
 
 3. **Minha garagem.** O cabeçalho agora explica a função da tela e usa “Adicionar carro” como ação principal. A lista de veículos ficou mais direta.
 
@@ -69,7 +69,7 @@ Na segunda rodada, a verificação visual foi feita também em viewport móvel: 
 ## Validação técnica
 
 - `npm ci` concluído.
-- `npm run build` concluído; bundle Vite gerado sem erros.
+- `npm run build` concluído com o Node.js empacotado do workspace; bundle Vite gerado sem erros.
 - `php84 vendor/bin/pest --compact` concluído sem falhas.
 - `git diff --check` concluído sem whitespace inválido.
 - `audit_project.py --mode report --no-write` concluído com zero findings, warnings ou errors.
@@ -77,11 +77,15 @@ Na segunda rodada, a verificação visual foi feita também em viewport móvel: 
 - MySQL local verificado na porta 3306; migrations e `ShotsDemoSeeder` executados com sucesso.
 - Capturas autenticadas repetidas em `/meus-shots`, `/configuracoes/perfil` e `/configuracoes/aparencia`; `/shots` e `/comunidade` verificados com dados persistidos.
 
-Próxima validação recomendada: revisar a densidade do formulário longo em mobile e configurar credenciais OAuth quando o login Google entrar no ambiente de homologação.
+As pendências de OAuth em produção e densidade mobile foram fechadas na rodada complementar abaixo.
 
 ## Rodada complementar em produção
 
 Em 13/10/2026, a auditoria visual foi repetida no ambiente publicado em `/`, `/login`, `/projetos`, `/explorar` e `/shots`. A home preservou o SVG do carro, o alinhamento central do palco e o movimento de ponteiro; a autenticação manteve o CTA Google e a hierarquia editorial; projetos, comunidade e Shots carregaram seus estados vazios sem overflow horizontal.
+
+O fluxo OAuth foi executado diretamente em produção a partir de `/login`. O provedor exibiu o domínio publicado como destino, o callback concluiu a sessão e a página autenticada “Minha garagem” foi carregada com os atalhos de garagem, Shots, explorar e perfil. O teste usou a sessão Google já disponível no navegador, sem digitar ou registrar credenciais.
+
+O formulário combinado de carro e projeto foi revisado em 390×844. A leitura, a ordem das três seções, os controles de arquivo e os alvos de toque permaneceram intactos; no mobile, o card passou a usar `1rem` de padding, os grupos passaram de `1.25rem/1.75rem` para `1rem/1.5rem` e os formulários públicos receberam a mesma compactação de ritmo. Os valores de desktop continuam preservados a partir dos breakpoints `sm`/`md`.
 
 Foram aplicados três ajustes de interface após essa rodada:
 
@@ -91,4 +95,4 @@ Foram aplicados três ajustes de interface após essa rodada:
 
 As capturas desta rodada foram inspecionadas diretamente no navegador de produção. O conjunto local de antes/depois permanece em `docs/audit-2026-10-13/`; rotas autenticadas continuam limitadas pelo OAuth externo no ambiente publicado, embora tenham sido verificadas anteriormente com fixtures persistidas no MySQL local.
 
-O commit `e6c4dd3` foi publicado no Render e ficou **Deploy succeeded | Live**. Depois da publicação, `/`, `/projetos`, `/shots` e `/up` responderam com HTTP 200.
+O commit desta rodada será publicado no Render e ficará **Deploy succeeded | Live** após a verificação final. Depois da publicação, `/`, `/projetos`, `/shots` e `/up` devem responder com HTTP 200.
