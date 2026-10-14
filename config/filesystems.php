@@ -32,6 +32,11 @@ return [
 
     'disks' => [
 
+        'database' => [
+            'driver' => 'database',
+            'visibility' => 'private',
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

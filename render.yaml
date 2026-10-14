@@ -64,7 +64,9 @@ services:
       - key: FILESYSTEM_DISK
         value: local
       - key: PRIVATE_FILESYSTEM_DISK
-        value: local
+        value: database
+      - key: STORAGE_PERSISTENT
+        value: "true"
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
