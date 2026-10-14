@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Storage;
+use App\Services\VehicleSlugService;
 
 class Project extends Model
 {
@@ -15,6 +16,41 @@ class Project extends Model
     protected function casts(): array
     {
         return ['is_public' => 'boolean', 'show_cost' => 'boolean'];
+    }
+
+    /**
+     * Projects are public-facing chapters of a vehicle. Use the vehicle's
+     * stable, readable slug in generated URLs instead of leaking the numeric
+     * project primary key.
+     */
+    public function getRouteKey(): string
+    {
+        if (! $this->exists) {
+            return (string) parent::getRouteKey();
+        }
+
+        $vehicle = $this->relationLoaded('vehicle')
+            ? $this->getRelation('vehicle')
+            : $this->vehicle()->first();
+
+        if (! $vehicle) {
+            return (string) parent::getRouteKey();
+        }
+
+        return app(VehicleSlugService::class)->ensure($vehicle);
+    }
+
+    /**
+     * Resolve both the new vehicle slug and legacy numeric project URLs while
+     * keeping all project actions on the same authorization path.
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        if (is_numeric($value)) {
+            return $query->whereKey((int) $value);
+        }
+
+        return $query->whereHas('vehicle', fn ($vehicle) => $vehicle->where('slug', $value));
     }
 
     public function vehicle()

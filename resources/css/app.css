@@ -677,6 +677,21 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
     .av-vehicle-magazine__actions .mc-link-button { width: 100%; }
     .av-community-magazine-card { grid-template-columns: 6.25rem minmax(0, 1fr); }
 }
+
+@media (max-width: 480px) {
+    .av-magazine { gap: 2.25rem; }
+    .av-magazine__book { padding-inline: 0; }
+    .av-magazine__edge { height: 2.5rem; width: 2.5rem; }
+    .av-magazine__edge--prev { left: .35rem; }
+    .av-magazine__edge--next { right: .35rem; }
+    .av-magazine-page__header { flex-wrap: wrap; }
+    .av-magazine-page__header > * { min-width: 0; }
+    .av-magazine-status { white-space: normal; }
+    .av-magazine-page__header h2, .av-magazine-cover__copy h2, .av-magazine-reading__header h2 { overflow-wrap: anywhere; }
+    .av-magazine-specs > div { align-items: flex-start; flex-wrap: wrap; }
+    .av-magazine-specs strong { min-width: 0; overflow-wrap: anywhere; text-align: right; }
+    .av-magazine-reading__reports article { align-items: flex-start; flex-direction: column; }
+}
 @media (prefers-reduced-motion: reduce) {
     .av-magazine__progress-line i { transition: none; }
     .av-magazine__slot.is-entering { animation: none; }

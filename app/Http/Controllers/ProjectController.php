@@ -79,6 +79,10 @@ class ProjectController extends Controller
 
     public function show(Project $project, ProjectMagazinePresenter $magazinePresenter, MagazineService $magazines, VehicleSlugService $slugs)
     {
+        if (ctype_digit((string) request()->segment(2))) {
+            return redirect()->route('projects.show', $project, 301);
+        }
+
         abort_unless(Gate::allows('view', $project), 404);
         $ownerCanEdit = Gate::allows('update', $project);
         $project->load('photos', 'mediaPhotos', 'modifications.parts.photos', 'modifications.photos', 'vehicle.user', 'vehicle.photos', 'vehicle.entries', 'workshop');

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\ProjectModification;
 use App\Models\ProjectPart;
 use App\Models\ProjectPhoto;
+use App\Services\VehicleSlugService;
 use App\Models\QuoteRequest;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -74,6 +75,18 @@ it('protege projetos e custos privados mesmo quando vinculados a uma oficina', f
     $project->vehicle->update(['visibility' => 'public']);
     $project->update(['is_public' => false]);
     $this->get(route('projects.show', $project))->assertNotFound();
+});
+it('gera links públicos de projeto sem o ID e redireciona links numéricos antigos', function () {
+    $project = mvpProject(data: ['title' => 'Venom Black MK7']);
+    $slug = app(VehicleSlugService::class)->ensure($project->vehicle);
+    $publicUrl = route('projects.show', $project);
+
+    expect($publicUrl)->toBe(route('projects.show', ['project' => $slug]))
+        ->and($publicUrl)->not->toContain('/'.$project->id);
+
+    $this->get('/projetos/'.$project->id)
+        ->assertRedirect($publicUrl)
+        ->assertStatus(301);
 });
 it('monta a revista com capítulos relevantes e oculta histórico privado', function () {
     $project = mvpProject(data: ['title' => 'Venom Black MK7']);
