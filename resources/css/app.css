@@ -367,6 +367,14 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
 .mc-gallery-grid > .mc-surface, .mc-gallery-grid > a.mc-surface, .mc-gallery-grid > article.mc-surface {
     height: 100%;
 }
+.shots-gallery-card, .shots-photo-card, .shots-manage-card, .shots-editor__photos > article { min-width: 0; }
+.shots-photo-card { display: flex; flex-direction: column; }
+.shots-photo-card__body { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
+.shots-photo-actions, .shots-report-form, .shots-request-actions, .shots-editor__photo-actions { min-width: 0; }
+.shots-photo-actions .mc-input, .shots-photo-actions select, .shots-report-form .mc-input, .shots-editor__photo-actions .mc-input { max-width: 100%; min-width: 0; }
+.shots-toolbar-actions { align-items: center; display: flex; flex-wrap: wrap; gap: .75rem; }
+.shots-toolbar-actions > * { min-width: 0; }
+.shots-editor__photo-actions { display: grid; gap: .75rem; }
 .mc-media-grid figure { overflow: hidden; }
 .mc-media-grid figure img { display: block; }
 .mc-media-grid figure figcaption { color: var(--mc-muted); font-size: .84rem; line-height: 1.5; }
@@ -459,6 +467,18 @@ main.mc-page-shell > section > h2, main.mc-page-shell > section > h1 { text-wrap
     .mc-gallery-grid .mc-surface, .mc-media-grid figure { border-radius: .85rem; }
     .mc-form { gap: 1rem; padding: 1rem; }
     .mc-form > .grid { gap: 1rem; }
+    .shots-toolbar-actions { align-items: stretch; width: 100%; }
+    .shots-toolbar-actions > * { flex: 1 1 100%; width: 100%; }
+    .shots-toolbar-actions .mc-text-link { justify-content: center; }
+    .shots-report-form { grid-template-columns: minmax(0, 1fr); }
+    .shots-report-form > * { width: 100%; }
+    .shots-editor__photos { grid-template-columns: minmax(0, 1fr); }
+    .shots-editor__photo-actions .mc-text-link { width: 100%; }
+}
+
+@media (max-width: 400px) {
+    main.mc-page-shell { padding-inline: 1rem; }
+    .shots-photo-card .p-5, .shots-gallery-card .p-6 { padding: 1rem; }
 }
 
 /* Autoverse Magazine: a light editorial layer over the existing project data. */

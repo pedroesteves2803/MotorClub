@@ -16,7 +16,7 @@
     }
 @endphp
 <x-layouts.public :title="$gallery->title.' — Fotos automotivas | Autoverse Shots'" :description="$galleryDescription" :noindex="!$gallery->is_public" ogType="article" :canonical="route('shots.galleries.show', $gallery)" :jsonLd="[$galleryStructuredData, $galleryBreadcrumb]" :image="$gallery->previewPhoto ? route('shots.photos.preview', $gallery->previewPhoto) : null">
-    <section class="space-y-4">
+    <section class="shots-gallery-intro space-y-4">
         <p class="mc-edition">Autoverse Shots · {{ $gallery->city }} / {{ $gallery->state }}</p>
         <h1 class="mc-title">{{ $gallery->title }}</h1>
         <p>{{ $gallery->description }}</p>
@@ -27,17 +27,17 @@
     </section>
     <section class="mc-gallery-grid mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         @forelse($gallery->photos as $photo)
-            <article class="mc-surface overflow-hidden rounded-xl">
+            <article class="shots-photo-card mc-surface overflow-hidden rounded-xl">
                 <img class="aspect-[4/3] w-full object-cover" src="{{ route('shots.photos.preview', $photo) }}" alt="Prévia de {{ $gallery->title }}">
                 @if($photo->brand || $photo->model)
                     <p class="px-5 pt-4">{{ trim($photo->brand.' '.$photo->model) }} {{ $photo->color ? '· '.$photo->color : '' }}</p>
                 @endif
-                <div class="p-5">
+                <div class="shots-photo-card__body p-5">
                     <p>{{ $photo->price === null ? 'Foto gratuita' : 'R$ '.number_format($photo->price, 2, ',', '.') }}</p>
                     <p class="mt-1 text-sm mc-muted">{{ $photo->license }}</p>
                     @auth
                         @if(auth()->id() !== $gallery->user_id)
-                            <form class="mt-4 space-y-3" method="POST" action="{{ route('shots.requests.store', $photo) }}">
+                            <form class="shots-photo-actions mt-4 space-y-3" method="POST" action="{{ route('shots.requests.store', $photo) }}">
                                 @csrf
                                 @if($vehicles->isNotEmpty())
                                     <select class="mc-input w-full" name="vehicle_id">
@@ -47,20 +47,20 @@
                                         @endforeach
                                     </select>
                                 @endif
-                                <button class="mc-link-button">Tenho interesse</button>
+                                <button class="mc-link-button w-full">Tenho interesse</button>
                             </form>
                             @if($photo->price === null && $vehicles->isNotEmpty())
-                                <form class="mt-3 space-y-3 rounded-lg border border-[var(--mc-line)] p-3" method="POST" action="{{ route('shots.photos.attach', $photo) }}">
+                                <form class="shots-photo-actions mt-3 space-y-3 rounded-lg border border-[var(--mc-line)] p-3" method="POST" action="{{ route('shots.photos.attach', $photo) }}">
                                     @csrf
                                     <input type="hidden" name="vehicle_id" value="{{ $vehicles->first()->id }}">
                                     <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="is_public" value="1"> Usar na página pública</label>
-                                    <button class="mc-text-link">Adicionar foto licenciada à garagem →</button>
+                                    <button class="mc-text-link w-full text-left">Adicionar foto licenciada à garagem →</button>
                                 </form>
                             @endif
-                            <form class="mt-3 flex gap-2" method="POST" action="{{ route('shots.reports.store', $photo) }}">
+                            <form class="shots-report-form mt-3 grid gap-2 sm:flex sm:items-end" method="POST" action="{{ route('shots.reports.store', $photo) }}">
                                 @csrf
                                 <input class="mc-input min-w-0" name="reason" maxlength="120" placeholder="Denunciar ou pedir remoção" required>
-                                <button class="mc-text-link">Enviar</button>
+                                <button class="mc-text-link w-full sm:w-auto">Enviar</button>
                             </form>
                         @endif
                     @else
