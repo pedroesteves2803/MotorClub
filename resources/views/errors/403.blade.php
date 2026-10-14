@@ -1,1 +1,12 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Acesso não permitido · Autoverse</title><style>body{background:#f2f0e9;color:#17231c;font-family:system-ui;margin:0;padding:clamp(2rem,8vw,8rem)}main{max-width:700px}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}a{color:#a73316;font-weight:700}p{font-size:1.1rem;line-height:1.6}</style></head><body><main><p>MOTORCLUB / 403</p><h1>Acesso não permitido</h1><p>Você não tem permissão para acessar este conteúdo.</p><a href="/">Voltar ao início</a></main></body></html>
+<x-error-page
+    code="403"
+    title="Você não tem acesso a esta garagem"
+    description="Esta área não está disponível para o seu perfil ou você não tem permissão para acessar este conteúdo."
+    variant="blocked"
+    illustration-label="Carro do Autoverse diante de uma barreira de acesso"
+    :actions="[
+        ['label' => 'Voltar', 'type' => 'back'],
+        ['label' => 'Minha garagem', 'href' => url('/garagem'), 'style' => 'primary'],
+        ['label' => 'Página inicial', 'href' => url('/')],
+    ]"
+ />

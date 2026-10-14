@@ -1,1 +1,11 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Voltamos em breve · Autoverse</title><style>body{background:#f2f0e9;color:#17231c;font-family:system-ui;margin:0;padding:clamp(2rem,8vw,8rem)}main{max-width:700px}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}a{color:#a73316;font-weight:700}p{font-size:1.1rem;line-height:1.6}</style></head><body><main><p>MOTORCLUB / 503</p><h1>Voltamos em breve</h1><p>O Autoverse está temporariamente indisponível.</p><a href="/">Voltar ao início</a></main></body></html>
+<x-error-page
+    code="503"
+    title="Estamos em manutenção na pista"
+    description="O Autoverse está temporariamente indisponível. Tente novamente em alguns minutos."
+    variant="pause"
+    illustration-label="Carro do Autoverse parado em um box de manutenção"
+    :actions="[
+        ['label' => 'Atualizar página', 'type' => 'reload', 'style' => 'primary'],
+        ['label' => 'Voltar mais tarde', 'type' => 'back'],
+    ]"
+ />

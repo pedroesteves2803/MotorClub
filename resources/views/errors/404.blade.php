@@ -1,1 +1,12 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Não encontramos esta página · Autoverse</title><style>body{background:#f2f0e9;color:#17231c;font-family:system-ui;margin:0;padding:clamp(2rem,8vw,8rem)}main{max-width:700px}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}a{color:#a73316;font-weight:700}p{font-size:1.1rem;line-height:1.6}</style></head><body><main><p>MOTORCLUB / 404</p><h1>Não encontramos esta página</h1><p>Ela pode ter sido removida ou estar privada.</p><a href="/">Voltar ao início</a></main></body></html>
+<x-error-page
+    code="404"
+    title="Essa rota não foi encontrada"
+    description="A página que você tentou acessar não existe, foi movida ou não está mais disponível."
+    variant="detour"
+    illustration-label="Carro do Autoverse seguindo uma placa de desvio"
+    :actions="[
+        ['label' => 'Voltar', 'type' => 'back'],
+        ['label' => 'Página inicial', 'href' => url('/'), 'style' => 'primary'],
+        ['label' => 'Explorar veículos', 'href' => url('/explorar')],
+    ]"
+ />

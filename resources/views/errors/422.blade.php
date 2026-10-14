@@ -1,1 +1,11 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Confira as informações · Autoverse</title><style>body{background:#f2f0e9;color:#17231c;font-family:system-ui;margin:0;padding:clamp(2rem,8vw,8rem)}main{max-width:700px}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}a{color:#a73316;font-weight:700}p{font-size:1.1rem;line-height:1.6}</style></head><body><main><p>MOTORCLUB / 422</p><h1>Confira as informações</h1><p>Não foi possível concluir esta operação com os dados enviados.</p><a href="/">Voltar ao início</a></main></body></html>
+<x-error-page
+    code="422"
+    title="Confira as informações"
+    description="Não foi possível concluir esta operação com os dados enviados. Revise os campos e tente novamente."
+    variant="blocked"
+    illustration-label="Carro do Autoverse parado enquanto os dados são conferidos"
+    :actions="[
+        ['label' => 'Voltar', 'type' => 'back'],
+        ['label' => 'Página inicial', 'href' => url('/'), 'style' => 'primary'],
+    ]"
+ />

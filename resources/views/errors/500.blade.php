@@ -1,1 +1,11 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Não foi possível carregar esta página · Autoverse</title><style>body{background:#f2f0e9;color:#17231c;font-family:system-ui;margin:0;padding:clamp(2rem,8vw,8rem)}main{max-width:700px}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}a{color:#a73316;font-weight:700}p{font-size:1.1rem;line-height:1.6}</style></head><body><main><p>MOTORCLUB / 500</p><h1>Não foi possível carregar esta página</h1><p>Tente novamente em alguns instantes.</p><a href="/">Voltar ao início</a></main></body></html>
+<x-error-page
+    code="500"
+    title="Algo saiu do trajeto"
+    description="Ocorreu um problema interno no Autoverse. Já estamos tratando isso ou você pode tentar novamente em instantes."
+    variant="workshop"
+    illustration-label="Carro do Autoverse em uma área de manutenção"
+    :actions="[
+        ['label' => 'Tentar novamente', 'type' => 'reload', 'style' => 'primary'],
+        ['label' => 'Página inicial', 'href' => url('/')],
+    ]"
+ />

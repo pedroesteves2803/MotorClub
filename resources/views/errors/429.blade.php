@@ -1,1 +1,11 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Muitas tentativas · Autoverse</title><style>body{background:#f2f0e9;color:#17231c;font-family:system-ui;margin:0;padding:clamp(2rem,8vw,8rem)}main{max-width:700px}h1{font-size:clamp(2rem,6vw,4rem);line-height:1.05}a{color:#a73316;font-weight:700}p{font-size:1.1rem;line-height:1.6}</style></head><body><main><p>MOTORCLUB / 429</p><h1>Muitas tentativas</h1><p>Aguarde um minuto e tente novamente.</p><a href="/">Voltar ao início</a></main></body></html>
+<x-error-page
+    code="429"
+    title="Calma, você acelerou rápido demais"
+    description="Recebemos muitas tentativas em pouco tempo. Aguarde alguns instantes e tente novamente."
+    variant="speed"
+    illustration-label="Carro do Autoverse com um aviso para reduzir a velocidade"
+    :actions="[
+        ['label' => 'Página inicial', 'href' => url('/'), 'style' => 'primary'],
+        ['label' => 'Voltar', 'type' => 'back'],
+    ]"
+ />
