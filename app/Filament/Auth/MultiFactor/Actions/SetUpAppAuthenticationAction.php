@@ -47,6 +47,21 @@ use SensitiveParameter;
  */
 class SetUpAppAuthenticationAction
 {
+    /**
+     * Resolve hidden password fields as well: Google-only accounts hide this
+     * field, but the action still needs its state path for rate limiting.
+     */
+    private static function getPasswordInput(Schema $schema): TextInput
+    {
+        $passwordInput = $schema->getComponent('password', withHidden: true);
+
+        if (! $passwordInput instanceof TextInput) {
+            throw new LogicException('The password input could not be found in the app authentication setup schema.');
+        }
+
+        return $passwordInput;
+    }
+
     public static function hasRecentGoogleAuthentication(): bool
     {
         $user = Filament::auth()->user() ?? auth()->user();
@@ -74,16 +89,6 @@ class SetUpAppAuthenticationAction
             }
 
             RateLimiter::hit($rateLimitingKey);
-        };
-
-        $getPasswordInput = static function (Schema $schema): TextInput {
-            $passwordInput = $schema->getComponent('password');
-
-            if (! $passwordInput instanceof TextInput) {
-                throw new LogicException('The password input could not be found in the app authentication setup schema.');
-            }
-
-            return $passwordInput;
         };
 
         $passwordInput = TextInput::make('password')
@@ -130,7 +135,7 @@ class SetUpAppAuthenticationAction
             ->modifyWizardUsing(fn (Wizard $wizard) => $wizard->hiddenHeader())
             ->steps(fn (Action $action): array => [
                 Step::make('app')
-                    ->beforeValidation(fn (Step $component) => $rateLimitAuthenticationAttempt($getPasswordInput($component->getChildSchema())->getStatePath()))
+                    ->beforeValidation(fn (Step $component) => $rateLimitAuthenticationAttempt(self::getPasswordInput($component->getChildSchema())->getStatePath()))
                     ->schema([
                         Group::make([
                             Text::make(__('filament-panels::auth/multi-factor/app/actions/set-up.modal.content.qr_code.instruction'))
@@ -215,7 +220,7 @@ class SetUpAppAuthenticationAction
                     ])
                     ->visible($appAuthentication->isRecoverable()),
             ])
-            ->beforeFormValidated(function (HasActions&HasSchemas $livewire) use ($getPasswordInput, $rateLimitAuthenticationAttempt): void {
+            ->beforeFormValidated(function (HasActions&HasSchemas $livewire) use ($rateLimitAuthenticationAttempt): void {
                 $mountedActionSchemaName = $livewire->getMountedActionSchemaName();
 
                 if ($mountedActionSchemaName === null) {
@@ -228,7 +233,7 @@ class SetUpAppAuthenticationAction
                     throw new LogicException('The mounted app authentication setup schema could not be found.');
                 }
 
-                $rateLimitAuthenticationAttempt($getPasswordInput($mountedActionSchema)->getStatePath());
+                $rateLimitAuthenticationAttempt(self::getPasswordInput($mountedActionSchema)->getStatePath());
             })
             ->modalSubmitAction(fn (Action $action) => $action
                 ->label(__('filament-panels::auth/multi-factor/app/actions/set-up.modal.actions.submit.label')))
