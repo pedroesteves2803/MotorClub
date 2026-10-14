@@ -80,6 +80,8 @@ class ProjectController extends Controller
     public function show(Project $project, ProjectMagazinePresenter $magazinePresenter, MagazineService $magazines, VehicleSlugService $slugs)
     {
         if (ctype_digit((string) request()->segment(2))) {
+            abort_unless(Gate::allows('view', $project), 404);
+
             return redirect()->route('projects.show', $project, 301);
         }
 
